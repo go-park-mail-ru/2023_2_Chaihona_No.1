@@ -10,6 +10,14 @@ type SessionStorage struct {
 	Size     uint32
 }
 
+func CreateSessionStorage() *SessionStorage {
+	storage := &SessionStorage{
+		Sessions: make(map[string]Session),
+	}
+
+	return storage
+}
+
 func (storage *SessionStorage) RegisterNewSession(session Session) error {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
