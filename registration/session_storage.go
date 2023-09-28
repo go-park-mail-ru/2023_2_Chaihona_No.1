@@ -61,7 +61,7 @@ func (storage *SessionStorage) GetSessions() ([]Session, error) {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
 
-	sessions := make([]Session, storage.Size)
+	sessions := make([]Session, 0)
 
 	for _, session := range storage.Sessions {
 		sessions = append(sessions, session)
