@@ -8,14 +8,14 @@ const OneTimePaymentAccess = "one-time_payment"
 const SubscribersAccess = "for_subscribers"
 
 type Post struct {
-	ID           uint      `json:"id,uint"`
-	HasAccess    bool      `json:"has_access,bool"`
+	ID           uint      `json:"id"`
+	HasAccess    bool      `json:"has_access"`
 	Reason       string    `json:"reason,omitempty"`
 	Access       string    `json:"access,string"`
 	Payment      float64   `json:"payment"`
 	MinSubLevel  uint      `json:"min_sub_level"`
-	CreationDate string    `json:"creation_date"`
-	Header       string    `json:"header"`
+	CreationDate string    `json:"creation_date,string"`
+	Header       string    `json:"header,string"`
 	Body         string    `json:"body,omitempty"`
 	Likes        uint      `json:"likes"`
 	Comments     []Comment `json:"comments,omitempty"`

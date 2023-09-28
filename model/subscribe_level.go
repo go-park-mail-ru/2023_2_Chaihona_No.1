@@ -1,8 +1,8 @@
 package model
 
 type SubscribeLevel struct {
-	ID          uint    `json:"id,uint"`
-	Level       uint    `json:"level,uint"`
+	ID          uint    `json:"id"`
+	Level       uint    `json:"level"`
 	Name        string  `json:"name,string"`
 	Description string  `json:"description,string"`
 	Payment     float64 `json:"payment"`

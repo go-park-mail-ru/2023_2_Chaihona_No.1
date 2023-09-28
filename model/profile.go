@@ -1,8 +1,8 @@
 package model
 
 type Profile struct {
-	ID              uint             `json:"id,int"`
-	User            User             `json:"user,User"`
+	ID              uint             `json:"id"`
+	User            User             `json:"user"`
 	Description     string           `json:"description,omitempty"`
 	Subscribers     uint             `json:"subscribers,omitempty"`
 	Goals           []Goal           `json:"goals,omitempty"`
