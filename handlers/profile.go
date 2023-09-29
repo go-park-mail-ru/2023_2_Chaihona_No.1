@@ -28,7 +28,11 @@ func CreateProfileHandler() *ProfileHandler {
 }
 
 func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
-	//check Session
+	if auth.CheckAuthorizathion(w, r) {
+		http.Error(w, `{"error":"unauthorized"}`, 401)
+		return
+	}
+
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
