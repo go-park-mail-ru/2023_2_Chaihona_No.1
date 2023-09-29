@@ -22,5 +22,8 @@ go.work
 
 *.txt
 model.go
-go.mod
 .gitignore
+authorization
+database
+registration
+handlers
