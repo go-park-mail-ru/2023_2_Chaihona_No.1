@@ -3,8 +3,7 @@ package main
 import (
 	"net/http"
 	auth "project/authorization"
-	post "project/post"
-	profile "project/profile"
+	handlers "project/handlers"
 	reg "project/registration"
 
 	"github.com/gorilla/mux"
@@ -13,8 +12,8 @@ import (
 func main() {
 	authHandler := auth.CreateRepoHandler()
 	registrationHandler := reg.CreateRepoHandler()
-	profileHandler := profile.CreateRepoHandler()
-	postHandler := post.CreateRepoHandler()
+	profileHandler := handlers.CreateProfileHandler()
+	postHandler := handlers.CreatePostHandler()
 
 	r := mux.NewRouter()
 	r.HandleFunc("/api/v1/login", authHandler.Login).Methods("POST")
