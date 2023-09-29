@@ -19,3 +19,13 @@
 
 # Go workspace file
 go.work
+
+*.txt
+model.go
+.gitignore
+authorization
+database
+registration
+main.go
+user.go
+model
