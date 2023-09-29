@@ -42,9 +42,10 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 		})
 
 		http.SetCookie(w, &http.Cookie{
-			Name:    "session_id",
-			Value:   SID,
-			Expires: time.Now().Add(10 * time.Hour),
+			Name:     "session_id",
+			Value:    SID,
+			Expires:  time.Now().Add(10 * time.Hour),
+			HttpOnly: true,
 		})
 
 		w.WriteHeader(200)
