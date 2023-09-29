@@ -11,7 +11,7 @@ type BodyLogin struct {
 }
 
 type LoginForm struct {
-	Body_ BodySignUp `json:"body"`
+	Body_ BodyLogin `json:"body"`
 }
 
 func ParseJSON(r *http.Request) (*LoginForm, error) {
