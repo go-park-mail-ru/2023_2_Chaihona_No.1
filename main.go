@@ -1,22 +1,24 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
+	"net/http"
+	auth "project/authorization"
 	model "project/model"
-	reg "project/registration"
 )
 
 // заглушка main
 func main() {
 	user := model.User{
-		ID:    32,
-		Login: "1@gmail.com",
+		ID:       32,
+		Login:    "12",
+		Password: "12",
 	}
 
-	storage := reg.CreateUserStorage()
-	storage.RegisterNewUser(user)
-	temp, _ := storage.CheckUser(user.ID)
-	s, _ := json.Marshal(temp)
-	fmt.Println(string(s))
+	rep := auth.CreateRepoHandler()
+	rep.Users.RegisterNewUser(user)
+
+
+	http.HandleFunc("/", rep.Root)
+	http.HandleFunc("/login", rep.Login)
+	http.ListenAndServe(":8080", nil)
 }
