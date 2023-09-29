@@ -1,4 +1,4 @@
-package registration
+package authorization
 
 type SessionRepository interface {
 	RegisterNewSession(session Session) error
