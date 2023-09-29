@@ -6,14 +6,14 @@ import (
 )
 
 type UserStorage struct {
-	Users map[uint]model.User
+	Users map[string]model.User
 	Mu    sync.Mutex
 	Size  uint32
 }
 
 func CreateUserStorage() *UserStorage {
 	storage := &UserStorage{
-		Users: make(map[uint]model.User),
+		Users: make(map[string]model.User),
 	}
 
 	return storage
@@ -24,30 +24,30 @@ func (storage *UserStorage) RegisterNewUser(user model.User) error {
 	defer storage.Mu.Unlock()
 
 	storage.Size++
-	storage.Users[user.ID] = user
+	storage.Users[user.Login] = user
 
 	return nil
 }
 
-func (storage *UserStorage) DeleteUser(userId uint) error {
+func (storage *UserStorage) DeleteUser(login string) error {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
 
-	if _, ok := storage.Users[userId]; !ok {
+	if _, ok := storage.Users[login]; !ok {
 		return ErrNoSuchUser
 	}
 
-	delete(storage.Users, userId)
+	delete(storage.Users, login)
 	storage.Size--
 
 	return nil
 }
 
-func (storage *UserStorage) CheckUser(userId uint) (*model.User, bool) {
+func (storage *UserStorage) CheckUser(login string) (*model.User, bool) {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
 
-	val, ok := storage.Users[userId]
+	val, ok := storage.Users[login]
 
 	if ok {
 		copy := val
