@@ -28,7 +28,7 @@ func CreateProfileHandler() *ProfileHandler {
 }
 
 func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
-	if auth.CheckAuthorizathion(w, r) {
+	if auth.CheckAuthorization(w, r) {
 		http.Error(w, `{"error":"unauthorized"}`, 401)
 		return
 	}
