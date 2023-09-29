@@ -22,8 +22,8 @@ go.work
 
 *.txt
 model.go
-.gitignore
 authorization
 database
 registration
 handlers
+profile_storage.go
