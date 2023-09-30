@@ -21,12 +21,5 @@
 go.work
 
 *.txt
-model.go
-.gitignore
-authorization
-database
-registration
-main.go
-model
-profile.go
-user.go
+go.mod
+go.sum
