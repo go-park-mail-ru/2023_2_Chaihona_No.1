@@ -27,7 +27,17 @@ func main() {
 	rep := auth.CreateRepoHandler()
 	profileHandler := handlers.CreateProfileHandlerViaRepos(&rep.Sessions, &rep.Profiles)
 	postStorage := model.CreatePostStorage()
-	postHandler := handlers.CreatePostHandlerViaRepos(&rep.Sessions, postStorage, &rep.Profiles)
+	postStorage.CreateNewPost(model.Post{
+		ID:           1,
+		AuthorID:     4,
+		HasAccess:    true,
+		Access:       model.EveryoneAccess,
+		CreationDate: "15:08 30.09.2023",
+		Header:       "Header",
+		Body:         "Body",
+		Likes:        10,
+	})
+	postHandler := handlers.CreatePostHandlerViaRepos(&rep.Sessions, &postStorage, &rep.Profiles)
 
 	rep.Users.RegisterNewUser(&user)
 
@@ -107,9 +117,22 @@ func main() {
 
 		resp, err = http.DefaultClient.Do(req)
 		fmt.Println("Cookies:", resp.Cookies(), "Status:", resp.StatusCode)
+		// body, _ := ioutil.ReadAll(resp.Body)
+		// fmt.Println(string(body))
+
+		if err != nil {
+			fmt.Println("error")
+			return
+		}
+
+		resp, err = http.Post("http://127.0.0.1:8081/api/v1/registration", "application/json", strings.NewReader(`{ "body" : {"login" : "abcd", "password" : "abcd", "user_type" : "creator"}}`))
+
+		req, _ = http.NewRequest("GET", "http://127.0.0.1:8081/api/v1/profile/4/post", nil)
+		req.AddCookie(kuka[0])
+		resp, err = http.DefaultClient.Do(req)
+		fmt.Println("Cookies:", resp.Cookies(), "Status:", resp.StatusCode)
 		body, _ := ioutil.ReadAll(resp.Body)
 		fmt.Println(string(body))
-
 		if err != nil {
 			fmt.Println("error")
 			return

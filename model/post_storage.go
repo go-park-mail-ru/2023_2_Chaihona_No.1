@@ -21,7 +21,7 @@ type PostStorage struct {
 	Size  uint32
 }
 
-func CreatePostStorage() *PostStorage {
+func CreatePostStorage() PostRepository {
 	storage := &PostStorage{
 		Posts: make(map[uint]Post),
 	}

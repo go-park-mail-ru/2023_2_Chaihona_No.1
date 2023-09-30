@@ -5,6 +5,7 @@ import (
 	"net/http"
 	auth "project/authorization"
 	model "project/model"
+	reg "project/registration"
 	"strconv"
 	"strings"
 )
@@ -12,7 +13,7 @@ import (
 type PostHandler struct {
 	Sessions *auth.SessionRepository
 	Posts    *model.PostRepository
-	Profiles *model.ProfileRepository
+	Profiles *reg.ProfileRepository
 }
 
 // func CreatePostHandler() *PostHandler {
@@ -24,7 +25,7 @@ type PostHandler struct {
 // }
 
 func CreatePostHandlerViaRepos(session *auth.SessionRepository, posts *model.PostRepository,
-	profiles *model.ProfileRepository) *PostHandler {
+	profiles *reg.ProfileRepository) *PostHandler {
 	return &PostHandler{
 		session,
 		posts,
@@ -40,7 +41,7 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 
 	// vars := mux.Vars(r)
 	// authorId, err := strconv.Atoi(vars["id"])
-	authorId, err := strconv.Atoi(strings.Split(r.URL.Path, "/")[3])
+	authorId, err := strconv.Atoi(strings.Split(r.URL.Path, "/")[4])
 	if err != nil {
 		http.Error(w, `{"error":"bad id"}`, 400)
 		return
