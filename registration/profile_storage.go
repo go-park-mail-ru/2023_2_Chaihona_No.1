@@ -19,13 +19,13 @@ func CreateProfileStorage() *ProfileStorage {
 	return storage
 }
 
-func (storage *ProfileStorage) RegisterNewProfile(Profile model.Profile) error {
+func (storage *ProfileStorage) RegisterNewProfile(Profile *model.Profile) error {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
 
 	Profile.ID = uint(storage.Size)
 	storage.Size++
-	storage.Profiles[Profile.User.Login] = Profile
+	storage.Profiles[Profile.User.Login] = *Profile
 
 	return nil
 }

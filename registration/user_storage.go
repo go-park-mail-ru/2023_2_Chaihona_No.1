@@ -19,13 +19,13 @@ func CreateUserStorage() *UserStorage {
 	return storage
 }
 
-func (storage *UserStorage) RegisterNewUser(user model.User) error {
+func (storage *UserStorage) RegisterNewUser(user *model.User) error {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
 
 	user.ID = uint(storage.Size)
 	storage.Size++
-	storage.Users[user.Login] = user
+	storage.Users[user.Login] = *user
 
 	return nil
 }

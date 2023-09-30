@@ -35,7 +35,7 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		UserType: regForm.Body_.UserType,
 	}
 
-	err = api.Users.RegisterNewUser(user)
+	err = api.Users.RegisterNewUser(&user)
 
 	if err != nil {
 		http.Error(w, `{"error":"user_registration"}`, 400)
@@ -48,7 +48,7 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 			User: user,
 		}
 
-		err = api.Profiles.RegisterNewProfile(profile)
+		err = api.Profiles.RegisterNewProfile(&profile)
 
 		if err != nil {
 			http.Error(w, `{"error":"profile_registration"}`, 401)
