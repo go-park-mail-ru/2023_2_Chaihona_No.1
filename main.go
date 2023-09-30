@@ -17,7 +17,7 @@ func main() {
 	}
 
 	rep := auth.CreateRepoHandler()
-	rep.Users.RegisterNewUser(user)
+	rep.Users.RegisterNewUser(&user)
 
 	go func() {
 		resp, err := http.Post("http://127.0.0.1:8080/registration", "application/json", strings.NewReader(`{ "body" : {"login" : "123", "password" : "123", "user_type" : "simple_user"}}`))
