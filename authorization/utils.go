@@ -1,6 +1,7 @@
 package authorization
 
 import (
+	"fmt"
 	"net/http"
 	model "project/model"
 	reg "project/registration"
@@ -8,7 +9,7 @@ import (
 )
 
 const (
-	SID_LEN = 32
+	SID_LEN      = 32
 	TTL_DURATION = 10 * time.Hour
 )
 
@@ -31,7 +32,7 @@ func CheckAuthorization(r *http.Request, sessions SessionRepository) bool {
 
 	if err == nil && session != nil {
 		_, authorized := sessions.CheckSession(session.Value)
-
+		fmt.Println(session)
 		return authorized
 	}
 

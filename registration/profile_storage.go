@@ -7,8 +7,8 @@ import (
 
 type ProfileStorage struct {
 	Profiles map[string]model.Profile
-	Mu    sync.Mutex
-	Size  uint32
+	Mu       sync.Mutex
+	Size     uint32
 }
 
 func CreateProfileStorage() *ProfileStorage {
@@ -23,7 +23,6 @@ func (storage *ProfileStorage) RegisterNewProfile(Profile *model.Profile) error 
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
 
-	Profile.ID = uint(storage.Size)
 	storage.Size++
 	storage.Profiles[Profile.User.Login] = *Profile
 
@@ -54,6 +53,20 @@ func (storage *ProfileStorage) CheckProfile(login string) (*model.Profile, bool)
 		copy := val
 
 		return &copy, true
+	}
+
+	return nil, false
+}
+
+func (storage *ProfileStorage) GetProfile(id uint) (*model.Profile, bool) {
+	storage.Mu.Lock()
+	defer storage.Mu.Unlock()
+
+	for _, profile := range storage.Profiles {
+		if profile.User.ID == id {
+			copy := profile
+			return &copy, true
+		}
 	}
 
 	return nil, false

@@ -67,6 +67,8 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// users, _ := api.Profiles.GetProfiles()
+	// fmt.Println(users)
 	user, err := Authorize(api.Users, userForm)
 
 	if err != nil {

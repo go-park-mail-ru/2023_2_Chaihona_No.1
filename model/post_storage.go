@@ -8,7 +8,7 @@ import (
 var ErrNoSuchPost = errors.New("no such post")
 
 type PostRepository interface {
-	CreateNewPost(user Post) error
+	CreateNewPost(post Post) error
 	DeletePost(id uint) error
 	GetPostById(id uint) (*Post, error)
 	GetPostsByAuthorId(authorId uint) (*[]Post, error)

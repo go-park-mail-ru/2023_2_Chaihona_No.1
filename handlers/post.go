@@ -10,21 +10,30 @@ import (
 )
 
 type PostHandler struct {
-	Sessions auth.SessionRepository
-	Posts    model.PostRepository
-	Profiles model.ProfileRepository
+	Sessions *auth.SessionRepository
+	Posts    *model.PostRepository
+	Profiles *model.ProfileRepository
 }
 
-func CreatePostHandler() *PostHandler {
+// func CreatePostHandler() *PostHandler {
+// 	return &PostHandler{
+// 		auth.CreateSessionStorage(),
+// 		model.CreatePostStorage(),
+// 		model.CreateProfileStorage(),
+// 	}
+// }
+
+func CreatePostHandlerViaRepos(session *auth.SessionRepository, posts *model.PostRepository,
+	profiles *model.ProfileRepository) *PostHandler {
 	return &PostHandler{
-		auth.CreateSessionStorage(),
-		model.CreatePostStorage(),
-		model.CreateProfileStorage(),
+		session,
+		posts,
+		profiles,
 	}
 }
 
 func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
-	if !auth.CheckAuthorization(r, p.Sessions) {
+	if !auth.CheckAuthorization(r, *p.Sessions) {
 		http.Error(w, `{"error":"unauthorized"}`, 401)
 		return
 	}
@@ -37,7 +46,7 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, err := p.Posts.GetPostsByAuthorId(uint(authorId))
+	posts, err := (*p.Posts).GetPostsByAuthorId(uint(authorId))
 	if err != nil {
 		if err == NotAuthorError {
 			http.Error(w, `{"error":"bad request"}`, 400)
@@ -48,9 +57,9 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cookie, _ := r.Cookie("session_id")
-	session, _ := p.Sessions.CheckSession(cookie.Value)
+	session, _ := (*p.Sessions).CheckSession(cookie.Value)
 	userId := session.UserId
-	profile, _ := p.Profiles.GetProfile(uint(userId))
+	profile, _ := (*p.Profiles).GetProfile(uint(userId))
 	subscribtions := profile.Subscribtions
 
 	isSubscirber := false
