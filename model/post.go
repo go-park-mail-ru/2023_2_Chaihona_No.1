@@ -13,8 +13,9 @@ type Post struct {
 	HasAccess    bool      `json:"has_access"`
 	Reason       string    `json:"reason,omitempty"`
 	Access       string    `json:"access,string"`
-	Payment      float64   `json:"payment"`
-	MinSubLevel  uint      `json:"min_sub_level"`
+	Payment      float64   `json:"payment,omitempty"`
+	Currency     string    `json:"currency,omitempty"`
+	MinSubLevel  uint      `json:"min_sub_level,omitempty"`
 	CreationDate string    `json:"creation_date,string"`
 	Header       string    `json:"header,string"`
 	Body         string    `json:"body,omitempty"`

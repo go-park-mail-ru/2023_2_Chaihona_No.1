@@ -8,4 +8,5 @@ type Profile struct {
 	SubscribeLevels []SubscribeLevel `json:"subscribe_levels,omitempty"`
 	Subscribtions   []User           `json:"subscribtions,omitempty"`
 	Donated         float64          `json:"donated,omitempty"`
+	Currency        string           `json:"currency,omitempty"`
 }
