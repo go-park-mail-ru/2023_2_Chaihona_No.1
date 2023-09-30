@@ -217,7 +217,6 @@ var TestCases = map[string]TestCase{
 			}, true).AnyTimes()
 
 			repos.Profile.EXPECT().GetProfile(uint(9)).Return(&model.Profile{
-				ID: 9,
 				User: model.User{
 					ID:       9,
 					Login:    "chert",
