@@ -2,13 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
 	auth "project/authorization"
 	model "project/model"
 	"strconv"
-
-	"github.com/gorilla/mux"
+	"strings"
 )
 
 type PostHandler struct {
@@ -31,8 +29,9 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vars := mux.Vars(r)
-	authorId, err := strconv.Atoi(vars["id"])
+	// vars := mux.Vars(r)
+	// authorId, err := strconv.Atoi(vars["id"])
+	authorId, err := strconv.Atoi(strings.Split(r.URL.Path, "/")[3])
 	if err != nil {
 		http.Error(w, `{"error":"bad id"}`, 400)
 		return
@@ -40,7 +39,7 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 
 	posts, err := p.Posts.GetPostsByAuthorId(uint(authorId))
 	if err != nil {
-		if err == errors.New("user isn't author") {
+		if err == NotAuthorError {
 			http.Error(w, `{"error":"bad request"}`, 400)
 			return
 		}
@@ -56,18 +55,26 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 
 	isSubscirber := false
 	for _, user := range subscribtions {
-		if user.ID == userId {
+		if user.ID == uint(authorId) {
 			isSubscirber = true
 		}
 	}
+
 	// Need to add subscribtion level check logic and one-time payment check logic
 	if !isSubscirber {
-		for post := range posts {
-			if post.Access == model.SubscribersAccess {
-				post.HasAccess = false
-				post.Reason = model.LowLevelReason
-				post.body = ""
+		for i, _ := range *posts {
+			switch (*posts)[i].Access {
+			case model.SubscribersAccess:
+				(*posts)[i].HasAccess = false
+				(*posts)[i].Reason = model.LowLevelReason
+				(*posts)[i].Body = ""
+			case model.EveryoneAccess:
+				(*posts)[i].HasAccess = true
 			}
+		}
+	} else {
+		for i, _ := range *posts {
+			(*posts)[i].HasAccess = true
 		}
 	}
 
