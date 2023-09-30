@@ -21,9 +21,6 @@
 go.work
 
 *.txt
-authorization
-database
-registration
 profile_storage.go
 go.mod
 go.sum
