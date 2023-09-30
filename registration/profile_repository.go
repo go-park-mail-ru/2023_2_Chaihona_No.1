@@ -9,5 +9,6 @@ type ProfileRepository interface {
 	DeleteProfile(login string) error
 	CheckProfile(login string) (*model.Profile, bool)
 	GetProfiles() ([]model.Profile, error)
+	GetProfile(id uint) (*model.Profile, bool)
 }
 
