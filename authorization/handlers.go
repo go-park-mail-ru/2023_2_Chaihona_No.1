@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"project/model"
 	reg "project/registration"
-	"time"
 )
 
 type RepoHandler struct {
@@ -57,21 +56,7 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	SID := RandStringRunes(32)
-	TTL := time.Now().Add(10 * time.Hour)
-
-	api.Sessions.RegisterNewSession(Session{
-		SessionId: SID,
-		UserId:    uint32(user.ID),
-		Ttl:       TTL,
-	})
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session_id",
-		Value:    SID,
-		Expires:  time.Now().Add(10 * time.Hour),
-		HttpOnly: true,
-	})
+	SetSession(w, api.Sessions, uint32(user.ID))
 
 	w.WriteHeader(200)
 }
@@ -92,21 +77,7 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	SID := RandStringRunes(32)
-	TTL := time.Now().Add(10 * time.Hour)
-
-	api.Sessions.RegisterNewSession(Session{
-		SessionId: SID,
-		UserId:    uint32(user.ID),
-		Ttl:       TTL,
-	})
-
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session_id",
-		Value:    SID,
-		Expires:  time.Now().Add(10 * time.Hour),
-		HttpOnly: true,
-	})
+	SetSession(w, api.Sessions, uint32(user.ID))
 
 	w.WriteHeader(200)
 }

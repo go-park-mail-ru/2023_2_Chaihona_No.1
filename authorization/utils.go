@@ -4,6 +4,12 @@ import (
 	"net/http"
 	model "project/model"
 	reg "project/registration"
+	"time"
+)
+
+const (
+	SID_LEN = 32
+	TTL_DURATION = 10 * time.Hour
 )
 
 func Authorize(users reg.UserRepository, form *LoginForm) (*model.User, error) {
@@ -30,4 +36,22 @@ func CheckAuthorization(r *http.Request, sessions SessionRepository) bool {
 	}
 
 	return false
+}
+
+func SetSession(w http.ResponseWriter, sessions SessionRepository, userId uint32) {
+	SID := RandStringRunes(SID_LEN)
+	TTL := time.Now().Add(TTL_DURATION)
+
+	sessions.RegisterNewSession(Session{
+		SessionId: SID,
+		UserId:    userId,
+		Ttl:       TTL,
+	})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    SID,
+		Expires:  TTL,
+		HttpOnly: true,
+	})
 }
