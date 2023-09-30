@@ -42,18 +42,15 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if regForm.Body_.UserType == "creator" {
-		profile := model.Profile{
-			ID:   user.ID,
-			User: user,
-		}
+	profile := model.Profile{
+		User: user,
+	}
 
-		err = api.Profiles.RegisterNewProfile(&profile)
+	err = api.Profiles.RegisterNewProfile(&profile)
 
-		if err != nil {
-			http.Error(w, `{"error":"profile_registration"}`, 401)
-			return
-		}
+	if err != nil {
+		http.Error(w, `{"error":"profile_registration"}`, 401)
+		return
 	}
 
 	SetSession(w, api.Sessions, uint32(user.ID))

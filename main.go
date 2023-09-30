@@ -29,7 +29,43 @@ func main() {
 
 		fmt.Println("Cookies:", resp.Cookies(), "Status:", resp.StatusCode)
 
+		resp, err = http.Post("http://127.0.0.1:8080/registration", "application/json", strings.NewReader(`{ "body" : {"login" : "1234", "password" : "1234", "user_type" : "simple_user"}}`))
+
+		if err != nil {
+			fmt.Println("error")
+			return
+		}
+
+		fmt.Println("Cookies:", resp.Cookies(), "Status:", resp.StatusCode)
+
+		resp, err = http.Post("http://127.0.0.1:8080/registration", "application/json", strings.NewReader(`{ "body" : {"login" : "12345", "password" : "12345", "user_type" : "simple_user"}}`))
+
+		if err != nil {
+			fmt.Println("error")
+			return
+		}
+
+		fmt.Println("Cookies:", resp.Cookies(), "Status:", resp.StatusCode)
+
 		resp, err = http.Post("http://127.0.0.1:8080/login", "application/json", strings.NewReader(`{ "body" : {"login" : "123", "password" : "123"}}`))
+		
+		if err != nil {
+			fmt.Println("error")
+			return
+		}
+
+		fmt.Println("Cookies:", resp.Cookies(), "Status:", resp.StatusCode)
+
+		resp, err = http.Post("http://127.0.0.1:8080/login", "application/json", strings.NewReader(`{ "body" : {"login" : "1234", "password" : "1234"}}`))
+		
+		if err != nil {
+			fmt.Println("error")
+			return
+		}
+
+		fmt.Println("Cookies:", resp.Cookies(), "Status:", resp.StatusCode)
+
+		resp, err = http.Post("http://127.0.0.1:8080/login", "application/json", strings.NewReader(`{ "body" : {"login" : "12345", "password" : "123"}}`))
 		
 		if err != nil {
 			fmt.Println("error")
