@@ -4,23 +4,26 @@ import (
 	"net/http"
 	auth "project/authorization"
 	handlers "project/handlers"
-	reg "project/registration"
+	model "project/model"
 
 	"github.com/gorilla/mux"
 )
 
 func main() {
-	authHandler := auth.CreateRepoHandler()
-	registrationHandler := reg.CreateRepoHandler()
-	profileHandler := handlers.CreateProfileHandler()
-	postHandler := handlers.CreatePostHandler()
+	// registrationHandler := reg.CreateRepoHandler()
+	// profileHandler := handlers.CreateProfileHandler()
+	// postHandler := handlers.CreatePostHandler()
+	rep := auth.CreateRepoHandler()
+	profileHandler := handlers.CreateProfileHandlerViaRepos(&rep.Sessions, &rep.Profiles)
+	postStorage := model.CreatePostStorage()
+	postHandler := handlers.CreatePostHandlerViaRepos(&rep.Sessions, &postStorage, &rep.Profiles)
 
 	r := mux.NewRouter()
-	r.HandleFunc("/api/v1/login", authHandler.Login).Methods("POST")
-	r.HandleFunc("/api/v1/logout", authHandler.Logout).Methods("POST")
-	r.HandleFunc("/api/v1/registration", registrationHandler.SignUp).Methods("POST")
+	r.HandleFunc("/api/v1/login", rep.Login).Methods("POST")
+	// r.HandleFunc("/api/v1/logout", rep.Logout).Methods("POST")
+	r.HandleFunc("/api/v1/registration", rep.Signup).Methods("POST")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
 
-	http.ListenAndServe(":8080", r)
+	http.ListenAndServe(":8081", r)
 }
