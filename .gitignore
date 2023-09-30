@@ -21,9 +21,9 @@
 go.work
 
 *.txt
-model.go
 authorization
 database
 registration
-handlers
 profile_storage.go
+go.mod
+go.sum

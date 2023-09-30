@@ -74,7 +74,7 @@ func (storage *PostStorage) GetPostsByAuthorId(authorId uint) (*[]Post, error) {
 
 	posts := make([]Post, 0)
 	for _, post := range storage.Posts {
-		if post.AuthorId == authorId {
+		if post.AuthorID == authorId {
 			posts = append(posts, post)
 		}
 	}

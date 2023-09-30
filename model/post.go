@@ -9,7 +9,7 @@ const SubscribersAccess = "for_subscribers"
 
 type Post struct {
 	ID           uint      `json:"id"`
-	AuthorId     uint      `json:"-"`
+	AuthorID     uint      `json:"-"`
 	HasAccess    bool      `json:"has_access"`
 	Reason       string    `json:"reason,omitempty"`
 	Access       string    `json:"access,string"`
