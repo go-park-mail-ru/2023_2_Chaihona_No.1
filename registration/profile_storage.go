@@ -23,6 +23,7 @@ func (storage *ProfileStorage) RegisterNewProfile(Profile model.Profile) error {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
 
+	Profile.ID = uint(storage.Size)
 	storage.Size++
 	storage.Profiles[Profile.User.Login] = Profile
 
