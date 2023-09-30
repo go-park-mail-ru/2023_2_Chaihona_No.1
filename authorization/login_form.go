@@ -2,7 +2,7 @@ package authorization
 
 import (
 	"encoding/json"
-	"net/http"
+	"io"
 )
 
 type BodyLogin struct {
@@ -14,10 +14,8 @@ type LoginForm struct {
 	Body_ BodyLogin `json:"body"`
 }
 
-func ParseJSON(r *http.Request) (*LoginForm, error) {
-	defer r.Body.Close()
-
-	decoder := json.NewDecoder(r.Body)
+func ParseJSON(r io.Reader) (*LoginForm, error) {
+	decoder := json.NewDecoder(r)
 	newUserInput := new(LoginForm)
 	err := decoder.Decode(newUserInput)
 

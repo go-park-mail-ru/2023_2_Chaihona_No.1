@@ -21,8 +21,6 @@ func CreateRepoHandler() *RepoHandler {
 	}
 }
 
-// http://127.0.0.1:8080/login?login=12&password=12
-
 func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	regForm, err := reg.ParseJSON(r.Body)
@@ -79,7 +77,8 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
-	userForm, err := ParseJSON(r)
+	defer r.Body.Close()
+	userForm, err := ParseJSON(r.Body)
 
 	if err != nil {
 		http.Error(w, `{"error":"wrong_json"}`, 405)
