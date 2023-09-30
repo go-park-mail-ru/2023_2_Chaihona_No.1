@@ -2,7 +2,7 @@ package registration
 
 import (
 	"encoding/json"
-	"net/http"
+	"io"
 )
 
 type BodySignUp struct {
@@ -15,10 +15,8 @@ type SignupForm struct {
 	Body_ BodySignUp `json:"body"`
 }
 
-func ParseJSON(r *http.Request) (*SignupForm, error) {
-	defer r.Body.Close()
-
-	decoder := json.NewDecoder(r.Body)
+func ParseJSON(r io.Reader) (*SignupForm, error) {
+	decoder := json.NewDecoder(r)
 	newUserInput := new(SignupForm)
 	err := decoder.Decode(newUserInput)
 
