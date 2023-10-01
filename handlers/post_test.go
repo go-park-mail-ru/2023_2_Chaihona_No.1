@@ -70,14 +70,13 @@ var TestCases = map[string]TestCase{
 				},
 			}, nil).AnyTimes()
 
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(auth.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
 				SessionId: "chertila",
 				UserId:    9,
 				Ttl:       time.Now().Add(10 * time.Hour),
 			}, true).AnyTimes()
 
 			repos.Profile.EXPECT().GetProfile(uint(9)).Return(&model.Profile{
-				ID: 9,
 				User: model.User{
 					ID:       9,
 					Login:    "chert",
@@ -140,14 +139,13 @@ var TestCases = map[string]TestCase{
 				},
 			}, nil).AnyTimes()
 
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(auth.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
 				SessionId: "chertila",
 				UserId:    9,
 				Ttl:       time.Now().Add(10 * time.Hour),
 			}, true).AnyTimes()
 
 			repos.Profile.EXPECT().GetProfile(uint(9)).Return(&model.Profile{
-				ID: 9,
 				User: model.User{
 					ID:       9,
 					Login:    "chert",
@@ -210,7 +208,7 @@ var TestCases = map[string]TestCase{
 				},
 			}, nil).AnyTimes()
 
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(auth.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
 				SessionId: "chertila",
 				UserId:    9,
 				Ttl:       time.Now().Add(10 * time.Hour),
@@ -238,6 +236,11 @@ var TestCases = map[string]TestCase{
 		},
 		Prepare: func(repos *MockRepos) {
 			repos.Posts.EXPECT().GetPostsByAuthorId(uint(4)).Return(&[]model.Post{}, NotAuthorError).AnyTimes()
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
+				SessionId: "chertila",
+				UserId:    9,
+				Ttl:       time.Now().Add(10 * time.Hour),
+			}, true).AnyTimes()
 		},
 	},
 
@@ -250,6 +253,13 @@ var TestCases = map[string]TestCase{
 			Value:    "chertila",
 			Expires:  time.Now().Add(10 * time.Hour),
 			HttpOnly: true,
+		},
+		Prepare: func(repos *MockRepos) {
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
+				SessionId: "chertila",
+				UserId:    9,
+				Ttl:       time.Now().Add(10 * time.Hour),
+			}, true).AnyTimes()
 		},
 	},
 }
@@ -274,11 +284,7 @@ func TestGetPosts(t *testing.T) {
 			testCase.Prepare(&mockRepos)
 		}
 
-		PostHandler := &PostHandler{
-			mockRepos.Sessions,
-			mockRepos.Posts,
-			mockRepos.Profile,
-		}
+		PostHandler := CreatePostHandlerViaRepos(mockRepos.Sessions, mockRepos.Posts, mockRepos.Profile)
 
 		PostHandler.GetAllUserPosts(w, req)
 
