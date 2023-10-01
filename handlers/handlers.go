@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -90,11 +91,12 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 }
 
-func (api *RepoHandler) Root(w http.ResponseWriter, r *http.Request) {
+func (api *RepoHandler) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
+	w.Header().Add("Content-Type", "application/json")
 	if auth.CheckAuthorization(r, api.Sessions) {
-		w.Write([]byte("autrorized"))
+		json.NewEncoder(w).Encode(&Result{Body: map[string]interface{}{"is_authorized": true}})
 	} else {
-		w.Write([]byte("not autrorized"))
+		json.NewEncoder(w).Encode(&Result{Body: map[string]interface{}{"is_authorized": false}})
 	}
 }

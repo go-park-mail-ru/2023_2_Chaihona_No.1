@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	auth "project/authorization"
 	reg "project/registration"
 	"strconv"
-	"fmt"
+
 	"github.com/gorilla/mux"
 )
 
