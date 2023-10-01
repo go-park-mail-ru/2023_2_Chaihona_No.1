@@ -21,7 +21,3 @@
 go.work
 
 *.txt
-profile_storage.go
-go.mod
-go.sum
-project

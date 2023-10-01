@@ -30,6 +30,7 @@ func CreateProfileHandlerViaRepos(session *auth.SessionRepository, profiles *reg
 }
 
 func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
 	if !auth.CheckAuthorization(r, *p.Session) {
 		http.Error(w, `{"error":"unauthorized"}`, 401)
 		return

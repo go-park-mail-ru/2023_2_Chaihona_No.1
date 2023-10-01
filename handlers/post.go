@@ -34,6 +34,7 @@ func CreatePostHandlerViaRepos(session *auth.SessionRepository, posts *model.Pos
 }
 
 func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
 	if !auth.CheckAuthorization(r, *p.Sessions) {
 		http.Error(w, `{"error":"unauthorized"}`, 401)
 		return
