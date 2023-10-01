@@ -24,6 +24,12 @@ func (storage *UserStorage) RegisterNewUser(user *model.User) error {
 	defer storage.Mu.Unlock()
 
 	user.ID = uint(storage.Size)
+	_, ok := storage.Users[user.Login]
+
+	if ok {
+		return ErrUserLoginAlreadyExists
+	}
+
 	storage.Size++
 	storage.Users[user.Login] = *user
 
