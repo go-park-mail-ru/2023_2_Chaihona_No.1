@@ -22,7 +22,6 @@ func CreateProfileStorage() *ProfileStorage {
 func (storage *ProfileStorage) RegisterNewProfile(Profile *model.Profile) error {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
-
 	storage.Size++
 	storage.Profiles[Profile.User.Login] = *Profile
 

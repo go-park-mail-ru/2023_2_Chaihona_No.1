@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+	"io"
 	"net/http"
 	auth "project/authorization"
 	"project/model"
@@ -32,9 +34,9 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := model.User{
-		Login:    regForm.Body_.Login,
-		Password: regForm.Body_.Password,
-		UserType: regForm.Body_.UserType,
+		Login:    regForm.Login,
+		Password: regForm.Password,
+		UserType: regForm.UserType,
 	}
 
 	err = api.Users.RegisterNewUser(&user)
@@ -47,6 +49,9 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	profile := model.Profile{
 		User: user,
 	}
+
+	abc, _ := io.ReadAll(r.Body)
+	fmt.Println((string)(abc))
 
 	err = api.Profiles.RegisterNewProfile(&profile)
 
@@ -75,6 +80,7 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	user, err := auth.Authorize(api.Users, userForm)
 
 	if err != nil {
+		fmt.Println(err)
 		http.Error(w, `{"error":"user_registration"}`, 400)
 		return
 	}
