@@ -6,6 +6,7 @@ import (
 	"net/http"
 	handlers "project/handlers"
 	model "project/model"
+	"project/test_data"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -25,17 +26,24 @@ func main() {
 	rep := handlers.CreateRepoHandler()
 	profileHandler := handlers.CreateProfileHandlerViaRepos(&rep.Sessions, &rep.Profiles)
 	postStorage := model.CreatePostStorage()
-	postStorage.CreateNewPost(model.Post{
-		ID:           1,
-		AuthorID:     4,
-		HasAccess:    true,
-		Access:       model.EveryoneAccess,
-		CreationDate: "15:08 30.09.2023",
-		Header:       "Header",
-		Body:         "Body",
-		Likes:        10,
-	})
+	// postStorage.CreateNewPost(model.Post{
+	// 	ID:           1,
+	// 	AuthorID:     4,
+	// 	HasAccess:    true,
+	// 	Access:       model.EveryoneAccess,
+	// 	CreationDate: "15:08 30.09.2023",
+	// 	Header:       "Header",
+	// 	Body:         "Body",
+	// 	Likes:        10,
+	// })
 	postHandler := handlers.CreatePostHandlerViaRepos(rep.Sessions, postStorage, rep.Profiles)
+	for _, test_user := range test_data.Users {
+		rep.Users.RegisterNewUser(&test_user)
+	}
+
+	for _, test_post := range test_data.Posts {
+		postStorage.CreateNewPost(test_post)
+	}
 
 	rep.Users.RegisterNewUser(&user)
 
