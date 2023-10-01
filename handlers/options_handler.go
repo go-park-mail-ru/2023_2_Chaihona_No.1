@@ -1,6 +1,8 @@
 package handlers
 
-import "net/http"
+import (
+	"net/http"
+)
 
 const (
 	AccessControlAllowOriginHeader      = "Access-Control-Allow-Origin"

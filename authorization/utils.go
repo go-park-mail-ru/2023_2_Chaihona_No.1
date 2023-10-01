@@ -1,7 +1,6 @@
 package authorization
 
 import (
-	"fmt"
 	"net/http"
 	model "project/model"
 	reg "project/registration"
@@ -32,7 +31,6 @@ func CheckAuthorization(r *http.Request, sessions SessionRepository) bool {
 
 	if err == nil && session != nil {
 		_, authorized := sessions.CheckSession(session.Value)
-		fmt.Println(session)
 		return authorized
 	}
 
