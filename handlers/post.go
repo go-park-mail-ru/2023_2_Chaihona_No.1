@@ -8,6 +8,7 @@ import (
 	reg "project/registration"
 	"strconv"
 	"strings"
+	"fmt"
 )
 
 type PostHandler struct {
@@ -61,9 +62,13 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 	cookie, _ := r.Cookie("session_id")
 	session, _ := (p.Sessions).CheckSession(cookie.Value)
 	userId := session.UserId
-	profile, _ := (p.Profiles).GetProfile(uint(userId))
-	subscribtions := profile.Subscribtions
-
+	profile, ok := (p.Profiles).GetProfile(uint(userId))
+	fmt.Println(p.Profiles)
+	if !ok {
+	   http.Error(w, `{"error":"very bad"}`, 400)
+	   return 
+	}
+	    subscribtions := profile.Subscribtions
 	isSubscirber := false
 	for _, user := range subscribtions {
 		if user.ID == uint(authorId) {

@@ -51,8 +51,8 @@ func SetSession(w http.ResponseWriter, sessions SessionRepository, userId uint32
 		Name:     "session_id",
 		Value:    SID,
 		Expires:  TTL,
-		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
-		Secure: true,
+		HttpOnly: false,
+		SameSite: http.SameSiteLaxMode,
+		Secure: false,
 	})
 }

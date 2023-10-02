@@ -69,7 +69,7 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 	defer r.Body.Close()
-	userForm, err := auth.ParseJSON(r.Body)
+	bodyForm, err := auth.ParseJSON(r.Body)
 
 	if err != nil {
 		http.Error(w, `{"error":"wrong_json"}`, 405)
@@ -78,7 +78,10 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	// users, _ := api.Profiles.GetProfiles()
 	// fmt.Println(users)
-	user, err := auth.Authorize(api.Users, userForm)
+	userForm := auth.LoginForm{
+		Body_: *bodyForm,
+	}
+	user, err := auth.Authorize(api.Users, &userForm)
 
 	if err != nil {
 		fmt.Println(err)

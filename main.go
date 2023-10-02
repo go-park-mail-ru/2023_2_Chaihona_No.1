@@ -14,11 +14,6 @@ import (
 )
 
 func main() {
-	user := model.User{
-		ID:       32,
-		Login:    "12",
-		Password: "12",
-	}
 
 	// registrationHandler := reg.CreateRepoHandler()
 
@@ -50,7 +45,7 @@ func main() {
 		postStorage.CreateNewPost(test_post)
 	}
 
-	rep.Users.RegisterNewUser(&user)
+	//	rep.Users.RegisterNewUser(&user)
 
 	// go func() {
 	// 	resp, err := http.Post("http://127.0.0.1:8081/api/v1/registration", "application/json", strings.NewReader(`{ "body" : {"login" : "123", "password" : "123", "user_type" : "simple_user"}}`))
@@ -184,7 +179,7 @@ func main() {
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
 
 	fmt.Println("start")
-	http.ListenAndServeTLS(":8001", "cert.pem", "key.pem", r)
+	//http.ListenAndServeTLS(":8001", "cert.pem", "key.pem", r)
 	// http.ListenAndServeTLS(":8001", "request_keys/secure.domain.com.crt", "request_keys/secure.domain.com.key", r)
-	// http.ListenAndServe(":8081", r)
+	 http.ListenAndServe(":8001", r)
 }

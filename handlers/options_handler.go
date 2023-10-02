@@ -26,6 +26,7 @@ func headersToString(headers ...string) string {
 }
 
 func OptionsHandler(w http.ResponseWriter, r *http.Request) {
+	//w.Header().Add("Content-Security-Policy", "default-src '*'")
 	w.Header().Add(AccessControlAllowOriginHeader, FrontendServerIP+FrontendServerPort)
 	w.Header().Add(AccessControlAllowMethodsHeader, headersToString(http.MethodGet, http.MethodPost, http.MethodOptions))
 	w.Header().Add(AccessControlAllowHeadersHeader, headersToString(ContentTypeHeader, CookieHeader))
@@ -34,6 +35,7 @@ func OptionsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddAllowHeaders(w http.ResponseWriter) {
+	//w.Header().Add("Content-Security-Policy", "default-src '*'")
 	w.Header().Add(AccessControlAllowOriginHeader, FrontendServerIP+FrontendServerPort)
 	w.Header().Add(AccessControlAllowCredentialsHeader, "true")
 }

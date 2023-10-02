@@ -1,4 +1,4 @@
 package handlers
 
-const FrontendServerIP = "http://localhost"
-const FrontendServerPort = ":3000"
+const FrontendServerIP = "http://212.233.89.163"
+const FrontendServerPort = ":8000"

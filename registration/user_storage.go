@@ -23,7 +23,7 @@ func (storage *UserStorage) RegisterNewUser(user *model.User) error {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
 
-	user.ID = uint(storage.Size)
+	user.ID = uint(storage.Size) + 1
 	_, ok := storage.Users[user.Login]
 
 	if ok {
