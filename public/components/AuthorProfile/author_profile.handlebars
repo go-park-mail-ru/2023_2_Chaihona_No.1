@@ -1,0 +1,58 @@
+<link rel="stylesheet" href="components/AuthorProfile/author_profile.css">
+<div class="user-cover"></div>
+
+<div class="page-data">
+
+    <div class="left-column">
+        <div class="ava-block">
+            <div class="ava">
+                <img src="img/rg-ava.png" style="height: 100%; width: 100%; object-fit: cover;">
+            </div>
+            <div class="subs-amount">{{subs}}</div>
+            <div class="subs-word">Подписчиков</div>
+            <button class="ava-btn">Отслеживать</button>
+            <button class="ava-btn">Отправить донат</button>
+        </div>
+        <div class="target-block">
+            <div class="target-word">Цели</div>
+            <div class="target-separator"></div>
+            {{#each targets}}
+                {{>target this}}
+                <div class="target-separator"></div>
+            {{/each}}
+        </div>
+    </div>
+
+    <div class="main-data">
+        <div class="name-and-status">
+            <div class="nickname">{{nickname}}</div>
+            <div class="status">{{status}}</div>
+        </div>
+
+        <div class="about-author">
+            <div style="font-weight: 700; font-size: 3rem;">Об авторе</div>
+            <div class="target-separator" style="margin-top: 3%; margin-bottom: 3%;"></div>
+            <div style="font-weight: 400; font-size: 1rem; color: rgba(0, 0, 0, 0.60);"> {{about}} </div>
+        </div>
+
+        <div class="switch-and-search">
+            <span> Лента </span>
+            <span style="margin-left: 2%;"> Медиа </span>
+        </div>
+
+        {{#each posts}}
+            {{>post this}}
+        {{/each}}
+    </div>
+
+
+    <div class="right-column">
+        <div class="subscriptions">
+            Уровни подписки
+            {{#each sub_levels}}
+                <div class = 'target-separator'></div>
+                {{>sub_level this}}
+            {{/each}}
+        </div>
+    </div>
+</div>

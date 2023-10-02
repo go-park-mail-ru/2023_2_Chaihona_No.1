@@ -1,0 +1,92 @@
+/*@media (max-width: 800px) {*/
+/*    button {*/
+/*        margin: 0 !important;*/
+/*    }*/
+/*    .main-page-btn {*/
+/*        height: 50% !important;*/
+/*    }*/
+/*    .exit-btn {*/
+/*        height: 50% !important;*/
+/*    }*/
+/*    .navlogo{*/
+/*        height: 50% !important;*/
+/*    }*/
+/*    .navbar > input {*/
+/*        height: 50% !important;*/
+/*        padding: 0 !important;*/
+/*        font-size: 1rem !important;*/
+/*        margin-top: 0 !important;*/
+/*    }*/
+/*    .nav-ava {*/
+/*        height: 50% !important;*/
+/*    }*/
+/*}*/
+
+.navbar {
+    height: 7vh;
+    width: 100%;
+    background-color: white;
+    box-sizing: border-box;
+    padding: 1rem 3rem;
+}
+
+.navlogo {
+    float: left;
+    height: 100%;
+}
+
+.main-page-btn {
+    float: left;
+    margin-left: 1rem;
+    background: #FF4D4D;
+    width: 7rem;
+    color: white;
+    border: none;
+    height: 100%;
+}
+
+.reg-btn {
+    float: right;
+    margin-right: 1vh;
+    background: white;
+    color: #FF4D4D;
+    width: 7rem;
+    border: 1px solid #FF4D4D;
+    height: 100%;
+}
+
+.exit-btn {
+    float: right;
+    background: #FF4D4D;
+    width: 7rem;
+    color: white;
+    border: none;
+    height: 100%;
+}
+
+.logo {
+    color: #FF4D4D;
+    font-family: Corinthia, sans-serif;
+    font-weight: 400;
+    word-wrap: break-word;
+    height: 100%;
+    font-size: 2rem;
+}
+
+.nav-ava {
+    float: right;
+    margin-right: 1vh;
+    border-radius: 9999px;
+    height: 100%;
+}
+
+.navbar > input {
+    float: right;
+    margin-right: 1vh;
+    width: 20vw;
+    border-radius: 12px;
+    border: 1px solid #FF8364;
+    box-sizing: border-box;
+    font-size: 18px;
+    padding: 1vh;
+}

@@ -1,0 +1,32 @@
+.comment {
+    border-radius: 12px;
+    border: 2px solid rgba(0, 0, 0, 0.20);
+    display: grid;
+    margin-bottom: 1vh;
+    grid-template-columns: 10% 90%;
+}
+
+.comment-ava > img {
+    width: 70%;
+    padding: 20% 20%;
+    border-radius: 9999px;
+}
+
+.comment-data {
+    color: rgba(0, 0, 0, 0.60);
+    padding: 1vh;
+    font-size: 18px;
+}
+
+.comment-nickname{
+    color: black;
+}
+
+.comment-text {
+    margin-top: 1%;
+}
+
+.comment-date {
+    font-size: 16px;
+    margin-top: 1%;
+}

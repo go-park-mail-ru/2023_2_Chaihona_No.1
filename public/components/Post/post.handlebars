@@ -1,0 +1,55 @@
+<link rel="stylesheet" href="components/Post/post.css">
+<div class="post">
+    <div class="post-lock-and-date">
+        <span>{{availability}}</span>
+        <span style="float: right;">{{datetime}}</span>
+    </div>
+
+    {{#if unlocked}}
+        <div class="target-separator"></div>
+
+        <div class="unlocked-post">
+            <div class="unlocked-post-topic">
+                {{topic}}
+            </div>
+            <div class="unlocked-post-content">
+                {{text}}
+            </div>
+        </div>
+
+        <div class="tagline">
+            {{#each tags}}
+                <span class="tag">{{this}}</span>
+            {{/each}}
+        </div>
+
+        <div class="target-separator"></div>
+
+    {{else}}
+        <div class="locked-post">
+            <div class="locked-post-topic">
+                {{topic}}
+            </div>
+            <div class="locked-post-price">{{availability}}</div>
+            <button class="buy-post-button">Купить</button>
+        </div>
+    {{/if}}
+
+    <div class="like-comment-share">
+        <img src="icons/like.svg" style="margin-left: 2%">
+        <img src="icons/comment.svg">
+        <img src="icons/share.svg" style="float:right; margin-right: 2%;">
+    </div>
+
+    {{#if unlocked}}
+        <div class="comments-sections">
+            {{#each comments}}
+                {{>comment this}}
+            {{/each}}
+        </div>
+        <div class="comment-input">
+            <div class="input-ava"><img src="img/default-ava.png"></div>
+            <div class="comment-field"><input type="text" placeholder="Оставьте комментарий..."></div>
+        </div>
+    {{/if}}
+</div>

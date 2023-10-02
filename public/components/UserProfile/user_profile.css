@@ -1,0 +1,125 @@
+.subscriptions {
+    font-size: 22px;
+    margin-top: 20px;
+    height: fit-content;
+    padding-top: 3vh;
+    padding-left: 3vh;
+    padding-right: 3vh;
+    background-color: white;
+    border-radius: 12px;
+}
+
+.sub-element {
+    font-size: 16px;
+    margin-top: 1vh;
+    display: inline-block;
+    color: rgba(0, 0, 0, 0.60);
+    width: 23%;
+    margin-right: 2vh;
+    height: 9vh;
+    text-align: center;
+}
+
+.sub-element > img {
+    width: 100%;
+    border-radius: 9999px;
+}
+
+.page-data{
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 80%;
+    display: grid;
+    gap: 15px;
+    grid-template-columns: 22.5% 58.5% 20%;
+}
+
+.user-cover {
+    height: 25vh;
+    width: 100%;
+    background-color: #fad5b4;
+}
+
+@font-face {
+    font-family: 'Corinthia';
+    src: local('Corinthia');
+}
+
+.main-data{
+    height: 100%;
+}
+
+.main-data {
+    color: black;
+}
+
+.name-and-status{
+    margin-top: 20px;
+    height: fit-content;
+    border-radius: 12px;
+    background: white;
+}
+
+.nickname {
+    padding-left: 3%;
+    padding-top: 2%;
+    font-weight: 700;
+    font-size: 3rem;
+}
+
+.status {
+    padding-left: 3%;
+    padding-top: 1%;
+    padding-bottom: 3%;
+    font-weight: 400;
+    font-size: 1rem;
+    color: rgba(0, 0, 0, 0.80);
+}
+
+.left-column{
+    margin-top: -30%;
+}
+
+.ava-block {
+    padding-top: 5%;
+    background-color: white;
+    border-radius: 12px;
+    height: fit-content;
+}
+
+.subs-amount{
+    padding-top: 5%;
+    position: relative;
+    top: 7%;
+    text-align: center;
+    color: black;
+    font-size: 30px;
+    font-weight: 700;
+    word-wrap: break-word;
+}
+
+.subs-word{
+    position: relative;
+    top: 7%;
+    text-align: center;
+    color: rgba(0, 0, 0, 0.60);
+    font-size: 16px;
+    font-weight: 700;
+    word-wrap: break-word;
+    padding-bottom: 5%;
+}
+
+.ava{
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, 0);
+    border-radius: 9999px;
+    width: 75%;
+    aspect-ratio: 1/1;
+    background-color: #C8D9EB;
+}
+
+.right-column {
+    margin-top: 0;
+}

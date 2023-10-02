@@ -1,0 +1,132 @@
+.post {
+    background: white;
+    margin-top: 2%;
+    border-radius: 12px;
+    height: fit-content;
+}
+
+.post-lock-and-date {
+    border-radius: 12px;
+    color: rgba(0, 0, 0, 0.60);
+    font-size: 16px;
+    font-weight: 400;
+    padding: 1.2% 2%;
+}
+
+.locked-post {
+    aspect-ratio: 16/9;
+    height: fit-content;
+    background-color: #fe9a70;
+}
+
+.locked-post-topic{
+    padding: 1.5% 2%;
+    font-size: 3rem;
+    color: white;
+    font-family: serif;
+}
+
+.locked-post-price{
+    text-align: center;
+    color: white;
+    font-size: 22px;
+    margin-top: 30rem;
+}
+
+.buy-post-button {
+    position: relative;
+    left: 50%;
+    transform: translate(-50%, 0);
+    font-size: 22px;
+    margin-top: 1rem;
+    background-color: #FF4D4D;
+    border: 0;
+    color: white;
+    width: 10rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+}
+
+.like-comment-share > img {
+    width: 2.5vh;
+    aspect-ratio: 1/1;
+}
+
+.comment-count {
+    width: 2.5vh;
+    aspect-ratio: 1/1;
+}
+
+.like-comment-share {
+    padding-top: 1.5%;
+    padding-bottom: 1.5%;
+    width: 100%;
+    display: inline-block;
+}
+
+.comment-input {
+    display: grid;
+    height: fit-content;
+    padding-left: 2%;
+    padding-bottom: 2%;
+    grid-template-columns: 7% 93%;
+}
+
+.input-ava {
+    height: 5vh;
+}
+
+.input-ava > img {
+    width: 100%;
+    border-radius: 9999px;
+}
+
+.comment-field {
+    padding-left: 2%;
+}
+
+.comment-field > input {
+    width: 96%;
+    height: 90%;
+    border-radius: 12px;
+    border-color: rgba(0, 0, 0, 0.60);
+}
+
+
+.unlocked-post {
+    padding: 1.5% 2%;
+}
+
+.unlocked-post-topic {
+    font-weight: 700;
+    font-size: 40px;
+}
+
+.unlocked-post-content {
+    color: rgba(0, 0, 0, 0.60);
+    font-size: 20px;
+    padding-top: 1.5%;
+}
+
+.tag {
+    padding: 0.75% 1.5%;
+    background-color: rgba(0, 0, 0, 0.30);
+    color: black;
+    width: fit-content;
+    height: fit-content;
+    border-radius: 12px;
+}
+
+.tagline {
+    height: 3vh;
+    padding-left: 2%;
+}
+
+.comments-sections {
+     padding-bottom: 1.5%;
+     padding-left:  2%;
+     padding-right: 2%;
+     height: fit-content;
+     width: 96%;
+     gap: 20px;
+ }
