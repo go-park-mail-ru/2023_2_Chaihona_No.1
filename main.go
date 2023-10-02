@@ -38,9 +38,13 @@ func main() {
 	// 	Likes:        10,
 	// })
 	postHandler := handlers.CreatePostHandlerViaRepos(rep.Sessions, postStorage, rep.Profiles)
-	// for _, test_user := range test_data.Users {
-	// 	rep.Users.RegisterNewUser(&test_user)
-	// }
+	for _, test_user := range test_data.Users {
+		rep.Users.RegisterNewUser(&test_user)
+	}
+
+	for _, test_profile := range test_data.Profiles {
+		rep.Profiles.RegisterNewProfile(&test_profile)
+	}
 
 	for _, test_post := range test_data.Posts {
 		postStorage.CreateNewPost(test_post)
