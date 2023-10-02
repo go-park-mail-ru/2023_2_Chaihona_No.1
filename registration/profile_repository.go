@@ -11,4 +11,3 @@ type ProfileRepository interface {
 	GetProfiles() ([]model.Profile, error)
 	GetProfile(id uint) (*model.Profile, bool)
 }
-
