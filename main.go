@@ -172,7 +172,7 @@ func main() {
 	r := mux.NewRouter()
 	r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
 	r.HandleFunc("/api/v1/login", rep.Login).Methods("POST")
-	// r.HandleFunc("/api/v1/logout", rep.Logout).Methods("POST")
+	r.HandleFunc("/api/v1/logout", rep.Logout).Methods("POST")
 	r.HandleFunc("/api/v1/registration", rep.Signup).Methods("POST")
 	r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
@@ -181,5 +181,5 @@ func main() {
 	fmt.Println("start")
 	//http.ListenAndServeTLS(":8001", "cert.pem", "key.pem", r)
 	// http.ListenAndServeTLS(":8001", "request_keys/secure.domain.com.crt", "request_keys/secure.domain.com.key", r)
-	 http.ListenAndServe(":8001", r)
+	http.ListenAndServe(":8001", r)
 }
