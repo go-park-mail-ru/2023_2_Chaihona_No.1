@@ -76,8 +76,6 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// users, _ := api.Profiles.GetProfiles()
-	// fmt.Println(users)
 	user, err := auth.Authorize(api.Users, userForm)
 
 	if err != nil {
@@ -87,6 +85,19 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	auth.SetSession(w, api.Sessions, uint32(user.ID))
+
+	w.WriteHeader(200)
+}
+
+func (api *RepoHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	session, err := r.Cookie("session_id")
+
+	if err != nil {
+		http.Error(w, `{"error":"user_logout"}`, 400)
+	}
+
+	auth.RemoveSession(w, api.Sessions, session.Value)
 
 	w.WriteHeader(200)
 }
