@@ -53,6 +53,27 @@ func SetSession(w http.ResponseWriter, sessions SessionRepository, userId uint32
 		Expires:  TTL,
 		HttpOnly: false,
 		SameSite: http.SameSiteLaxMode,
-		Secure: false,
+		Secure:   false,
 	})
+}
+
+func RemoveSession(w http.ResponseWriter, sessions SessionRepository, sessionId string) error {
+	EXPIRED := time.Now().Add(-1)
+
+	err := sessions.DeleteSession(sessionId)
+
+	if err != nil {
+		return err
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    sessionId,
+		Expires:  EXPIRED,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
+	})
+
+	return err
 }
