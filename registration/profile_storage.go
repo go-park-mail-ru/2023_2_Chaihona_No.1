@@ -1,7 +1,6 @@
 package registration
 
 import (
-	"fmt"
 	model "project/model"
 	"sync"
 )
@@ -24,11 +23,7 @@ func (storage *ProfileStorage) RegisterNewProfile(Profile *model.Profile) error 
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
 	storage.Size++
-	fmt.Println("Registrate profile input")
-	fmt.Println(Profile)
 	storage.Profiles[Profile.User.Login] = *Profile
-	fmt.Println("out")
-	fmt.Println(storage.Profiles[Profile.User.Login])
 	return nil
 }
 
@@ -67,8 +62,6 @@ func (storage *ProfileStorage) GetProfile(id uint) (*model.Profile, bool) {
 
 	for _, profile := range storage.Profiles {
 		if profile.User.ID == id {
-			fmt.Println("Get profile by id")
-			fmt.Println(storage.Profiles[profile.User.Login])
 			copy := profile
 			return &copy, true
 		}

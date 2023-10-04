@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	auth "project/authorization"
 	reg "project/registration"
@@ -38,7 +37,6 @@ func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	profile, ok := (*p.Profiles).GetProfile(uint(id))
-	fmt.Println(profile)
 	if !ok {
 		http.Error(w, `{"error":"db"}`, 500)
 		return
