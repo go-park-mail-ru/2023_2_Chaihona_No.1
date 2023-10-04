@@ -3,6 +3,7 @@ package registration
 import (
 	model "project/model"
 	"sync"
+	"fmt"
 )
 
 type ProfileStorage struct {
@@ -63,11 +64,12 @@ func (storage *ProfileStorage) GetProfile(id uint) (*model.Profile, bool) {
 
 	for _, profile := range storage.Profiles {
 		if profile.User.ID == id {
+			fmt.Println(profile)
 			copy := profile
 			return &copy, true
 		}
 	}
-
+	
 	return nil, false
 }
 
