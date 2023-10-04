@@ -33,7 +33,6 @@ func CreateProfileHandlerViaRepos(session *auth.SessionRepository, profiles *reg
 func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 	if !auth.CheckAuthorization(r, *p.Session) {
-		fmt.Println("uzbek")
 		http.Error(w, `{"error":"unauthorized"}`, 401)
 		return
 	}
@@ -46,7 +45,7 @@ func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	profile, ok := (*p.Profiles).GetProfile(uint(id))
-	fmt.Println((*p.Profiles).GetProfiles())
+	fmt.Println(profile)
 	if !ok {
 		http.Error(w, `{"error":"db"}`, 500)
 		return
