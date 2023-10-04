@@ -16,13 +16,6 @@ type ProfileHandler struct {
 	Profiles *reg.ProfileRepository
 }
 
-// func CreateProfileHandler() *ProfileHandler {
-// 	return &ProfileHandler{
-// 		auth.CreateSessionStorage(),
-// 		reg.CreateProfileStorage(),
-// 	}
-// }
-
 func CreateProfileHandlerViaRepos(session *auth.SessionRepository, profiles *reg.ProfileRepository) *ProfileHandler {
 	return &ProfileHandler{
 		session,

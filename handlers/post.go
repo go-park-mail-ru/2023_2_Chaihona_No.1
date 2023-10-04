@@ -16,14 +16,6 @@ type PostHandler struct {
 	Profiles reg.ProfileRepository
 }
 
-// func CreatePostHandler() *PostHandler {
-// 	return &PostHandler{
-// 		auth.CreateSessionStorage(),
-// 		model.CreatePostStorage(),
-// 		model.CreateProfileStorage(),
-// 	}
-// }
-
 func CreatePostHandlerViaRepos(session auth.SessionRepository, posts model.PostRepository,
 	profiles reg.ProfileRepository) *PostHandler {
 	return &PostHandler{
@@ -40,8 +32,6 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// vars := mux.Vars(r)
-	// authorId, err := strconv.Atoi(vars["id"])
 	authorId, err := strconv.Atoi(strings.Split(r.URL.Path, "/")[4])
 	if err != nil {
 		http.Error(w, `{"error":"bad id"}`, 400)
@@ -74,7 +64,6 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Need to add subscribtion level check logic and one-time payment check logic
 	if !isSubscirber {
 		for i, _ := range *posts {
 			switch (*posts)[i].Access {

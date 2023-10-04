@@ -86,22 +86,6 @@ var TestCases = map[string]TestCase{
 			}, true).AnyTimes()
 		},
 	},
-	// "get one-time payment post without access": TestCase{
-	// 	ID: "5",
-	// 	Response: JSONEncode(model.Post{
-	// 		ID:           11,
-	// 		AuthorID:     5,
-	// 		HasAccess:    false,
-	// 		Access:       model.OneTimePaymentAccess,
-	// 		Reason:       model.UnpaidReason,
-	// 		Payment:      100,
-	// 		Currency:     model.Currency,
-	// 		CreationDate: "15:08 30.09.2023",
-	// 		Header:       "Header",
-	// 		Likes:        10,
-	// 	}),
-	// 	StatusCode: 200,
-	// },
 	"get post for subscriber without access": TestCase{
 		ID: "6",
 		Response: JSONEncode(Result{Body: map[string]interface{}{
@@ -155,22 +139,6 @@ var TestCases = map[string]TestCase{
 			}, true).AnyTimes()
 		},
 	},
-	// // "get one-time payment post with access": TestCase{
-	// // 	ID: "5",
-	// // 	Response: JSONEncode(model.Post{
-	// // 		ID:           15,
-	// // 		AuthorID:     5,
-	// // 		HasAccess:    true,
-	// // 		Access:       model.OneTimePaymentAccess,
-	// // 		Payment:      100,
-	// // 		Currency:     model.Currency,
-	// // 		CreationDate: "15:08 30.09.2023",
-	// // 		Header:       "Header",
-	// // 		Body:         "Body",
-	// // 		Likes:        10,
-	// // 	}),
-	// // 	StatusCode: 200,
-	// // },
 	"get post for subscribers with access": TestCase{
 		ID: "7",
 		Response: JSONEncode(Result{Body: map[string]interface{}{
