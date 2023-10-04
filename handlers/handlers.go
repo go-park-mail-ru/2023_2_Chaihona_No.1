@@ -68,7 +68,7 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(200)
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(&Result{Body: body})
 }
 
@@ -100,7 +100,7 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 		"id": user.ID,
 	}
 
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(&Result{Body: body})
 }
 
