@@ -63,7 +63,13 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 
 	auth.SetSession(w, api.Sessions, uint32(user.ID))
 
+	body := map[string]interface{}{
+		"id": user.ID,
+	}
+
 	w.WriteHeader(200)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(&Result{Body: body})
 }
 
 func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -89,6 +95,13 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	auth.SetSession(w, api.Sessions, uint32(user.ID))
 
 	w.WriteHeader(200)
+
+	body := map[string]interface{}{
+		"id": user.ID,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(&Result{Body: body})
 }
 
 func (api *RepoHandler) Logout(w http.ResponseWriter, r *http.Request) {
