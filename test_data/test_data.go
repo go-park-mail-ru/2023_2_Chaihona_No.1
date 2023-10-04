@@ -4,6 +4,43 @@ import (
 	"project/model"
 )
 
+var Goals = []model.Goal{
+	{
+		ID:          1,
+		GoalType:    model.SubcribersGoalType,
+		Current:     0,
+		GoalValue:   100,
+		Description: "Как набирется 100 подпищиков орагинзую сходку",
+	},
+	{
+		ID:          2,
+		GoalType:    model.MoneyGoalType,
+		Currency:    model.RubCurrency,
+		Current:     1000,
+		GoalValue:   100000,
+		Description: "Куплю много шоколадок",
+	},
+}
+
+var SubscrebeLevels = []model.SubscribeLevel{
+	{
+		ID:          1,
+		Level:       1,
+		Name:        "Почитатель",
+		Description: "У тебя будет доступ ко всем моим произведениям",
+		Payment:     1000,
+		Currency:    model.RubCurrency,
+	},
+	{
+		ID:          2,
+		Level:       2,
+		Name:        "Истинный ценитель",
+		Description: "У тебя будет доступ к моим черновым вариантам и неиспользованным кускам",
+		Payment:     5000,
+		Currency:    model.RubCurrency,
+	},
+}
+
 var Users = []model.User{
 	{
 		ID:       1,
@@ -141,7 +178,7 @@ var Profiles = []model.Profile{
 				Status:   `Кефтеме`,
 			},
 		},
-		Donated:  0,
+		Donated:  100,
 		Currency: model.RubCurrency,
 	},
 	{
@@ -163,7 +200,7 @@ var Profiles = []model.Profile{
 			UserType: model.SimpleUserStatus,
 			Status:   `Кефтеме`,
 		},
-		Donated:  0,
+		Donated:  50,
 		Currency: model.RubCurrency,
 	},
 }
@@ -231,42 +268,5 @@ var Posts = []model.Post{
 				Name: "Литература",
 			},
 		},
-	},
-}
-
-var Goals = []model.Goal{
-	{
-		ID:          1,
-		GoalType:    model.SubcribersGoalType,
-		Current:     0,
-		GoalValue:   100,
-		Description: "Как набирется 100 подпищиков орагинзую сходку",
-	},
-	{
-		ID:          2,
-		GoalType:    model.MoneyGoalType,
-		Currency:    model.RubCurrency,
-		Current:     1000,
-		GoalValue:   100000,
-		Description: "Куплю много шоколадок",
-	},
-}
-
-var SubscrebeLevels = []model.SubscribeLevel{
-	{
-		ID:          1,
-		Level:       1,
-		Name:        "Почитатель",
-		Description: "У тебя будет доступ ко всем моим произведениям",
-		Payment:     1000,
-		Currency:    model.RubCurrency,
-	},
-	{
-		ID:          2,
-		Level:       2,
-		Name:        "Истинный ценитель",
-		Description: "У тебя будет доступ к моим черновым вариантам и неиспользованным кускам",
-		Payment:     5000,
-		Currency:    model.RubCurrency,
 	},
 }

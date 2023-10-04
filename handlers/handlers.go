@@ -2,8 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
 	auth "project/authorization"
 	"project/model"
@@ -51,9 +49,6 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		User: user,
 	}
 
-	abc, _ := io.ReadAll(r.Body)
-	fmt.Println((string)(abc))
-
 	err = api.Profiles.RegisterNewProfile(&profile)
 
 	if err != nil {
@@ -87,7 +82,6 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	user, err := auth.Authorize(api.Users, &userForm)
 
 	if err != nil {
-		fmt.Println(err)
 		http.Error(w, `{"error":"user_registration"}`, 400)
 		return
 	}

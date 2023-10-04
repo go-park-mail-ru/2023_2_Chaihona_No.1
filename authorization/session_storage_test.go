@@ -186,8 +186,6 @@ func TestGetSessionsSimple(t *testing.T) {
 		t.Fatalf("Error during getting all sessions!")
 	}
 
-	fmt.Println(storage.Size)
-
 	for _, session := range sessions {
 		checkedSession, ok := storage.CheckSession(session.SessionId)
 

@@ -8,7 +8,6 @@ import (
 	reg "project/registration"
 	"strconv"
 	"strings"
-	"fmt"
 )
 
 type PostHandler struct {
@@ -16,14 +15,6 @@ type PostHandler struct {
 	Posts    model.PostRepository
 	Profiles reg.ProfileRepository
 }
-
-// func CreatePostHandler() *PostHandler {
-// 	return &PostHandler{
-// 		auth.CreateSessionStorage(),
-// 		model.CreatePostStorage(),
-// 		model.CreateProfileStorage(),
-// 	}
-// }
 
 func CreatePostHandlerViaRepos(session auth.SessionRepository, posts model.PostRepository,
 	profiles reg.ProfileRepository) *PostHandler {
@@ -41,8 +32,6 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// vars := mux.Vars(r)
-	// authorId, err := strconv.Atoi(vars["id"])
 	authorId, err := strconv.Atoi(strings.Split(r.URL.Path, "/")[4])
 	if err != nil {
 		http.Error(w, `{"error":"bad id"}`, 400)
@@ -63,12 +52,11 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 	session, _ := (p.Sessions).CheckSession(cookie.Value)
 	userId := session.UserId
 	profile, ok := (p.Profiles).GetProfile(uint(userId))
-	fmt.Println(p.Profiles)
 	if !ok {
-	   http.Error(w, `{"error":"very bad"}`, 400)
-	   return 
+		http.Error(w, `{"error":"very bad"}`, 400)
+		return
 	}
-	    subscribtions := profile.Subscribtions
+	subscribtions := profile.Subscribtions
 	isSubscirber := false
 	for _, user := range subscribtions {
 		if user.ID == uint(authorId) {
@@ -76,7 +64,6 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Need to add subscribtion level check logic and one-time payment check logic
 	if !isSubscirber {
 		for i, _ := range *posts {
 			switch (*posts)[i].Access {

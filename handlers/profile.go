@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	auth "project/authorization"
 	reg "project/registration"
@@ -16,13 +15,6 @@ type ProfileHandler struct {
 	Profiles *reg.ProfileRepository
 }
 
-// func CreateProfileHandler() *ProfileHandler {
-// 	return &ProfileHandler{
-// 		auth.CreateSessionStorage(),
-// 		reg.CreateProfileStorage(),
-// 	}
-// }
-
 func CreateProfileHandlerViaRepos(session *auth.SessionRepository, profiles *reg.ProfileRepository) *ProfileHandler {
 	return &ProfileHandler{
 		session,
@@ -33,7 +25,6 @@ func CreateProfileHandlerViaRepos(session *auth.SessionRepository, profiles *reg
 func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 	if !auth.CheckAuthorization(r, *p.Session) {
-		fmt.Println("uzbek")
 		http.Error(w, `{"error":"unauthorized"}`, 401)
 		return
 	}
@@ -46,7 +37,6 @@ func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	profile, ok := (*p.Profiles).GetProfile(uint(id))
-	fmt.Println((*p.Profiles).GetProfiles())
 	if !ok {
 		http.Error(w, `{"error":"db"}`, 500)
 		return
