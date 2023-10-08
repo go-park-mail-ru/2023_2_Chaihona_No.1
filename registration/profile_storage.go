@@ -73,14 +73,16 @@ func (storage *ProfileStorage) GetProfile(id uint) (*model.Profile, bool) {
 }
 
 func (storage *ProfileStorage) GetProfiles() ([]model.Profile, error) {
-	storage.Mu.Lock()
-	defer storage.Mu.Unlock()
+	storage.Mu.RLock()
+	defer storage.Mu.RUnlock()
 
-	Profiles := make([]model.Profile, 0)
+	profiles := make([]model.Profile, storage.Size)
 
-	for _, Profile := range storage.Profiles {
-		Profiles = append(Profiles, Profile)
+	i := 0
+	for _, profile := range storage.Profiles {
+		profiles[i] = profile
+		i++
 	}
 
-	return Profiles, nil
+	return profiles, nil
 }

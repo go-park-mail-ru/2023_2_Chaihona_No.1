@@ -70,13 +70,15 @@ func (storage *UserStorage) CheckUser(login string) (*model.User, bool) {
 }
 
 func (storage *UserStorage) GetUsers() ([]model.User, error) {
-	storage.Mu.Lock()
-	defer storage.Mu.Unlock()
+	storage.Mu.RLock()
+	defer storage.Mu.RUnlock()
 
-	users := make([]model.User, 0)
+	users := make([]model.User, storage.Size)
 
+	i := 0
 	for _, user := range storage.Users {
-		users = append(users, user)
+		users[i] = user
+		i++
 	}
 
 	return users, nil
