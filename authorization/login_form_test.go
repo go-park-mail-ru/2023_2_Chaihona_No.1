@@ -18,12 +18,12 @@ func TestParseJson(t *testing.T) {
 		t.Fatalf("Failed on right json!")
 	}
 
-	is_login_correct := form.Body_.Login == login
-	is_password_correct := form.Body_.Password == password
+	is_login_correct := form.Login == login
+	is_password_correct := form.Password == password
 
 	if !is_login_correct || !is_password_correct {
 		t.Fatalf(`Wrong parsing! Required: login: %s, password: %s.
 				Get: login: %s, password: %s.`,
-			login, password, form.Body_.Login, form.Body_.Password)
+			login, password, form.Login, form.Password)
 	}
 }

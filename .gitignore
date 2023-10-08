@@ -21,7 +21,4 @@
 go.work
 
 *.txt
-model.go
-go.mod
-.gitignore
 project

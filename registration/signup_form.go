@@ -15,9 +15,9 @@ type SignupForm struct {
 	Body_ BodySignUp `json:"body"`
 }
 
-func ParseJSON(r io.Reader) (*SignupForm, error) {
+func ParseJSON(r io.Reader) (*BodySignUp, error) {
 	decoder := json.NewDecoder(r)
-	newUserInput := new(SignupForm)
+	newUserInput := &BodySignUp{}
 	err := decoder.Decode(newUserInput)
 
 	if err != nil {
