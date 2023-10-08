@@ -8,6 +8,10 @@ import (
 	reg "project/registration"
 )
 
+const (
+	MAX_BYTES_TO_READ = 1024 * 2
+)
+
 type RepoHandler struct {
 	sessions auth.SessionRepository
 	users    reg.UserRepository
@@ -24,8 +28,14 @@ func CreateRepoHandler(sessions auth.SessionRepository, users reg.UserRepository
 
 func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
-	defer r.Body.Close()
-	regForm, err := reg.ParseJSON(r.Body)
+
+	body := http.MaxBytesReader(w, r.Body, MAX_BYTES_TO_READ)
+	defer body.Close()
+
+	decoder := json.NewDecoder(body)
+	regForm := &reg.BodySignUp{}
+
+	err := decoder.Decode(regForm)
 
 	if err != nil {
 		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
@@ -57,13 +67,13 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 
 	auth.SetSession(w, api.sessions, uint32(user.ID))
 
-	body := map[string]interface{}{
+	bodyResponse := map[string]interface{}{
 		"id": user.ID,
 	}
 
 	w.WriteHeader(200)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&Result{Body: body})
+	json.NewEncoder(w).Encode(&Result{Body: bodyResponse})
 }
 
 func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
