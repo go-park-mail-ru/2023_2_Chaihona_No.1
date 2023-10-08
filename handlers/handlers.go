@@ -28,29 +28,28 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	regForm, err := reg.ParseJSON(r.Body)
 
 	if err != nil {
-		http.Error(w, `{"error":"wrong_json"}`, 405)
+		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
 		return
 	}
 
-	user := model.User{
-		Login:    regForm.Login,
-		Password: regForm.Password,
-		UserType: regForm.UserType,
+	user, err := regForm.Validate()
+
+	if err != nil {
+		http.Error(w, `{"error":"user_validation"}`, http.StatusBadRequest)
 	}
 
-	err = api.users.RegisterNewUser(&user)
-
+	err = api.users.RegisterNewUser(user)
+	
 	if err != nil {
 		http.Error(w, `{"error":"user_registration"}`, 400)
 		return
 	}
 
 	profile := model.Profile{
-		User: user,
+		User: *user,
 	}
 
 	err = api.profiles.RegisterNewProfile(&profile)
-
 	if err != nil {
 		http.Error(w, `{"error":"profile_registration"}`, 401)
 		return
@@ -73,7 +72,7 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	bodyForm, err := auth.ParseJSON(r.Body)
 
 	if err != nil {
-		http.Error(w, `{"error":"wrong_json"}`, 405)
+		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
 		return
 	}
 	userForm := auth.LoginForm{

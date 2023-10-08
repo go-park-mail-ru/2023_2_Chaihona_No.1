@@ -7,6 +7,6 @@ type Profile struct {
 	Subscribers     uint             `json:"subscribers,omitempty"`
 	Goals           []Goal           `json:"goals,omitempty"`
 	SubscribeLevels []SubscribeLevel `json:"subscribe_levels,omitempty"`
-	Subscribtions    []User           `json:"subsribtions,omitempty"`
+	Subscribtions   []User           `json:"subsribtions,omitempty"`
 	Donated         float64          `json:"donated,omitempty"`
 }
