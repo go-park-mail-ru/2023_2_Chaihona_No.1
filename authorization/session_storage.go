@@ -6,7 +6,7 @@ import (
 
 type SessionStorage struct {
 	Sessions map[string]Session
-	Mu       sync.Mutex
+	Mu       sync.RWMutex
 	Size     uint32
 }
 
@@ -43,8 +43,8 @@ func (storage *SessionStorage) DeleteSession(sessionId string) error {
 }
 
 func (storage *SessionStorage) CheckSession(sessionId string) (*Session, bool) {
-	storage.Mu.Lock()
-	defer storage.Mu.Unlock()
+	storage.Mu.RLock()
+	defer storage.Mu.RUnlock()
 
 	val, ok := storage.Sessions[sessionId]
 

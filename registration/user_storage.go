@@ -8,7 +8,7 @@ import (
 
 type UserStorage struct {
 	Users map[string]model.User
-	Mu    sync.Mutex
+	Mu    sync.RWMutex
 	Size  uint32
 }
 
@@ -55,8 +55,8 @@ func (storage *UserStorage) DeleteUser(login string) error {
 }
 
 func (storage *UserStorage) CheckUser(login string) (*model.User, bool) {
-	storage.Mu.Lock()
-	defer storage.Mu.Unlock()
+	storage.Mu.RLock()
+	defer storage.Mu.RUnlock()
 
 	val, ok := storage.Users[login]
 

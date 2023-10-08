@@ -7,7 +7,7 @@ import (
 
 type ProfileStorage struct {
 	Profiles map[string]model.Profile
-	Mu       sync.Mutex
+	Mu       sync.RWMutex
 	Size     uint32
 }
 
@@ -44,8 +44,8 @@ func (storage *ProfileStorage) DeleteProfile(login string) error {
 }
 
 func (storage *ProfileStorage) CheckProfile(login string) (*model.Profile, bool) {
-	storage.Mu.Lock()
-	defer storage.Mu.Unlock()
+	storage.Mu.RLock()
+	defer storage.Mu.RUnlock()
 
 	val, ok := storage.Profiles[login]
 
