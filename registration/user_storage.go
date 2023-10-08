@@ -1,6 +1,7 @@
 package registration
 
 import (
+	"net/http"
 	model "project/model"
 	"sync"
 )
@@ -19,14 +20,17 @@ func CreateUserStorage() *UserStorage {
 	return storage
 }
 
-func (storage *UserStorage) RegisterNewUser(user *model.User) error {
+func (storage *UserStorage) RegisterNewUser(user *model.User) *ErrorRegistration {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
 
 	_, ok := storage.Users[user.Login]
 
 	if ok {
-		return ErrUserLoginAlreadyExists
+		return &ErrorRegistration{
+			ErrUserLoginAlreadyExists,
+			http.StatusBadRequest,
+		}
 	}
 
 	user.ID = uint(storage.Size)

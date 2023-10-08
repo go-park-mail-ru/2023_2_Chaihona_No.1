@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	auth "project/authorization"
 	"project/model"
@@ -36,22 +37,19 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	regForm := &reg.BodySignUp{}
 
 	err := decoder.Decode(regForm)
-
 	if err != nil {
 		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
 		return
 	}
 
 	user, err := regForm.Validate()
-
 	if err != nil {
 		http.Error(w, `{"error":"user_validation"}`, http.StatusBadRequest)
 	}
 
-	err = api.users.RegisterNewUser(user)
-	
+	errReg := api.users.RegisterNewUser(user)
 	if err != nil {
-		http.Error(w, `{"error":"user_registration"}`, 400)
+		http.Error(w, fmt.Sprintf(`{"error":"%v"}`, errReg.Err), errReg.StatusCode)
 		return
 	}
 
@@ -59,9 +57,9 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		User: *user,
 	}
 
-	err = api.profiles.RegisterNewProfile(&profile)
-	if err != nil {
-		http.Error(w, `{"error":"profile_registration"}`, 401)
+	errReg = api.profiles.RegisterNewProfile(&profile)
+	if errReg != nil {
+		http.Error(w, fmt.Sprintf(`{"error":"%v"}`, errReg.Err), errReg.StatusCode)
 		return
 	}
 
@@ -71,7 +69,7 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		"id": user.ID,
 	}
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(&Result{Body: bodyResponse})
 }
@@ -91,13 +89,13 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	user, err := auth.Authorize(api.users, &userForm)
 
 	if err != nil {
-		http.Error(w, `{"error":"user_registration"}`, 400)
+		http.Error(w, `{"error":"user_registration"}`, http.StatusBadRequest)
 		return
 	}
 
 	auth.SetSession(w, api.sessions, uint32(user.ID))
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 
 	body := map[string]interface{}{
 		"id": user.ID,
@@ -112,12 +110,12 @@ func (api *RepoHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	session, err := r.Cookie("session_id")
 
 	if err != nil {
-		http.Error(w, `{"error":"user_logout"}`, 400)
+		http.Error(w, `{"error":"user_logout"}`, http.StatusBadRequest)
 	}
 
 	auth.RemoveSession(w, api.sessions, session.Value)
 
-	w.WriteHeader(200)
+	w.WriteHeader(http.StatusOK)
 }
 
 func (api *RepoHandler) IsAuthorized(w http.ResponseWriter, r *http.Request) {

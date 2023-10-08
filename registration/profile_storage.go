@@ -19,7 +19,7 @@ func CreateProfileStorage() *ProfileStorage {
 	return storage
 }
 
-func (storage *ProfileStorage) RegisterNewProfile(Profile *model.Profile) error {
+func (storage *ProfileStorage) RegisterNewProfile(Profile *model.Profile) *ErrorRegistration {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
 
