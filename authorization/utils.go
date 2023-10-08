@@ -13,13 +13,13 @@ const (
 )
 
 func Authorize(users reg.UserRepository, form *LoginForm) (*model.User, error) {
-	user, ok := users.CheckUser(form.Body_.Login)
+	user, ok := users.CheckUser(form.Body.Login)
 
 	if !ok {
 		return nil, ErrWrongLogin
 	}
 
-	if user.Password != form.Body_.Password {
+	if user.Password != form.Body.Password {
 		return nil, ErrWrongPassword
 	}
 

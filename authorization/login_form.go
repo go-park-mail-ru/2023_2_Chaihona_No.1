@@ -21,7 +21,7 @@ func (form BodyLogin) Validate() bool {
 }
 
 type LoginForm struct {
-	Body_ BodyLogin `json:"body"`
+	Body BodyLogin `json:"body"`
 }
 
 func ParseJSON(r io.Reader) (*BodyLogin, error) {

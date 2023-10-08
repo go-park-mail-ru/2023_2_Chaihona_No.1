@@ -90,7 +90,7 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userForm := auth.LoginForm{
-		Body_: *loginForm,
+		Body: *loginForm,
 	}
 	user, err := auth.Authorize(api.users, &userForm)
 
