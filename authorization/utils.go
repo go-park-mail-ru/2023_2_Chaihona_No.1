@@ -5,10 +5,12 @@ import (
 	model "project/model"
 	reg "project/registration"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const (
-	SID_LEN = 32
+	SID_LEN      = 32
 	TTL_DURATION = 10 * time.Hour
 )
 
@@ -39,7 +41,7 @@ func CheckAuthorization(r *http.Request, sessions SessionRepository) bool {
 }
 
 func SetSession(w http.ResponseWriter, sessions SessionRepository, userId uint32) {
-	SID := RandStringRunes(SID_LEN)
+	SID := uuid.New().String()
 	TTL := time.Now().Add(TTL_DURATION)
 
 	sessions.RegisterNewSession(Session{
@@ -73,7 +75,7 @@ func RemoveSession(w http.ResponseWriter, sessions SessionRepository, sessionId 
 		Expires:  EXPIRED,
 		HttpOnly: true,
 		SameSite: http.SameSiteNoneMode,
-		Secure:   false,
+		Secure:   false, // пока http
 	})
 
 	return err
