@@ -76,15 +76,21 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 
 func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
-	defer r.Body.Close()
-	bodyForm, err := auth.ParseJSON(r.Body)
 
+	body := http.MaxBytesReader(w, r.Body, MAX_BYTES_TO_READ)
+	defer body.Close()
+
+	decoder := json.NewDecoder(body)
+	loginForm := &auth.BodyLogin{}
+
+	err := decoder.Decode(loginForm)
 	if err != nil {
 		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
 		return
 	}
+
 	userForm := auth.LoginForm{
-		Body_: *bodyForm,
+		Body_: *loginForm,
 	}
 	user, err := auth.Authorize(api.users, &userForm)
 
@@ -97,12 +103,12 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 
-	body := map[string]interface{}{
+	bodyResponse := map[string]interface{}{
 		"id": user.ID,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&Result{Body: body})
+	json.NewEncoder(w).Encode(&Result{Body: bodyResponse})
 }
 
 func (api *RepoHandler) Logout(w http.ResponseWriter, r *http.Request) {
