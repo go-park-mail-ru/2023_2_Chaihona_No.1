@@ -9,16 +9,16 @@ import (
 )
 
 type RepoHandler struct {
-	Sessions auth.SessionRepository
-	Users    reg.UserRepository
-	Profiles reg.ProfileRepository
+	sessions auth.SessionRepository
+	users    reg.UserRepository
+	profiles reg.ProfileRepository
 }
 
-func CreateRepoHandler() *RepoHandler {
+func CreateRepoHandler(sessions auth.SessionRepository, users reg.UserRepository, profiles reg.ProfileRepository) *RepoHandler {
 	return &RepoHandler{
-		auth.CreateSessionStorage(),
-		reg.CreateUserStorage(),
-		reg.CreateProfileStorage(),
+		sessions,
+		users,
+		profiles,
 	}
 }
 
@@ -38,7 +38,7 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		UserType: regForm.UserType,
 	}
 
-	err = api.Users.RegisterNewUser(&user)
+	err = api.users.RegisterNewUser(&user)
 
 	if err != nil {
 		http.Error(w, `{"error":"user_registration"}`, 400)
@@ -49,14 +49,14 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		User: user,
 	}
 
-	err = api.Profiles.RegisterNewProfile(&profile)
+	err = api.profiles.RegisterNewProfile(&profile)
 
 	if err != nil {
 		http.Error(w, `{"error":"profile_registration"}`, 401)
 		return
 	}
 
-	auth.SetSession(w, api.Sessions, uint32(user.ID))
+	auth.SetSession(w, api.sessions, uint32(user.ID))
 
 	body := map[string]interface{}{
 		"id": user.ID,
@@ -79,14 +79,14 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	userForm := auth.LoginForm{
 		Body_: *bodyForm,
 	}
-	user, err := auth.Authorize(api.Users, &userForm)
+	user, err := auth.Authorize(api.users, &userForm)
 
 	if err != nil {
 		http.Error(w, `{"error":"user_registration"}`, 400)
 		return
 	}
 
-	auth.SetSession(w, api.Sessions, uint32(user.ID))
+	auth.SetSession(w, api.sessions, uint32(user.ID))
 
 	w.WriteHeader(200)
 
@@ -106,7 +106,7 @@ func (api *RepoHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"user_logout"}`, 400)
 	}
 
-	auth.RemoveSession(w, api.Sessions, session.Value)
+	auth.RemoveSession(w, api.sessions, session.Value)
 
 	w.WriteHeader(200)
 }
@@ -114,7 +114,7 @@ func (api *RepoHandler) Logout(w http.ResponseWriter, r *http.Request) {
 func (api *RepoHandler) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 	w.Header().Add("Content-Type", "application/json")
-	if auth.CheckAuthorization(r, api.Sessions) {
+	if auth.CheckAuthorization(r, api.sessions) {
 		json.NewEncoder(w).Encode(&Result{Body: map[string]interface{}{"is_authorized": true}})
 	} else {
 		json.NewEncoder(w).Encode(&Result{Body: map[string]interface{}{"is_authorized": false}})

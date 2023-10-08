@@ -5,16 +5,23 @@ import (
 	"net/http"
 	"project/model"
 	"project/handlers"
+	auth "project/authorization"
+	reg "project/registration"
 
 	"github.com/gorilla/mux"
 )
 
 // заглушка main
 func main() {
-	rep := handlers.CreateRepoHandler()
-	profileHandler := handlers.CreateProfileHandlerViaRepos(rep.Sessions, rep.Profiles)
+	sessionStorage := auth.CreateSessionStorage()
+	userStoarge := reg.CreateUserStorage()
+	profileStorage := reg.CreateProfileStorage()
 	postStorage := model.CreatePostStorage()
-	postHandler := handlers.CreatePostHandlerViaRepos(rep.Sessions, postStorage, rep.Profiles)
+
+	
+	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, profileStorage)
+	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, profileStorage)
+	postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, profileStorage)
 	
 
 	r := mux.NewRouter()
