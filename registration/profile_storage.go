@@ -14,6 +14,8 @@ type ProfileStorage struct {
 func CreateProfileStorage() *ProfileStorage {
 	storage := &ProfileStorage{
 		Profiles: make(map[string]model.Profile),
+		Mu:       sync.RWMutex{},
+		Size:     0,
 	}
 
 	return storage

@@ -13,6 +13,8 @@ type SessionStorage struct {
 func CreateSessionStorage() *SessionStorage {
 	storage := &SessionStorage{
 		Sessions: make(map[string]Session),
+		Mu:       sync.RWMutex{},
+		Size:     0,
 	}
 
 	return storage

@@ -15,6 +15,8 @@ type UserStorage struct {
 func CreateUserStorage() *UserStorage {
 	storage := &UserStorage{
 		Users: make(map[string]model.User),
+		Mu:    sync.RWMutex{},
+		Size:  0,
 	}
 
 	return storage
