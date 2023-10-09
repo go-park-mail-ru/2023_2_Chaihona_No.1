@@ -95,6 +95,7 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	user, err := auth.Authorize(api.users, &userForm)
 
 	if err != nil {
+		fmt.Println("not authorize")
 		http.Error(w, `{"error":"user_registration"}`, http.StatusBadRequest)
 		return
 	}
