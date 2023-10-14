@@ -3,28 +3,26 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"project/model"
-	"project/handlers"
-	auth "project/authorization"
-	reg "project/registration"
+
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/authorization"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/handlers"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
+	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/registration"
 
 	"github.com/gorilla/mux"
 )
 
-// заглушка main
 func main() {
 	sessionStorage := auth.CreateSessionStorage()
 	userStoarge := reg.CreateUserStorage()
 	profileStorage := reg.CreateProfileStorage()
 	postStorage := model.CreatePostStorage()
 
-	
 	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, profileStorage)
 	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, profileStorage)
 	postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, profileStorage)
-	
-
 	r := mux.NewRouter()
+
 	r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
 	r.HandleFunc("/api/v1/login", rep.Login).Methods("POST")
 	r.HandleFunc("/api/v1/logout", rep.Logout).Methods("POST")
@@ -34,5 +32,6 @@ func main() {
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
 
 	fmt.Println("Server started")
-	http.ListenAndServe(":8001", r)
+	err := http.ListenAndServe(":8001", r)
+	fmt.Println(err)
 }

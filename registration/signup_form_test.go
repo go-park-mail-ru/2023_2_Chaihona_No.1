@@ -11,10 +11,14 @@ func TestParseJson(t *testing.T) {
 	password := "1234"
 	user_type := "simple_user"
 
-	json := fmt.Sprintf(`{ "body" : {"login" : "%s", "password" : "%s", "user_type" : "%s"}}`, login, password, user_type)
+	json := fmt.Sprintf(
+		`{ "body" : {"login" : "%s", "password" : "%s", "user_type" : "%s"}}`,
+		login,
+		password,
+		user_type,
+	)
 
 	form, err := ParseJSON(strings.NewReader(json))
-
 	if err != nil {
 		t.Fatalf("Failed on right json!")
 	}

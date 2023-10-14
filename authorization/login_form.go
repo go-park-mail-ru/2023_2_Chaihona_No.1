@@ -13,11 +13,7 @@ type BodyLogin struct {
 func (form BodyLogin) Validate() bool {
 	isLenCorrect := len(form.Login) > 0 && len(form.Password) > 0
 
-	if isLenCorrect {
-		return true
-	}
-
-	return false
+	return isLenCorrect
 }
 
 type LoginForm struct {
@@ -28,7 +24,6 @@ func ParseJSON(r io.Reader) (*BodyLogin, error) {
 	decoder := json.NewDecoder(r)
 	newUserInput := &BodyLogin{}
 	err := decoder.Decode(newUserInput)
-
 	if err != nil {
 		return nil, err
 	}

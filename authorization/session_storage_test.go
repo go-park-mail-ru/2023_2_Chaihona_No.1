@@ -45,7 +45,6 @@ func TestRegisterNewSessionNotEmptyStorage(t *testing.T) {
 
 	storage := CreateSessionStorage()
 	err := storage.RegisterNewSession(session1)
-
 	if err != nil {
 		t.Fatalf("Erorr during registration new session!")
 	}
@@ -145,7 +144,6 @@ func TestDeleteSessionGoroutines(t *testing.T) {
 			storage.RegisterNewSession(session)
 
 			err := storage.DeleteSession(session.SessionId)
-
 			if err != nil {
 				m.Lock()
 				tests_passed = false
@@ -181,12 +179,9 @@ func TestGetSessionsSimple(t *testing.T) {
 	}
 
 	sessions, err := storage.GetSessions()
-
 	if err != nil {
 		t.Fatalf("Error during getting all sessions!")
 	}
-
-	fmt.Println(storage.Size)
 
 	for _, session := range sessions {
 		checkedSession, ok := storage.CheckSession(session.SessionId)
@@ -216,7 +211,6 @@ func TestGetSessionsGoroutines(t *testing.T) {
 			storage.RegisterNewSession(session)
 
 			sessions, err := storage.GetSessions()
-
 			if err != nil {
 				m.Lock()
 				tests_passed = false

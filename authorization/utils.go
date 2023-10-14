@@ -2,11 +2,12 @@ package authorization
 
 import (
 	"net/http"
-	model "project/model"
-	reg "project/registration"
 	"time"
 
 	"github.com/google/uuid"
+
+	model "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
+	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/registration"
 )
 
 const (
@@ -33,7 +34,6 @@ func CheckAuthorization(r *http.Request, sessions SessionRepository) bool {
 
 	if err == nil && session != nil {
 		_, authorized := sessions.CheckSession(session.Value)
-
 		return authorized
 	}
 
@@ -64,7 +64,6 @@ func RemoveSession(w http.ResponseWriter, sessions SessionRepository, sessionId 
 	EXPIRED := time.Now().Add(-1)
 
 	err := sessions.DeleteSession(sessionId)
-
 	if err != nil {
 		return err
 	}

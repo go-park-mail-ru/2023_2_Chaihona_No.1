@@ -2,8 +2,9 @@ package registration
 
 import (
 	"net/http"
-	model "project/model"
 	"sync"
+
+	model "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
 )
 
 type UserStorage struct {

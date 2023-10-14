@@ -3,11 +3,12 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	auth "project/authorization"
-	reg "project/registration"
 	"strconv"
 
 	"github.com/gorilla/mux"
+
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/authorization"
+	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/registration"
 )
 
 type ProfileHandler struct {
@@ -15,7 +16,10 @@ type ProfileHandler struct {
 	Profiles reg.ProfileRepository
 }
 
-func CreateProfileHandlerViaRepos(session auth.SessionRepository, profiles reg.ProfileRepository) *ProfileHandler {
+func CreateProfileHandlerViaRepos(
+	session auth.SessionRepository,
+	profiles reg.ProfileRepository,
+) *ProfileHandler {
 	return &ProfileHandler{
 		session,
 		profiles,
@@ -25,7 +29,7 @@ func CreateProfileHandlerViaRepos(session auth.SessionRepository, profiles reg.P
 func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 	if !auth.CheckAuthorization(r, p.Session) {
-		http.Error(w, `{"error":"unauthorized"}`, 401)
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
 		return
 	}
 
@@ -46,5 +50,10 @@ func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 		"profiles": profile,
 	}
 	w.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(&Result{Body: body})
+	err = json.NewEncoder(w).Encode(&Result{Body: body})
+	if err == nil {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		http.Error(w, `{"error":"json_encoding"}`, http.StatusInternalServerError)
+	}
 }

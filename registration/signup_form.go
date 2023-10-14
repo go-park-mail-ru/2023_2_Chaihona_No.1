@@ -3,7 +3,8 @@ package registration
 import (
 	"encoding/json"
 	"io"
-	"project/model"
+
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
 )
 
 type BodySignUp struct {
@@ -14,11 +15,11 @@ type BodySignUp struct {
 
 func (form BodySignUp) Validate() (*model.User, error) {
 	isLenCorrect := len(form.Login) > 0 && len(form.Password) > 0
-	isUserTypeCorrect := form.UserType == "simple_user" || form.UserType == "creator" 
+	isUserTypeCorrect := form.UserType == "simple_user" || form.UserType == "creator"
 
 	if isLenCorrect && isUserTypeCorrect {
 		return &model.User{
-			Login: form.Login,
+			Login:    form.Login,
 			Password: form.Password,
 			UserType: form.UserType,
 		}, nil
@@ -35,7 +36,6 @@ func ParseJSON(r io.Reader) (*BodySignUp, error) {
 	decoder := json.NewDecoder(r)
 	newUserInput := &BodySignUp{}
 	err := decoder.Decode(newUserInput)
-
 	if err != nil {
 		return nil, err
 	}

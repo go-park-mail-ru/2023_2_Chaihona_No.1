@@ -13,7 +13,6 @@ func TestParseJson(t *testing.T) {
 	json := fmt.Sprintf(`{ "body" : {"login" : "%s", "password" : "%s"}}`, login, password)
 
 	form, err := ParseJSON(strings.NewReader(json))
-
 	if err != nil {
 		t.Fatalf("Failed on right json!")
 	}

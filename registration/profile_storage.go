@@ -1,8 +1,9 @@
 package registration
 
 import (
-	model "project/model"
 	"sync"
+
+	model "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
 )
 
 type ProfileStorage struct {
@@ -24,10 +25,8 @@ func CreateProfileStorage() *ProfileStorage {
 func (storage *ProfileStorage) RegisterNewProfile(Profile *model.Profile) *ErrorRegistration {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
-
 	storage.Size++
 	storage.Profiles[Profile.User.Login] = *Profile
-
 	return nil
 }
 
