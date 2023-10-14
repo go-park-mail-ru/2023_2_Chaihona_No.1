@@ -21,7 +21,4 @@
 go.work
 
 *.txt
-profile_storage.go
-go.mod
-go.sum
-project
+github.com/go-park-mail-ru/2023_2_Chaihona_No.1
