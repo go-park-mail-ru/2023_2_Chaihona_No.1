@@ -1,21 +1,26 @@
-package handlers
+package handlers_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	auth "project/authorization"
-	mocks "project/handlers/mock_model"
-	"project/model"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/golang/mock/gomock"
+	"github.com/gorilla/mux"
+
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/authorization"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/handlers"
+	mocks "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/handlers/mock_model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
 )
 
 type MockRepos struct {
+	Users    *mocks.MockUserRepository
 	Sessions *mocks.MockSessionRepository
 	Posts    *mocks.MockPostRepository
 	Profile  *mocks.MockProfileRepository
@@ -34,12 +39,12 @@ func JSONEncode(posts interface{}) string {
 	return string(res)
 }
 
-var TestCases = map[string]TestCase{
-	"get simple post": TestCase{
+var PostTestCases = map[string]TestCase{
+	"get simple post": {
 		ID: "5",
-		Response: JSONEncode(Result{Body: map[string]interface{}{
+		Response: JSONEncode(handlers.Result{Body: map[string]interface{}{
 			"posts": []model.Post{
-				model.Post{
+				{
 					ID:           9,
 					AuthorID:     5,
 					HasAccess:    true,
@@ -49,7 +54,8 @@ var TestCases = map[string]TestCase{
 					Body:         "Body",
 					Likes:        10,
 				},
-			}}}),
+			},
+		}}),
 		StatusCode: 200,
 		Cookie: http.Cookie{
 			Name:     "session_id",
@@ -58,8 +64,8 @@ var TestCases = map[string]TestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Posts.EXPECT().GetPostsByAuthorId(uint(5)).Return(&[]model.Post{
-				model.Post{
+			repos.Posts.EXPECT().GetPostsByAuthorId(uint(5)).Return([]model.Post{
+				{
 					ID:           9,
 					AuthorID:     5,
 					Access:       model.EveryoneAccess,
@@ -82,31 +88,15 @@ var TestCases = map[string]TestCase{
 					Login:    "chert",
 					UserType: model.SimpleUserStatus,
 				},
-				Subscribtions: []model.User{model.User{ID: 3}},
+				Subscriptions: []model.User{{ID: 3}},
 			}, true).AnyTimes()
 		},
 	},
-	// "get one-time payment post without access": TestCase{
-	// 	ID: "5",
-	// 	Response: JSONEncode(model.Post{
-	// 		ID:           11,
-	// 		AuthorID:     5,
-	// 		HasAccess:    false,
-	// 		Access:       model.OneTimePaymentAccess,
-	// 		Reason:       model.UnpaidReason,
-	// 		Payment:      100,
-	// 		Currency:     model.Currency,
-	// 		CreationDate: "15:08 30.09.2023",
-	// 		Header:       "Header",
-	// 		Likes:        10,
-	// 	}),
-	// 	StatusCode: 200,
-	// },
-	"get post for subscriber without access": TestCase{
+	"get post for subscriber without access": {
 		ID: "6",
-		Response: JSONEncode(Result{Body: map[string]interface{}{
+		Response: JSONEncode(handlers.Result{Body: map[string]interface{}{
 			"posts": []model.Post{
-				model.Post{
+				{
 					ID:           13,
 					AuthorID:     6,
 					HasAccess:    false,
@@ -117,7 +107,8 @@ var TestCases = map[string]TestCase{
 					Header:       "Header",
 					Likes:        10,
 				},
-			}}}),
+			},
+		}}),
 		StatusCode: 200,
 		Cookie: http.Cookie{
 			Name:     "session_id",
@@ -126,8 +117,8 @@ var TestCases = map[string]TestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Posts.EXPECT().GetPostsByAuthorId(uint(6)).Return(&[]model.Post{
-				model.Post{
+			repos.Posts.EXPECT().GetPostsByAuthorId(uint(6)).Return([]model.Post{
+				{
 					ID:           13,
 					AuthorID:     6,
 					Access:       model.SubscribersAccess,
@@ -151,31 +142,15 @@ var TestCases = map[string]TestCase{
 					Login:    "chert",
 					UserType: model.SimpleUserStatus,
 				},
-				Subscribtions: []model.User{model.User{ID: 3}},
+				Subscriptions: []model.User{{ID: 3}},
 			}, true).AnyTimes()
 		},
 	},
-	// // "get one-time payment post with access": TestCase{
-	// // 	ID: "5",
-	// // 	Response: JSONEncode(model.Post{
-	// // 		ID:           15,
-	// // 		AuthorID:     5,
-	// // 		HasAccess:    true,
-	// // 		Access:       model.OneTimePaymentAccess,
-	// // 		Payment:      100,
-	// // 		Currency:     model.Currency,
-	// // 		CreationDate: "15:08 30.09.2023",
-	// // 		Header:       "Header",
-	// // 		Body:         "Body",
-	// // 		Likes:        10,
-	// // 	}),
-	// // 	StatusCode: 200,
-	// // },
-	"get post for subscribers with access": TestCase{
+	"get post for subscribers with access": {
 		ID: "7",
-		Response: JSONEncode(Result{Body: map[string]interface{}{
+		Response: JSONEncode(handlers.Result{Body: map[string]interface{}{
 			"posts": []model.Post{
-				model.Post{
+				{
 					ID:           17,
 					AuthorID:     7,
 					HasAccess:    true,
@@ -186,7 +161,8 @@ var TestCases = map[string]TestCase{
 					Body:         "Body",
 					Likes:        10,
 				},
-			}}}),
+			},
+		}}),
 		StatusCode: 200,
 		Cookie: http.Cookie{
 			Name:     "session_id",
@@ -195,8 +171,8 @@ var TestCases = map[string]TestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Posts.EXPECT().GetPostsByAuthorId(uint(7)).Return(&[]model.Post{
-				model.Post{
+			repos.Posts.EXPECT().GetPostsByAuthorId(uint(7)).Return([]model.Post{
+				{
 					ID:           17,
 					AuthorID:     7,
 					Access:       model.SubscribersAccess,
@@ -220,13 +196,13 @@ var TestCases = map[string]TestCase{
 					Login:    "chert",
 					UserType: model.SimpleUserStatus,
 				},
-				Subscribtions: []model.User{model.User{ID: 7}},
+				Subscriptions: []model.User{{ID: 7}},
 			}, true).AnyTimes()
 		},
 	},
-	"get simple user's post": TestCase{
+	"get simple user's post": {
 		ID:         "4",
-		Response:   `{"error":"bad request"}`,
+		Response:   `{"error":"user isn't author"}`,
 		StatusCode: 400,
 		Cookie: http.Cookie{
 			Name:     "session_id",
@@ -235,26 +211,10 @@ var TestCases = map[string]TestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Posts.EXPECT().GetPostsByAuthorId(uint(4)).Return(&[]model.Post{}, NotAuthorError).AnyTimes()
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
-				SessionId: "chertila",
-				UserId:    9,
-				Ttl:       time.Now().Add(10 * time.Hour),
-			}, true).AnyTimes()
-		},
-	},
-
-	"get non-existent user posts": TestCase{
-		ID:         "bla",
-		Response:   `{"error":"bad id"}`,
-		StatusCode: 400,
-		Cookie: http.Cookie{
-			Name:     "session_id",
-			Value:    "chertila",
-			Expires:  time.Now().Add(10 * time.Hour),
-			HttpOnly: true,
-		},
-		Prepare: func(repos *MockRepos) {
+			repos.Posts.EXPECT().
+				GetPostsByAuthorId(uint(4)).
+				Return([]model.Post{}, &model.ErrorPost{Err: handlers.ErrorNotAuthor, StatusCode: http.StatusBadRequest}).
+				AnyTimes()
 			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
 				SessionId: "chertila",
 				UserId:    9,
@@ -265,8 +225,8 @@ var TestCases = map[string]TestCase{
 }
 
 func TestGetPosts(t *testing.T) {
-	for caseName, testCase := range TestCases {
-		url := "https://api/v1/profile/" + testCase.ID + "/post"
+	for caseName, testCase := range PostTestCases {
+		url := fmt.Sprintf("/api/v1/profile/%s/post", testCase.ID)
 		req := httptest.NewRequest("GET", url, nil)
 		w := httptest.NewRecorder()
 		req.AddCookie(&testCase.Cookie)
@@ -275,18 +235,25 @@ func TestGetPosts(t *testing.T) {
 		defer ctrl.Finish()
 
 		mockRepos := MockRepos{
-			mocks.NewMockSessionRepository(ctrl),
-			mocks.NewMockPostRepository(ctrl),
-			mocks.NewMockProfileRepository(ctrl),
+			Sessions: mocks.NewMockSessionRepository(ctrl),
+			Posts:    mocks.NewMockPostRepository(ctrl),
+			Profile:  mocks.NewMockProfileRepository(ctrl),
 		}
 
 		if testCase.Prepare != nil {
 			testCase.Prepare(&mockRepos)
 		}
 
-		PostHandler := CreatePostHandlerViaRepos(mockRepos.Sessions, mockRepos.Posts, mockRepos.Profile)
+		PostHandler := handlers.CreatePostHandlerViaRepos(
+			mockRepos.Sessions,
+			mockRepos.Posts,
+			mockRepos.Profile,
+		)
 
-		PostHandler.GetAllUserPosts(w, req)
+		router := mux.NewRouter()
+		router.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", PostHandler.GetAllUserPosts).
+			Methods("GET")
+		router.ServeHTTP(w, req)
 
 		if w.Code != testCase.StatusCode {
 			t.Errorf("[%s] wrong StatusCode: got %d, expected %d",
@@ -300,6 +267,15 @@ func TestGetPosts(t *testing.T) {
 		if !reflect.DeepEqual(bodyStr[:len(body)-1], testCase.Response) {
 			t.Errorf("[%s] wrong Response: got %+v, expected %+v",
 				caseName, bodyStr, testCase.Response)
+		}
+
+		if contentHeader := resp.Header.Get("Content-Type"); testCase.StatusCode < 400 &&
+			contentHeader != "application/json" {
+			t.Errorf(
+				"[%s] wrong Content-Type header: got %s, expected application/json",
+				caseName,
+				contentHeader,
+			)
 		}
 	}
 }

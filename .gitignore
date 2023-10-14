@@ -21,5 +21,4 @@
 go.work
 
 *.txt
-go.mod
-go.sum
+github.com/go-park-mail-ru/2023_2_Chaihona_No.1

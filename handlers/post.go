@@ -2,13 +2,19 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
-	auth "project/authorization"
-	model "project/model"
-	reg "project/registration"
 	"strconv"
-	"strings"
+
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/authorization"
+	model "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
+	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/registration"
+	"github.com/gorilla/mux"
 )
+
+type BodyPosts struct {
+	Posts []model.Post `json:"posts"`
+}
 
 type PostHandler struct {
 	Sessions auth.SessionRepository
@@ -16,16 +22,9 @@ type PostHandler struct {
 	Profiles reg.ProfileRepository
 }
 
-// func CreatePostHandler() *PostHandler {
-// 	return &PostHandler{
-// 		auth.CreateSessionStorage(),
-// 		model.CreatePostStorage(),
-// 		model.CreateProfileStorage(),
-// 	}
-// }
-
 func CreatePostHandlerViaRepos(session auth.SessionRepository, posts model.PostRepository,
-	profiles reg.ProfileRepository) *PostHandler {
+	profiles reg.ProfileRepository,
+) *PostHandler {
 	return &PostHandler{
 		session,
 		posts,
@@ -35,62 +34,74 @@ func CreatePostHandlerViaRepos(session auth.SessionRepository, posts model.PostR
 
 func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
+	w.Header().Add("Content-Type", "application/json")
 	if !auth.CheckAuthorization(r, p.Sessions) {
-		http.Error(w, `{"error":"unauthorized"}`, 401)
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
 		return
 	}
 
-	// vars := mux.Vars(r)
-	// authorId, err := strconv.Atoi(vars["id"])
-	authorId, err := strconv.Atoi(strings.Split(r.URL.Path, "/")[4])
+	// authorId, err := strconv.Atoi(strings.Split(r.URL.Path, "/")[3])
+	vars := mux.Vars(r)
+	authorId, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		http.Error(w, `{"error":"bad id"}`, 400)
 		return
 	}
 
-	posts, err := (p.Posts).GetPostsByAuthorId(uint(authorId))
-	if err != nil {
-		if err == NotAuthorError {
-			http.Error(w, `{"error":"bad request"}`, 400)
+	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorId))
+	if errPost != nil {
+		if errors.Is(ErrorNotAuthor, errPost.Err) {
+			res := Result{Err: errPost.Err.Error()}
+			errJson, err := json.Marshal(res)
+			if err != nil {
+				errJson = []byte{}
+			}
+			http.Error(w, string(errJson), errPost.StatusCode)
 			return
 		}
-		http.Error(w, `{"error":"db"}`, 500)
+		http.Error(w, `{"error":"db"}`, errPost.StatusCode)
 		return
 	}
 
 	cookie, _ := r.Cookie("session_id")
-	session, _ := (p.Sessions).CheckSession(cookie.Value)
+	session, _ := p.Sessions.CheckSession(cookie.Value)
 	userId := session.UserId
-	profile, _ := (p.Profiles).GetProfile(uint(userId))
-	subscribtions := profile.Subscribtions
-
+	profile, ok := p.Profiles.GetProfile(uint(userId))
+	if !ok {
+		http.Error(w, `{"error":"very bad"}`, 400)
+		return
+	}
+	subscriptions := profile.Subscriptions
 	isSubscirber := false
-	for _, user := range subscribtions {
+	for _, user := range subscriptions {
 		if user.ID == uint(authorId) {
 			isSubscirber = true
 		}
 	}
 
-	// Need to add subscribtion level check logic and one-time payment check logic
 	if !isSubscirber {
-		for i, _ := range *posts {
-			switch (*posts)[i].Access {
+		for i := range posts {
+			switch posts[i].Access {
 			case model.SubscribersAccess:
-				(*posts)[i].HasAccess = false
-				(*posts)[i].Reason = model.LowLevelReason
-				(*posts)[i].Body = ""
+				posts[i].HasAccess = false
+				posts[i].Reason = model.LowLevelReason
+				posts[i].Body = ""
 			case model.EveryoneAccess:
-				(*posts)[i].HasAccess = true
+				posts[i].HasAccess = true
 			}
 		}
 	} else {
-		for i, _ := range *posts {
-			(*posts)[i].HasAccess = true
+		for i := range posts {
+			posts[i].HasAccess = true
 		}
 	}
 
-	body := map[string]interface{}{
-		"posts": posts,
+	result := Result{Body: BodyPosts{Posts: posts}}
+
+	err = json.NewEncoder(w).Encode(&result)
+	if err == nil {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		http.Error(w, `{"error":"json_encoding"}`, http.StatusInternalServerError)
 	}
-	json.NewEncoder(w).Encode(&Result{Body: body})
 }
