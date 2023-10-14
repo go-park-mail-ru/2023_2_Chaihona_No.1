@@ -2,93 +2,94 @@ package model
 
 import (
 	"errors"
+	"net/http"
 	"sync"
 )
 
 var ErrNoSuchPost = errors.New("no such post")
 
+type ErrorPost struct {
+	Err        error `json:"error"`
+	StatusCode int
+}
+
 type PostRepository interface {
-	CreateNewPost(post Post) error
-	DeletePost(id uint) error
-	GetPostById(id uint) (*Post, error)
-	GetPostsByAuthorId(authorId uint) (*[]Post, error)
-	GetPosts() ([]Post, error)
+	CreateNewPost(post Post) *ErrorPost
+	DeletePost(id uint) *ErrorPost
+	GetPostById(id uint) (Post, *ErrorPost)
+	GetPostsByAuthorId(authorId uint) ([]Post, *ErrorPost)
+	GetPosts() ([]Post, *ErrorPost)
 }
 
 type PostStorage struct {
-	Posts map[uint]Post
-	Mu    sync.Mutex
-	Size  uint32
+	posts map[uint]Post
+	mu    sync.Mutex
 }
 
 func CreatePostStorage() PostRepository {
 	storage := &PostStorage{
-		Posts: make(map[uint]Post),
+		posts: make(map[uint]Post),
 	}
 
 	return storage
 }
 
-func (storage *PostStorage) CreateNewPost(post Post) error {
-	storage.Mu.Lock()
-	defer storage.Mu.Unlock()
+func (storage *PostStorage) CreateNewPost(post Post) *ErrorPost {
+	storage.mu.Lock()
+	defer storage.mu.Unlock()
 
-	storage.Size++
-	storage.Posts[post.ID] = post
-
-	return nil
-}
-
-func (storage *PostStorage) DeletePost(id uint) error {
-	storage.Mu.Lock()
-	defer storage.Mu.Unlock()
-
-	if _, ok := storage.Posts[id]; !ok {
-		return ErrNoSuchPost
-	}
-
-	delete(storage.Posts, id)
-	storage.Size--
+	storage.posts[post.ID] = post
 
 	return nil
 }
 
-func (storage *PostStorage) GetPostById(id uint) (*Post, error) {
-	storage.Mu.Lock()
-	defer storage.Mu.Unlock()
+func (storage *PostStorage) DeletePost(id uint) *ErrorPost {
+	storage.mu.Lock()
+	defer storage.mu.Unlock()
 
-	val, ok := storage.Posts[id]
-
-	if ok {
-		copy := val
-
-		return &copy, nil
+	if _, ok := storage.posts[id]; !ok {
+		return &ErrorPost{ErrNoSuchPost, http.StatusBadRequest}
 	}
 
-	return nil, ErrNoSuchPost
+	delete(storage.posts, id)
+
+	return nil
 }
 
-func (storage *PostStorage) GetPostsByAuthorId(authorId uint) (*[]Post, error) {
-	storage.Mu.Lock()
-	defer storage.Mu.Unlock()
+func (storage *PostStorage) GetPostById(id uint) (Post, *ErrorPost) {
+	storage.mu.Lock()
+	defer storage.mu.Unlock()
+
+	val, ok := storage.posts[id]
+
+	if !ok {
+		return Post{}, &ErrorPost{ErrNoSuchPost, http.StatusBadRequest}
+	}
+
+	return val, nil
+}
+
+func (storage *PostStorage) GetPostsByAuthorId(authorId uint) ([]Post, *ErrorPost) {
+	storage.mu.Lock()
+	defer storage.mu.Unlock()
 
 	posts := make([]Post, 0)
-	for _, post := range storage.Posts {
+	for _, post := range storage.posts {
 		if post.AuthorID == authorId {
 			posts = append(posts, post)
 		}
 	}
 
-	return &posts, nil
+	return posts, nil
 }
 
-func (storage *PostStorage) GetPosts() ([]Post, error) {
-	storage.Mu.Lock()
-	defer storage.Mu.Unlock()
+func (storage *PostStorage) GetPosts() ([]Post, *ErrorPost) {
+	storage.mu.Lock()
+	defer storage.mu.Unlock()
 
 	posts := make([]Post, 0)
 
-	for _, post := range storage.Posts {
+	for _, post := range storage.posts {
 		posts = append(posts, post)
 	}
 
