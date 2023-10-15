@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -98,10 +99,9 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 
 	result := Result{Body: BodyPosts{Posts: posts}}
 
+	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(&result)
-	if err == nil {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		http.Error(w, `{"error":"json_encoding"}`, http.StatusInternalServerError)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
