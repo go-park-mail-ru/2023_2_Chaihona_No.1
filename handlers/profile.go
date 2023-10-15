@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -10,6 +11,10 @@ import (
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/authorization"
 	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/registration"
 )
+
+type BodyProfile struct {
+	Profile model.Profile `json:"profile"`
+}
 
 type ProfileHandler struct {
 	Session  auth.SessionRepository
@@ -46,14 +51,11 @@ func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body := map[string]interface{}{
-		"profiles": profile,
-	}
+	result := Result{Body: BodyProfile{Profile: profile}}
 	w.Header().Add("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(&Result{Body: body})
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(&result)
 	if err == nil {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		http.Error(w, `{"error":"json_encoding"}`, http.StatusInternalServerError)
+		log.Fatal(err)
 	}
 }
