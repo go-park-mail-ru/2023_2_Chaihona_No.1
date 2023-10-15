@@ -226,56 +226,61 @@ var PostTestCases = map[string]TestCase{
 
 func TestGetPosts(t *testing.T) {
 	for caseName, testCase := range PostTestCases {
-		url := fmt.Sprintf("/api/v1/profile/%s/post", testCase.ID)
-		req := httptest.NewRequest("GET", url, nil)
-		w := httptest.NewRecorder()
-		req.AddCookie(&testCase.Cookie)
+		testCase := testCase
+		caseName := caseName
+		t.Run(caseName, func(t *testing.T) {
+			t.Parallel()
+			url := fmt.Sprintf("/api/v1/profile/%s/post", testCase.ID)
+			req := httptest.NewRequest("GET", url, nil)
+			w := httptest.NewRecorder()
+			req.AddCookie(&testCase.Cookie)
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-		mockRepos := MockRepos{
-			Sessions: mocks.NewMockSessionRepository(ctrl),
-			Posts:    mocks.NewMockPostRepository(ctrl),
-			Profile:  mocks.NewMockProfileRepository(ctrl),
-		}
+			mockRepos := MockRepos{
+				Sessions: mocks.NewMockSessionRepository(ctrl),
+				Posts:    mocks.NewMockPostRepository(ctrl),
+				Profile:  mocks.NewMockProfileRepository(ctrl),
+			}
 
-		if testCase.Prepare != nil {
-			testCase.Prepare(&mockRepos)
-		}
+			if testCase.Prepare != nil {
+				testCase.Prepare(&mockRepos)
+			}
 
-		PostHandler := handlers.CreatePostHandlerViaRepos(
-			mockRepos.Sessions,
-			mockRepos.Posts,
-			mockRepos.Profile,
-		)
-
-		router := mux.NewRouter()
-		router.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", PostHandler.GetAllUserPosts).
-			Methods("GET")
-		router.ServeHTTP(w, req)
-
-		if w.Code != testCase.StatusCode {
-			t.Errorf("[%s] wrong StatusCode: got %d, expected %d",
-				caseName, w.Code, testCase.StatusCode)
-		}
-
-		resp := w.Result()
-		body, _ := ioutil.ReadAll(resp.Body)
-
-		bodyStr := string(body)
-		if !reflect.DeepEqual(bodyStr[:len(body)-1], testCase.Response) {
-			t.Errorf("[%s] wrong Response: got %+v, expected %+v",
-				caseName, bodyStr, testCase.Response)
-		}
-
-		if contentHeader := resp.Header.Get("Content-Type"); testCase.StatusCode < 400 &&
-			contentHeader != "application/json" {
-			t.Errorf(
-				"[%s] wrong Content-Type header: got %s, expected application/json",
-				caseName,
-				contentHeader,
+			PostHandler := handlers.CreatePostHandlerViaRepos(
+				mockRepos.Sessions,
+				mockRepos.Posts,
+				mockRepos.Profile,
 			)
-		}
+
+			router := mux.NewRouter()
+			router.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", PostHandler.GetAllUserPosts).
+				Methods("GET")
+			router.ServeHTTP(w, req)
+
+			if w.Code != testCase.StatusCode {
+				t.Errorf("[%s] wrong StatusCode: got %d, expected %d",
+					caseName, w.Code, testCase.StatusCode)
+			}
+
+			resp := w.Result()
+			body, _ := ioutil.ReadAll(resp.Body)
+
+			bodyStr := string(body)
+			if !reflect.DeepEqual(bodyStr[:len(body)-1], testCase.Response) {
+				t.Errorf("[%s] wrong Response: got %+v, expected %+v",
+					caseName, bodyStr, testCase.Response)
+			}
+
+			if contentHeader := resp.Header.Get("Content-Type"); testCase.StatusCode < 400 &&
+				contentHeader != "application/json" {
+				t.Errorf(
+					"[%s] wrong Content-Type header: got %s, expected application/json",
+					caseName,
+					contentHeader,
+				)
+			}
+		})
 	}
 }
