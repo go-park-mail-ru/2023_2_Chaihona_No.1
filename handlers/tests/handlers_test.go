@@ -172,7 +172,6 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 func TestAuthorization(t *testing.T) {
 	for caseName, testCase := range SignupTestCases {
 		testCase := testCase
-		caseName := caseName
 		t.Run(caseName, func(t *testing.T) {
 			t.Parallel()
 			url := "/api/v1/" + testCase.APIMethod

@@ -79,7 +79,7 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(&Result{Body: bodyResponse})
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }
 
@@ -118,7 +118,7 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(&Result{Body: bodyResponse})
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }
 
@@ -146,7 +146,7 @@ func (api *RepoHandler) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 		err := json.NewEncoder(w).
 			Encode(&Result{Body: map[string]interface{}{"is_authorized": true}})
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		return
 	}
@@ -154,6 +154,6 @@ func (api *RepoHandler) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	err := json.NewEncoder(w).
 		Encode(&Result{Body: map[string]interface{}{"is_authorized": false}})
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }
