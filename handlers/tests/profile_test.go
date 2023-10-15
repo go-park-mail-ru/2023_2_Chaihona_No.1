@@ -158,7 +158,6 @@ var ProfileTestCases = map[string]TestCase{
 func TestGetProfileInfo(t *testing.T) {
 	for caseName, testCase := range ProfileTestCases {
 		testCase := testCase
-		caseName := caseName
 		t.Run(caseName, func(t *testing.T) {
 			t.Parallel()
 			url := fmt.Sprintf("/api/v1/profile/%s", testCase.ID)

@@ -56,6 +56,6 @@ func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(&result)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }
