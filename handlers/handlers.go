@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/authorization"
@@ -36,7 +37,6 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 
 	body := http.MaxBytesReader(w, r.Body, MAX_BYTES_TO_READ)
-	defer body.Close()
 
 	decoder := json.NewDecoder(body)
 	regForm := &reg.BodySignUp{}
@@ -75,12 +75,11 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		"id": user.ID,
 	}
 
-	err = json.NewEncoder(w).Encode(&Result{Body: bodyResponse})
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
-	if err == nil {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		http.Error(w, `{"error":"json_encoding"}`, http.StatusInternalServerError)
+	err = json.NewEncoder(w).Encode(&Result{Body: bodyResponse})
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -88,7 +87,6 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 
 	body := http.MaxBytesReader(w, r.Body, MAX_BYTES_TO_READ)
-	defer body.Close()
 
 	decoder := json.NewDecoder(body)
 	loginForm := &auth.BodyLogin{}
@@ -116,12 +114,11 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 		"id": user.ID,
 	}
 
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(&Result{Body: bodyResponse})
-	if err == nil {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		http.Error(w, `{"error":"json_encoding"}`, http.StatusInternalServerError)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -145,20 +142,18 @@ func (api *RepoHandler) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 	w.Header().Add("Content-Type", "application/json")
 	if auth.CheckAuthorization(r, api.sessions) {
+		w.WriteHeader(http.StatusOK)
 		err := json.NewEncoder(w).
 			Encode(&Result{Body: map[string]interface{}{"is_authorized": true}})
-		if err == nil {
-			w.WriteHeader(http.StatusOK)
-		} else {
-			http.Error(w, `{"error":"json_encoding"}`, http.StatusInternalServerError)
+		if err != nil {
+			log.Fatal(err)
 		}
-	} else {
-		err := json.NewEncoder(w).
-			Encode(&Result{Body: map[string]interface{}{"is_authorized": false}})
-		if err == nil {
-			w.WriteHeader(http.StatusUnauthorized)
-		} else {
-			http.Error(w, `{"error":"json_encoding"}`, http.StatusInternalServerError)
-		}
+		return
+	}
+	w.WriteHeader(http.StatusUnauthorized)
+	err := json.NewEncoder(w).
+		Encode(&Result{Body: map[string]interface{}{"is_authorized": false}})
+	if err != nil {
+		log.Fatal(err)
 	}
 }

@@ -1,9 +1,6 @@
 package registration
 
 import (
-	"encoding/json"
-	"io"
-
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
 )
 
@@ -30,15 +27,4 @@ func (form BodySignUp) Validate() (*model.User, error) {
 
 type SignupForm struct {
 	Body_ BodySignUp `json:"body"`
-}
-
-func ParseJSON(r io.Reader) (*BodySignUp, error) {
-	decoder := json.NewDecoder(r)
-	newUserInput := &BodySignUp{}
-	err := decoder.Decode(newUserInput)
-	if err != nil {
-		return nil, err
-	}
-
-	return newUserInput, nil
 }

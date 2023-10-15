@@ -171,60 +171,65 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 
 func TestAuthorization(t *testing.T) {
 	for caseName, testCase := range SignupTestCases {
-		url := "/api/v1/" + testCase.APIMethod
-		postBody := httptest.NewRecorder().Body
-		postBody.Write([]byte(JSONEncode(testCase.User)))
-		req := httptest.NewRequest("POST", url, postBody)
-		w := httptest.NewRecorder()
+		testCase := testCase
+		caseName := caseName
+		t.Run(caseName, func(t *testing.T) {
+			t.Parallel()
+			url := "/api/v1/" + testCase.APIMethod
+			postBody := httptest.NewRecorder().Body
+			postBody.Write([]byte(JSONEncode(testCase.User)))
+			req := httptest.NewRequest("POST", url, postBody)
+			w := httptest.NewRecorder()
 
-		if testCase.Cookie.Name != "" {
-			req.AddCookie(&testCase.Cookie)
-		}
+			if testCase.Cookie.Name != "" {
+				req.AddCookie(&testCase.Cookie)
+			}
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-		mockRepos := MockRepos{
-			Users:    mocks.NewMockUserRepository(ctrl),
-			Sessions: mocks.NewMockSessionRepository(ctrl),
-			Profile:  mocks.NewMockProfileRepository(ctrl),
-		}
+			mockRepos := MockRepos{
+				Users:    mocks.NewMockUserRepository(ctrl),
+				Sessions: mocks.NewMockSessionRepository(ctrl),
+				Profile:  mocks.NewMockProfileRepository(ctrl),
+			}
 
-		if testCase.Prepare != nil {
-			testCase.Prepare(&mockRepos)
-		}
+			if testCase.Prepare != nil {
+				testCase.Prepare(&mockRepos)
+			}
 
-		authHandler := handlers.CreateRepoHandler(
-			mockRepos.Sessions,
-			mockRepos.Users,
-			mockRepos.Profile,
-		)
-
-		router := mux.NewRouter()
-		router.HandleFunc("/api/v1/registration", authHandler.Signup).Methods("POST")
-		router.HandleFunc("/api/v1/login", authHandler.Login).Methods("POST")
-		router.HandleFunc("/api/v1/logout", authHandler.Logout).Methods("POST")
-		router.ServeHTTP(w, req)
-
-		if w.Code != testCase.StatusCode {
-			t.Errorf("[%s] wrong StatusCode: got %d, expected %d",
-				caseName, w.Code, testCase.StatusCode)
-		}
-
-		resp := w.Result()
-		body, err := ioutil.ReadAll(resp.Body)
-
-		bodyStr := string(body)
-		if err != nil && !reflect.DeepEqual(bodyStr[:len(body)-1], testCase.Response) {
-			t.Errorf("[%s] wrong Response: got %+v, expected %+v",
-				caseName, bodyStr, testCase.Response)
-		}
-		if cookieHeader := resp.Header.Get("Set-Cookie"); testCase.StatusCode < 400 &&
-			cookieHeader == "" {
-			t.Errorf(
-				"[%s] wrong Set-Cookie header: header is empty",
-				caseName,
+			authHandler := handlers.CreateRepoHandler(
+				mockRepos.Sessions,
+				mockRepos.Users,
+				mockRepos.Profile,
 			)
-		}
+
+			router := mux.NewRouter()
+			router.HandleFunc("/api/v1/registration", authHandler.Signup).Methods("POST")
+			router.HandleFunc("/api/v1/login", authHandler.Login).Methods("POST")
+			router.HandleFunc("/api/v1/logout", authHandler.Logout).Methods("POST")
+			router.ServeHTTP(w, req)
+
+			if w.Code != testCase.StatusCode {
+				t.Errorf("[%s] wrong StatusCode: got %d, expected %d",
+					caseName, w.Code, testCase.StatusCode)
+			}
+
+			resp := w.Result()
+			body, err := ioutil.ReadAll(resp.Body)
+
+			bodyStr := string(body)
+			if err != nil && !reflect.DeepEqual(bodyStr[:len(body)-1], testCase.Response) {
+				t.Errorf("[%s] wrong Response: got %+v, expected %+v",
+					caseName, bodyStr, testCase.Response)
+			}
+			if cookieHeader := resp.Header.Get("Set-Cookie"); testCase.StatusCode < 400 &&
+				cookieHeader == "" {
+				t.Errorf(
+					"[%s] wrong Set-Cookie header: header is empty",
+					caseName,
+				)
+			}
+		})
 	}
 }
