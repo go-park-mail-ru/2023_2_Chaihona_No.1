@@ -227,7 +227,6 @@ var PostTestCases = map[string]TestCase{
 func TestGetPosts(t *testing.T) {
 	for caseName, testCase := range PostTestCases {
 		testCase := testCase
-		caseName := caseName
 		t.Run(caseName, func(t *testing.T) {
 			t.Parallel()
 			url := fmt.Sprintf("/api/v1/profile/%s/post", testCase.ID)
