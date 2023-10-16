@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/authorization"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
 	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/registration"
 )
 
@@ -51,7 +52,7 @@ func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result := Result{Body: BodyProfile{Profile: profile}}
+	result := Result{Body: BodyProfile{Profile: *profile}}
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(&result)

@@ -1,6 +1,6 @@
 package handlers
 
 const (
-	FrontendServerIP   = "http://localhost"
+	FrontendServerIP   = "http://212.233.89.163"
 	FrontendServerPort = ":8000"
 )
