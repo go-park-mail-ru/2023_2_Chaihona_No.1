@@ -1,7 +1,9 @@
 package model
 
-const CreatorStatus = "creator"
-const SimpleUserStatus = "simple_user"
+const (
+	CreatorStatus    = "creator"
+	SimpleUserStatus = "simple_user"
+)
 
 type User struct {
 	ID         uint   `json:"id"`

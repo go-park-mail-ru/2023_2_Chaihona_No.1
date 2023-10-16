@@ -1,11 +1,12 @@
 package model
 
-const UnpaidReason = "unpaid"
-const LowLevelReason = "low_level"
-
-const EveryoneAccess = "for_everyone"
-const OneTimePaymentAccess = "one-time_payment"
-const SubscribersAccess = "for_subscribers"
+const (
+	UnpaidReason         = "unpaid"
+	LowLevelReason       = "low_level"
+	EveryoneAccess       = "for_everyone"
+	OneTimePaymentAccess = "one-time_payment"
+	SubscribersAccess    = "for_subscribers"
+)
 
 type Post struct {
 	ID           uint      `json:"id"`
