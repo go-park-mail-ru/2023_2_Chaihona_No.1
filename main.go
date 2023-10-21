@@ -8,7 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/handlers"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
 	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/registration"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/test_data"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/testdata"
 
 	"github.com/gorilla/mux"
 )
@@ -19,14 +19,14 @@ func main() {
 	profileStorage := reg.CreateProfileStorage()
 	postStorage := model.CreatePostStorage()
 
-	for _, test_user := range test_data.Users {
-		userStoarge.RegisterNewUser(&test_user)
+	for _, testUser := range testdata.Users {
+		userStoarge.RegisterNewUser(&testUser)
 	}
-	for _, test_profile := range test_data.Profiles {
-		profileStorage.RegisterNewProfile(&test_profile)
+	for _, testProfile := range testdata.Profiles {
+		profileStorage.RegisterNewProfile(&testProfile)
 	}
-	for _, test_post := range test_data.Posts {
-		postStorage.CreateNewPost(test_post)
+	for _, testPost := range testdata.Posts {
+		postStorage.CreateNewPost(testPost)
 	}
 
 	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, profileStorage)

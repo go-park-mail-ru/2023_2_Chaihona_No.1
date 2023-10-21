@@ -5,7 +5,7 @@ import (
 )
 
 type Session struct {
-	SessionId string    `json:"session_id"`
-	UserId    uint32    `json:"user_id"`
-	Ttl       time.Time `json:"ttl"`
+	SessionID string    `json:"session_id"`
+	UserID    uint32    `json:"user_id"`
+	TTL       time.Time `json:"ttl"`
 }

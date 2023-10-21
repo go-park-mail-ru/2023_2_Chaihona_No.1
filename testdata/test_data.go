@@ -1,4 +1,4 @@
-package test_data
+package testdata
 
 import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"

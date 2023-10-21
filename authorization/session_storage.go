@@ -25,20 +25,20 @@ func (storage *SessionStorage) RegisterNewSession(session Session) error {
 	defer storage.Mu.Unlock()
 
 	storage.Size++
-	storage.Sessions[session.SessionId] = session
+	storage.Sessions[session.SessionID] = session
 
 	return nil
 }
 
-func (storage *SessionStorage) DeleteSession(sessionId string) error {
+func (storage *SessionStorage) DeleteSession(sessionID string) error {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
 
-	if _, ok := storage.Sessions[sessionId]; !ok {
+	if _, ok := storage.Sessions[sessionID]; !ok {
 		return ErrNoSuchSession
 	}
 
-	delete(storage.Sessions, sessionId)
+	delete(storage.Sessions, sessionID)
 	storage.Size--
 
 	return nil

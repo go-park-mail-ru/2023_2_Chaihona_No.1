@@ -9,9 +9,9 @@ import (
 
 func TestRegisterNewSession(t *testing.T) {
 	session := Session{
-		SessionId: "1",
-		UserId:    1,
-		Ttl:       time.Now().Add(10 * time.Hour),
+		SessionID: "1",
+		UserID:    1,
+		TTL:       time.Now().Add(10 * time.Hour),
 	}
 
 	storage := CreateSessionStorage()
@@ -20,7 +20,7 @@ func TestRegisterNewSession(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Erorr during registration new session!")
 	} else {
-		if val, ok := storage.Sessions[session.SessionId]; ok {
+		if val, ok := storage.Sessions[session.SessionID]; ok {
 			if val != session {
 				t.Fatalf("Error session mismatch data!")
 			}
@@ -32,15 +32,15 @@ func TestRegisterNewSession(t *testing.T) {
 
 func TestRegisterNewSessionNotEmptyStorage(t *testing.T) {
 	session1 := Session{
-		SessionId: "1",
-		UserId:    1,
-		Ttl:       time.Now().Add(10 * time.Hour),
+		SessionID: "1",
+		UserID:    1,
+		TTL:       time.Now().Add(10 * time.Hour),
 	}
 
 	session2 := Session{
-		SessionId: "1",
-		UserId:    1,
-		Ttl:       time.Now().Add(10 * time.Hour),
+		SessionID: "1",
+		UserID:    1,
+		TTL:       time.Now().Add(10 * time.Hour),
 	}
 
 	storage := CreateSessionStorage()
@@ -54,7 +54,7 @@ func TestRegisterNewSessionNotEmptyStorage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Erorr during registration new session!")
 	} else {
-		if val, ok := storage.Sessions[session2.SessionId]; ok {
+		if val, ok := storage.Sessions[session2.SessionID]; ok {
 			if val != session2 {
 				t.Fatalf("Error session mismatch data!")
 			}
@@ -71,14 +71,14 @@ func TestCheckSession(t *testing.T) {
 
 	for i := 0; i < SESSIONS; i++ {
 		session := Session{
-			SessionId: fmt.Sprint(i),
-			UserId:    uint32(i),
-			Ttl:       time.Now().Add(10 * time.Hour),
+			SessionID: fmt.Sprint(i),
+			UserID:    uint32(i),
+			TTL:       time.Now().Add(10 * time.Hour),
 		}
 
 		storage.RegisterNewSession(session)
 
-		if val, ok := storage.CheckSession(session.SessionId); ok {
+		if val, ok := storage.CheckSession(session.SessionID); ok {
 			if *val != session {
 				t.Fatalf("Error session mismatch data!")
 			}
@@ -94,33 +94,33 @@ func TestRegisterNewSessionGoroutines(t *testing.T) {
 	storage := CreateSessionStorage()
 
 	var m sync.Mutex
-	tests_passed := true
+	testsPassed := true
 
 	for i := 0; i < SESSIONS; i++ {
 		go func(i int, m *sync.Mutex) {
 			session := Session{
-				SessionId: fmt.Sprint(i),
-				UserId:    uint32(i),
-				Ttl:       time.Now().Add(10 * time.Hour),
+				SessionID: fmt.Sprint(i),
+				UserID:    uint32(i),
+				TTL:       time.Now().Add(10 * time.Hour),
 			}
 
 			storage.RegisterNewSession(session)
 
-			if val, ok := storage.CheckSession(session.SessionId); ok {
-				if val.SessionId != session.SessionId || val.UserId != session.UserId {
+			if val, ok := storage.CheckSession(session.SessionID); ok {
+				if val.SessionID != session.SessionID || val.UserID != session.UserID {
 					m.Lock()
-					tests_passed = false
+					testsPassed = false
 					m.Unlock()
 				}
 			} else {
 				m.Lock()
-				tests_passed = false
+				testsPassed = false
 				m.Unlock()
 			}
 		}(i, &m)
 	}
 
-	if !tests_passed {
+	if !testsPassed {
 		t.Fatalf("Test failed during register or checking!")
 	}
 }
@@ -131,34 +131,34 @@ func TestDeleteSessionGoroutines(t *testing.T) {
 	storage := CreateSessionStorage()
 
 	var m sync.Mutex
-	tests_passed := true
+	testsPassed := true
 
 	for i := 0; i < SESSIONS; i++ {
 		go func(i int, m *sync.Mutex) {
 			session := Session{
-				SessionId: fmt.Sprint(i),
-				UserId:    uint32(i),
-				Ttl:       time.Now().Add(10 * time.Hour),
+				SessionID: fmt.Sprint(i),
+				UserID:    uint32(i),
+				TTL:       time.Now().Add(10 * time.Hour),
 			}
 
 			storage.RegisterNewSession(session)
 
-			err := storage.DeleteSession(session.SessionId)
+			err := storage.DeleteSession(session.SessionID)
 			if err != nil {
 				m.Lock()
-				tests_passed = false
+				testsPassed = false
 				m.Unlock()
 			}
 
-			if val, ok := storage.CheckSession(session.SessionId); val != nil || ok {
+			if val, ok := storage.CheckSession(session.SessionID); val != nil || ok {
 				m.Lock()
-				tests_passed = false
+				testsPassed = false
 				m.Unlock()
 			}
 		}(i, &m)
 	}
 
-	if !tests_passed {
+	if !testsPassed {
 		t.Fatalf("Test failed during deletion!")
 	}
 }
@@ -170,9 +170,9 @@ func TestGetSessionsSimple(t *testing.T) {
 
 	for i := 0; i < SESSIONS; i++ {
 		session := Session{
-			SessionId: fmt.Sprint(i),
-			UserId:    uint32(i),
-			Ttl:       time.Now().Add(10 * time.Hour),
+			SessionID: fmt.Sprint(i),
+			UserID:    uint32(i),
+			TTL:       time.Now().Add(10 * time.Hour),
 		}
 
 		storage.RegisterNewSession(session)
@@ -184,10 +184,10 @@ func TestGetSessionsSimple(t *testing.T) {
 	}
 
 	for _, session := range sessions {
-		checkedSession, ok := storage.CheckSession(session.SessionId)
+		checkedSession, ok := storage.CheckSession(session.SessionID)
 
 		if !ok || session != *checkedSession {
-			t.Fatalf("Test failed on getting all sessions! UserId: %d", session.UserId)
+			t.Fatalf("Test failed on getting all sessions! UserId: %d", session.UserID)
 		}
 	}
 }
@@ -198,14 +198,14 @@ func TestGetSessionsGoroutines(t *testing.T) {
 	storage := CreateSessionStorage()
 
 	var m sync.Mutex
-	tests_passed := true
+	testsPassed := true
 
 	for i := 0; i < SESSIONS; i++ {
 		go func(i int, m *sync.Mutex) {
 			session := Session{
-				SessionId: fmt.Sprint(i),
-				UserId:    uint32(i),
-				Ttl:       time.Now().Add(10 * time.Hour),
+				SessionID: fmt.Sprint(i),
+				UserID:    uint32(i),
+				TTL:       time.Now().Add(10 * time.Hour),
 			}
 
 			storage.RegisterNewSession(session)
@@ -213,7 +213,7 @@ func TestGetSessionsGoroutines(t *testing.T) {
 			sessions, err := storage.GetSessions()
 			if err != nil {
 				m.Lock()
-				tests_passed = false
+				testsPassed = false
 				m.Unlock()
 			}
 
@@ -226,13 +226,13 @@ func TestGetSessionsGoroutines(t *testing.T) {
 
 			if !founded {
 				m.Lock()
-				tests_passed = false
+				testsPassed = false
 				m.Unlock()
 			}
 		}(i, &m)
 	}
 
-	if !tests_passed {
+	if !testsPassed {
 		t.Fatalf("Test failed on geting all sessions!")
 	}
 }

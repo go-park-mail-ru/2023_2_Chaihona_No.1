@@ -77,9 +77,9 @@ var PostTestCases = map[string]TestCase{
 			}, nil).AnyTimes()
 
 			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
-				SessionId: "chertila",
-				UserId:    9,
-				Ttl:       time.Now().Add(10 * time.Hour),
+				SessionID: "chertila",
+				UserID:    9,
+				TTL:       time.Now().Add(10 * time.Hour),
 			}, true).AnyTimes()
 
 			repos.Profile.EXPECT().GetProfile(uint(9)).Return(&model.Profile{
@@ -131,9 +131,9 @@ var PostTestCases = map[string]TestCase{
 			}, nil).AnyTimes()
 
 			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
-				SessionId: "chertila",
-				UserId:    9,
-				Ttl:       time.Now().Add(10 * time.Hour),
+				SessionID: "chertila",
+				UserID:    9,
+				TTL:       time.Now().Add(10 * time.Hour),
 			}, true).AnyTimes()
 
 			repos.Profile.EXPECT().GetProfile(uint(9)).Return(&model.Profile{
@@ -185,9 +185,9 @@ var PostTestCases = map[string]TestCase{
 			}, nil).AnyTimes()
 
 			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
-				SessionId: "chertila",
-				UserId:    9,
-				Ttl:       time.Now().Add(10 * time.Hour),
+				SessionID: "chertila",
+				UserID:    9,
+				TTL:       time.Now().Add(10 * time.Hour),
 			}, true).AnyTimes()
 
 			repos.Profile.EXPECT().GetProfile(uint(9)).Return(&model.Profile{
@@ -216,9 +216,9 @@ var PostTestCases = map[string]TestCase{
 				Return([]model.Post{}, &model.ErrorPost{Err: handlers.ErrorNotAuthor, StatusCode: http.StatusBadRequest}).
 				AnyTimes()
 			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
-				SessionId: "chertila",
-				UserId:    9,
-				Ttl:       time.Now().Add(10 * time.Hour),
+				SessionID: "chertila",
+				UserID:    9,
+				TTL:       time.Now().Add(10 * time.Hour),
 			}, true).AnyTimes()
 		},
 	},

@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	MAX_BYTES_TO_READ = 1024 * 2
+	maxBytesToRead = 1024 * 2
 )
 
 type RepoHandler struct {
@@ -36,7 +36,7 @@ func CreateRepoHandler(
 func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 
-	body := http.MaxBytesReader(w, r.Body, MAX_BYTES_TO_READ)
+	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
 
 	decoder := json.NewDecoder(body)
 	regForm := &reg.BodySignUp{}
@@ -86,7 +86,7 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 
-	body := http.MaxBytesReader(w, r.Body, MAX_BYTES_TO_READ)
+	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
 
 	decoder := json.NewDecoder(body)
 	loginForm := &auth.BodyLogin{}

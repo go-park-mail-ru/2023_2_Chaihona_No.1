@@ -26,5 +26,5 @@ func (form BodySignUp) Validate() (*model.User, error) {
 }
 
 type SignupForm struct {
-	Body_ BodySignUp `json:"body"`
+	Body BodySignUp `json:"body"`
 }

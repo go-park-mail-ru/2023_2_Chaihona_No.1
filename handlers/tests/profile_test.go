@@ -123,9 +123,9 @@ var ProfileTestCases = map[string]TestCase{
 		},
 		Prepare: func(repos *MockRepos) {
 			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
-				SessionId: "chertila",
-				UserId:    9,
-				Ttl:       time.Now().Add(10 * time.Hour),
+				SessionID: "chertila",
+				UserID:    9,
+				TTL:       time.Now().Add(10 * time.Hour),
 			}, true).AnyTimes()
 
 			repos.Profile.EXPECT().GetProfile(uint(5)).Return(&TestProfiles[0], true).AnyTimes()
@@ -145,9 +145,9 @@ var ProfileTestCases = map[string]TestCase{
 		},
 		Prepare: func(repos *MockRepos) {
 			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
-				SessionId: "chertila",
-				UserId:    9,
-				Ttl:       time.Now().Add(10 * time.Hour),
+				SessionID: "chertila",
+				UserID:    9,
+				TTL:       time.Now().Add(10 * time.Hour),
 			}, true).AnyTimes()
 
 			repos.Profile.EXPECT().GetProfile(uint(5)).Return(&TestProfiles[1], true).AnyTimes()

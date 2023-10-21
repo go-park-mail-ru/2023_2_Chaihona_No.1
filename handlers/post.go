@@ -41,23 +41,22 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// authorId, err := strconv.Atoi(strings.Split(r.URL.Path, "/")[3])
 	vars := mux.Vars(r)
-	authorId, err := strconv.Atoi(vars["id"])
+	authorID, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		http.Error(w, `{"error":"bad id"}`, 400)
 		return
 	}
 
-	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorId))
+	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID))
 	if errPost != nil {
 		if errors.Is(ErrorNotAuthor, errPost.Err) {
 			res := Result{Err: errPost.Err.Error()}
-			errJson, err := json.Marshal(res)
+			errJSON, err := json.Marshal(res)
 			if err != nil {
-				errJson = []byte{}
+				errJSON = []byte{}
 			}
-			http.Error(w, string(errJson), errPost.StatusCode)
+			http.Error(w, string(errJSON), errPost.StatusCode)
 			return
 		}
 		http.Error(w, `{"error":"db"}`, errPost.StatusCode)
@@ -66,8 +65,8 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 
 	cookie, _ := r.Cookie("session_id")
 	session, _ := p.Sessions.CheckSession(cookie.Value)
-	userId := session.UserId
-	profile, ok := p.Profiles.GetProfile(uint(userId))
+	userID := session.UserID
+	profile, ok := p.Profiles.GetProfile(uint(userID))
 	if !ok {
 		http.Error(w, `{"error":"very bad"}`, 400)
 		return
@@ -75,7 +74,7 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 	subscriptions := profile.Subscriptions
 	isSubscirber := false
 	for _, user := range subscriptions {
-		if user.ID == uint(authorId) {
+		if user.ID == uint(authorID) {
 			isSubscirber = true
 		}
 	}
@@ -98,7 +97,6 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result := Result{Body: BodyPosts{Posts: posts}}
-
 
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(&result)

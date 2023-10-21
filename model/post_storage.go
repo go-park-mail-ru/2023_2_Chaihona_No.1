@@ -17,7 +17,7 @@ type PostRepository interface {
 	CreateNewPost(post Post) *ErrorPost
 	DeletePost(id uint) *ErrorPost
 	GetPostById(id uint) (Post, *ErrorPost)
-	GetPostsByAuthorId(authorId uint) ([]Post, *ErrorPost)
+	GetPostsByAuthorId(authorID uint) ([]Post, *ErrorPost)
 	GetPosts() ([]Post, *ErrorPost)
 }
 

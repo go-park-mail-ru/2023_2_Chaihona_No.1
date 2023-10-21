@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	SID_LEN      = 32
-	TTL_DURATION = 10 * time.Hour
+	SIDLen      = 32
+	TTLDuration = 10 * time.Hour
 )
 
 func Authorize(users reg.UserRepository, form *LoginForm) (*model.User, error) {
@@ -40,14 +40,14 @@ func CheckAuthorization(r *http.Request, sessions SessionRepository) bool {
 	return false
 }
 
-func SetSession(w http.ResponseWriter, sessions SessionRepository, userId uint32) {
+func SetSession(w http.ResponseWriter, sessions SessionRepository, userID uint32) {
 	SID := uuid.New().String()
-	TTL := time.Now().Add(TTL_DURATION)
+	TTL := time.Now().Add(TTLDuration)
 
 	sessions.RegisterNewSession(Session{
-		SessionId: SID,
-		UserId:    userId,
-		Ttl:       TTL,
+		SessionID: SID,
+		UserID:    userID,
+		TTL:       TTL,
 	})
 
 	http.SetCookie(w, &http.Cookie{
@@ -60,17 +60,17 @@ func SetSession(w http.ResponseWriter, sessions SessionRepository, userId uint32
 	})
 }
 
-func RemoveSession(w http.ResponseWriter, sessions SessionRepository, sessionId string) error {
+func RemoveSession(w http.ResponseWriter, sessions SessionRepository, sessionID string) error {
 	EXPIRED := time.Now().Add(-1)
 
-	err := sessions.DeleteSession(sessionId)
+	err := sessions.DeleteSession(sessionID)
 	if err != nil {
 		return err
 	}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_id",
-		Value:    sessionId,
+		Value:    sessionID,
 		Expires:  EXPIRED,
 		HttpOnly: true,
 		SameSite: http.SameSiteNoneMode,
