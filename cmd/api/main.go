@@ -37,7 +37,7 @@ func main() {
 	r := mux.NewRouter()
 
 	r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
-	r.HandleFunc("/api/v1/login", rep.Login).Methods("POST")
+	r.HandleFunc("/api/v1/login", handlers.NewWrapper(rep.LoginStrategy).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/logout", rep.Logout).Methods("POST")
 	r.HandleFunc("/api/v1/registration", handlers.NewWrapper(rep.SignupStrategy).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")

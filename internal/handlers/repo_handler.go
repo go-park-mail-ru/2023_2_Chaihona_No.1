@@ -122,6 +122,23 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (api *RepoHandler) LoginStrategy(ctx context.Context, form auth.LoginForm) (*Result, error){
+	loginForm := &auth.LoginForm{}
+
+	user, err := auth.Authorize(api.users, loginForm)
+	if err != nil {
+		return nil, err
+	}
+
+	auth.SetSessionContext(ctx, api.sessions, uint32(user.ID))
+
+	bodyResponse := map[string]interface{}{
+		"id": user.ID,
+	}
+
+	return &Result{Body: bodyResponse}, nil
+}
+
 func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 
