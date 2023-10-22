@@ -11,6 +11,7 @@ import (
 	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
+	configs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/testdata"
 )
 
@@ -44,6 +45,6 @@ func main() {
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
 
 	fmt.Println("Server started")
-	err := http.ListenAndServe(":8001", r)
+	err := http.ListenAndServe(configs.BackendServerPort, r)
 	fmt.Println(err)
 }
