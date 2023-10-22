@@ -6,12 +6,12 @@ import (
 
 	"github.com/gorilla/mux"
 
+	configs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
 	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
-	configs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/testdata"
 )
 
@@ -39,7 +39,7 @@ func main() {
 	r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
 	r.HandleFunc("/api/v1/login", rep.Login).Methods("POST")
 	r.HandleFunc("/api/v1/logout", rep.Logout).Methods("POST")
-	r.HandleFunc("/api/v1/registration", rep.Signup).Methods("POST")
+	r.HandleFunc("/api/v1/registration", handlers.NewWrapper(rep.SignupStrategy).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")

@@ -1,21 +1,18 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
-	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
-	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/registration"
 	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
-)
-
-const (
-	maxBytesToRead = 1024 * 2
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
+	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/registration"
 )
 
 type RepoHandler struct {
@@ -36,6 +33,36 @@ func CreateRepoHandler(
 	}
 }
 
+
+func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm) (*Result, error) {
+	user := &model.User{
+		Login: form.Login,
+		Password: form.Password,
+		UserType: form.UserType,
+	}
+
+	errReg := api.users.RegisterNewUser(user)
+	if errReg != nil {
+		return nil, errReg
+	}
+
+	profile := model.Profile{
+		User: *user,
+	}
+
+	errReg = api.profiles.RegisterNewProfile(&profile)
+	if errReg != nil {
+		return nil, errReg
+	}
+
+	auth.SetSessionContext(ctx, api.sessions, uint32(user.ID))
+
+	bodyResponse := map[string]interface{}{
+		"id": user.ID,
+	}
+
+	return &Result{Body: bodyResponse}, nil
+}
 
 func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)

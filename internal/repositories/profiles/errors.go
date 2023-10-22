@@ -10,7 +10,7 @@ var (
 )
 
 type ErrorProfileRegistration struct {
-	Err        error
+	Err        error `json:"error"`
 	StatusCode int
 }
 

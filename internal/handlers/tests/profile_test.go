@@ -12,10 +12,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 
-	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/authorization"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/handlers"
-	mocks "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/handlers/mock_model"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
+	// auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/authorization"
+	// "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/handlers"
+	// mocks "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/handlers/mock_model"
+	// "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
 )
 
 var TestProfiles = []model.Profile{

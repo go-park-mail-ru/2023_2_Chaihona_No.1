@@ -24,3 +24,11 @@ func (form SignupForm) Validate() (*model.User, error) {
 
 	return nil, ErrBodySignUpValidation
 }
+
+func (form SignupForm) IsValide() bool {
+	isLenCorrect := len(form.Login) > 0 && len(form.Password) > 0
+	isUserTypeCorrect := form.UserType == "simple_user" || form.UserType == "creator"
+
+
+	return isLenCorrect && isUserTypeCorrect
+}

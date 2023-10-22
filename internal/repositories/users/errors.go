@@ -11,7 +11,7 @@ var (
 )
 
 type ErrorUserRegistration struct {
-	Err        error
+	Err        error `json:"error"`
 	StatusCode int
 }
 

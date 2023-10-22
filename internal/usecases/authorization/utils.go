@@ -1,6 +1,7 @@
 package authorization
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -16,6 +17,16 @@ const (
 	TTLDuration = 10 * time.Hour
 )
 
+type writerKey struct{}
+
+func AddWriter(ctx context.Context, w http.ResponseWriter) context.Context {
+	return context.WithValue(ctx, writerKey{}, w)
+}
+
+func GetWriter(ctx context.Context) http.ResponseWriter {
+	return ctx.Value(writerKey{}).(http.ResponseWriter)
+}
+
 func Authorize(users usrep.UserRepository, form *LoginForm) (*model.User, error) {
 	user, ok := users.CheckUser(form.Login)
 
@@ -30,6 +41,7 @@ func Authorize(users usrep.UserRepository, form *LoginForm) (*model.User, error)
 	return user, nil
 }
 
+// стоит заменить на мидлвару в будущем думаю
 func CheckAuthorization(r *http.Request, sessions sessrep.SessionRepository) bool {
 	session, err := r.Cookie("session_id")
 
@@ -39,6 +51,28 @@ func CheckAuthorization(r *http.Request, sessions sessrep.SessionRepository) boo
 	}
 
 	return false
+}
+
+func SetSessionContext(ctx context.Context, sessions sessrep.SessionRepository, userID uint32) {
+	w := GetWriter(ctx)
+
+	SID := uuid.New().String()
+	TTL := time.Now().Add(TTLDuration)
+
+	sessions.RegisterNewSession(sessrep.Session{
+		SessionID: SID,
+		UserID:    userID,
+		TTL:       TTL,
+	})
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    SID,
+		Expires:  TTL,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   false,
+	})
 }
 
 func SetSession(w http.ResponseWriter, sessions sessrep.SessionRepository, userID uint32) {
@@ -59,6 +93,28 @@ func SetSession(w http.ResponseWriter, sessions sessrep.SessionRepository, userI
 		SameSite: http.SameSiteLaxMode,
 		Secure:   false,
 	})
+}
+
+func RemoveSessionContext(ctx context.Context, sessions sessrep.SessionRepository, sessionID string) error {
+	w := GetWriter(ctx)
+
+	EXPIRED := time.Now().Add(-1)
+
+	err := sessions.DeleteSession(sessionID)
+	if err != nil {
+		return err
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "session_id",
+		Value:    sessionID,
+		Expires:  EXPIRED,
+		HttpOnly: true,
+		SameSite: http.SameSiteNoneMode,
+		Secure:   false, // пока http
+	})
+
+	return err
 }
 
 func RemoveSession(w http.ResponseWriter, sessions sessrep.SessionRepository, sessionID string) error {

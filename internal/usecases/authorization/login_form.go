@@ -8,3 +8,7 @@ type LoginForm struct {
 func (form LoginForm) Validate() bool {
 	return len(form.Login) > 0 && len(form.Password) > 0
 }
+
+func (form LoginForm) IsValide() bool {
+	return len(form.Login) > 0 && len(form.Password) > 0
+}
