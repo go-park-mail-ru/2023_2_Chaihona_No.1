@@ -16,6 +16,7 @@ const (
 
 type IValidatable interface {
 	IsValide() bool
+	IsEmpty() bool
 }
 
 type Wrapper[Req IValidatable, Resp any] struct {
@@ -42,20 +43,22 @@ func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	if err == nil {
 		ctx = context.WithValue(ctx, sessionIDKey{}, cookie)
 	}
-	
+
 	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
 
 	var request Req
-	err = json.NewDecoder(body).Decode(&request)
-	if err != nil {
-		WriteHttpError(w, ErrDecoding)
-		log.Println(err)
-		return
-	}
+	if !request.IsEmpty() {
+		err = json.NewDecoder(body).Decode(&request)
+		if err != nil {
+			WriteHttpError(w, ErrDecoding)
+			log.Println(err)
+			return
+		}
 
-	if !request.IsValide() {
-		WriteHttpError(w, ErrValidation)
-		return
+		if !request.IsValide() {
+			WriteHttpError(w, ErrValidation)
+			return
+		}
 	}
 
 	response, err := wrapper.fn(ctx, request)

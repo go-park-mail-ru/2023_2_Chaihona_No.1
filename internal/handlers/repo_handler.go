@@ -20,6 +20,16 @@ type RepoHandler struct {
 	profiles profsrep.ProfileRepository
 }
 
+type EmptyForm struct{}
+
+func (f EmptyForm) IsValide() bool {
+	return true
+}
+
+func (f EmptyForm) IsEmpty() bool {
+	return true
+}
+
 func CreateRepoHandler(
 	sessions sessrep.SessionRepository,
 	users usrep.UserRepository,
@@ -75,12 +85,6 @@ func (api *RepoHandler) LoginStrategy(ctx context.Context, form auth.LoginForm) 
 	}
 
 	return &Result{Body: bodyResponse}, nil
-}
-
-type EmptyForm struct{}
-
-func (f EmptyForm) IsValide() bool {
-	return true
 }
 
 func (api *RepoHandler) LogoutStrategy(ctx context.Context, form EmptyForm) (Result, error) {

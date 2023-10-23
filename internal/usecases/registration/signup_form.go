@@ -32,3 +32,7 @@ func (form SignupForm) IsValide() bool {
 
 	return isLenCorrect && isUserTypeCorrect
 }
+
+func (form SignupForm) IsEmpty() bool {
+	return false
+}
