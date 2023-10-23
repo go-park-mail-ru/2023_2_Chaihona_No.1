@@ -88,7 +88,7 @@ func (api *RepoHandler) LoginStrategy(ctx context.Context, form auth.LoginForm) 
 }
 
 func (api *RepoHandler) LogoutStrategy(ctx context.Context, form EmptyForm) (Result, error) {
-	session := ctx.Value(sessionIDKey{}).(*http.Cookie)
+	session := auth.GetSession(ctx)
 	if session == nil {
 		return Result{}, ErrLogoutCookie
 	}
@@ -118,7 +118,7 @@ func (api *RepoHandler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *RepoHandler) IsAuthorizedStrategy(ctx context.Context, form EmptyForm) (Result, error) {
-	if auth.CheckAuthorizationByCookie(ctx.Value(sessionIDKey{}).(*http.Cookie), api.sessions) {
+	if auth.CheckAuthorizationByContext(ctx, api.sessions) {
 		return Result{Body: map[string]interface{}{"is_authorized": true}}, nil
 	}
 

@@ -30,18 +30,15 @@ func NewWrapper[Req IValidatable, Resp any](fn func(ctx context.Context, req Req
 	}
 }
 
-type sessionIDKey struct{}
-type routesVarsKey struct{}
-
 func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 	w.Header().Add("Content-Type", "application/json")
 
 	ctx := auth.AddWriter(r.Context(), w)
-	ctx = context.WithValue(ctx, routesVarsKey{}, mux.Vars(r))
+	ctx = auth.AddVars(ctx, mux.Vars(r))
 	cookie, err := r.Cookie("session_id")
 	if err == nil {
-		ctx = context.WithValue(ctx, sessionIDKey{}, cookie)
+		ctx = auth.AddSession(ctx, cookie)
 	}
 
 	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)

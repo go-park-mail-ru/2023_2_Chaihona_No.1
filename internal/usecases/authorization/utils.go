@@ -17,16 +17,6 @@ const (
 	TTLDuration = 10 * time.Hour
 )
 
-type writerKey struct{}
-
-func AddWriter(ctx context.Context, w http.ResponseWriter) context.Context {
-	return context.WithValue(ctx, writerKey{}, w)
-}
-
-func GetWriter(ctx context.Context) http.ResponseWriter {
-	return ctx.Value(writerKey{}).(http.ResponseWriter)
-}
-
 func Authorize(users usrep.UserRepository, form *LoginForm) (*model.User, error) {
 	user, ok := users.CheckUser(form.Login)
 
@@ -54,7 +44,9 @@ func CheckAuthorization(r *http.Request, sessions sessrep.SessionRepository) boo
 }
 
 // стоит заменить на мидлвару в будущем думаю
-func CheckAuthorizationByCookie(session *http.Cookie, sessions sessrep.SessionRepository) bool {
+func CheckAuthorizationByContext(ctx context.Context, sessions sessrep.SessionRepository) bool {
+	session := GetSession(ctx)
+	
 	if session != nil {
 		_, authorized := sessions.CheckSession(session.Value)
 		return authorized
