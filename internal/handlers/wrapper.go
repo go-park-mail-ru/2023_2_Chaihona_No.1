@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 )
 
 const (
@@ -46,7 +48,7 @@ func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	AddAllowHeaders(w)
 	w.Header().Add("Content-Type", "application/json")
 
-	ctx := r.Context()
+	ctx := auth.AddWriter(r.Context(), w)
 
 	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
 
