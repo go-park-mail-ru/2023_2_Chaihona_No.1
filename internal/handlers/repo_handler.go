@@ -63,9 +63,7 @@ func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm)
 }
 
 func (api *RepoHandler) LoginStrategy(ctx context.Context, form auth.LoginForm) (*Result, error) {
-	loginForm := &auth.LoginForm{}
-
-	user, err := auth.Authorize(api.users, loginForm)
+	user, err := auth.Authorize(api.users, &form)
 	if err != nil {
 		return nil, err
 	}
