@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
-	"encoding/json"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
@@ -19,8 +19,40 @@ type ErrorHttp struct {
 }
 
 func (e ErrorHttp) Error() string {
-	return e.Msg + fmt.Sprintf("(with status code %d)", e.StatusCode)
+	return e.Msg + fmt.Sprintf(" with status code (%d)", e.StatusCode)
 }
+
+var (
+	ErrValidation = ErrorHttp{
+		StatusCode: http.StatusBadRequest,
+		Msg:        `{"error":"user_validation"}`,
+	}
+
+	ErrDecoding = ErrorHttp{
+		StatusCode: http.StatusBadRequest,
+		Msg:        `{"error":"wrong_json"}`,
+	}
+
+	ErrEncoding = ErrorHttp{
+		StatusCode: http.StatusInternalServerError,
+		Msg:        `{"error":"encoding_json"}`,
+	}
+
+	ErrLogoutCookie = ErrorHttp{
+		StatusCode: http.StatusBadRequest,
+		Msg:        `{"error":"user_logout_no_cookie"}`,
+	}
+
+	ErrLogoutDeleteSession = ErrorHttp{
+		StatusCode: http.StatusInternalServerError,
+		Msg:        `{"error":"user_logout_cant_delete_session"}`,
+	}
+
+	ErrUnathorized = ErrorHttp{
+		StatusCode: http.StatusUnauthorized,
+		Msg:        `{"error":"user_unauthorized"}`,
+	}
+)
 
 func WriteHttpError(w http.ResponseWriter, err error) {
 	switch err.(type) {
@@ -37,7 +69,7 @@ func WriteHttpError(w http.ResponseWriter, err error) {
 		err := err.(users.ErrorUserRegistration)
 		jsonErr, _ := json.Marshal(err)
 		http.Error(w, string(jsonErr), err.StatusCode)
-	
+
 	case profiles.ErrorProfileRegistration:
 		err := err.(profiles.ErrorProfileRegistration)
 		jsonErr, _ := json.Marshal(err)
@@ -46,5 +78,5 @@ func WriteHttpError(w http.ResponseWriter, err error) {
 	default:
 		jsonErr, _ := json.Marshal(err)
 		http.Error(w, string(jsonErr), http.StatusInternalServerError)
-	}	
+	}
 }

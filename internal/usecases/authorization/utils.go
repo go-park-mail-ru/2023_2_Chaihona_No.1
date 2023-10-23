@@ -53,6 +53,16 @@ func CheckAuthorization(r *http.Request, sessions sessrep.SessionRepository) boo
 	return false
 }
 
+// стоит заменить на мидлвару в будущем думаю
+func CheckAuthorizationByCookie(session *http.Cookie, sessions sessrep.SessionRepository) bool {
+	if session != nil {
+		_, authorized := sessions.CheckSession(session.Value)
+		return authorized
+	}
+
+	return false
+}
+
 func SetSessionContext(ctx context.Context, sessions sessrep.SessionRepository, userID uint32) {
 	w := GetWriter(ctx)
 

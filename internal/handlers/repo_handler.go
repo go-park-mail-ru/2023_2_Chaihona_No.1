@@ -33,7 +33,6 @@ func CreateRepoHandler(
 	}
 }
 
-
 func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm) (*Result, error) {
 	user := &model.User{
 		Login: form.Login,
@@ -64,64 +63,6 @@ func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm)
 	return &Result{Body: bodyResponse}, nil
 }
 
-func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
-
-	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
-
-	decoder := json.NewDecoder(body)
-	regForm := &reg.SignupForm{}
-
-	err := decoder.Decode(regForm)
-	if err != nil {
-		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
-		return
-	}
-
-	user, err := regForm.Validate()
-	if err != nil {
-		http.Error(w, `{"error":"user_validation"}`, http.StatusBadRequest)
-		return
-	}
-
-	errReg := api.users.RegisterNewUser(user)
-	if err != nil {
-		switch errReg.(type) {
-		case usrep.ErrorUserRegistration:
-			errReg := errReg.(usrep.ErrorUserRegistration)
-			http.Error(w, fmt.Sprintf(`{"error":"%v"}`, errReg.Err), errReg.StatusCode)
-			return
-		}
-	}
-
-	profile := model.Profile{
-		User: *user,
-	}
-
-	errReg = api.profiles.RegisterNewProfile(&profile)
-	if errReg != nil {
-		switch errReg.(type) {
-		case profsrep.ErrorProfileRegistration:
-			errReg := errReg.(profsrep.ErrorProfileRegistration)
-			http.Error(w, fmt.Sprintf(`{"error":"%v"}`, errReg.Err), errReg.StatusCode)
-			return
-		}
-	}
-
-	auth.SetSession(w, api.sessions, uint32(user.ID))
-
-	bodyResponse := map[string]interface{}{
-		"id": user.ID,
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(&Result{Body: bodyResponse})
-	if err != nil {
-		log.Println(err)
-	}
-}
-
 func (api *RepoHandler) LoginStrategy(ctx context.Context, form auth.LoginForm) (*Result, error){
 	loginForm := &auth.LoginForm{}
 
@@ -139,41 +80,22 @@ func (api *RepoHandler) LoginStrategy(ctx context.Context, form auth.LoginForm) 
 	return &Result{Body: bodyResponse}, nil
 }
 
-func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
+type EmptyForm struct{}
 
-	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
-
-	decoder := json.NewDecoder(body)
-	loginForm := &auth.LoginForm{}
-
-	err := decoder.Decode(loginForm)
-	if err != nil {
-		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
-		return
+func (api *RepoHandler) LogoutStrategy(ctx context.Context, form EmptyForm) (Result, error) {
+	session := ctx.Value(sessionIDKey{}).(*http.Cookie)
+	if session == nil {
+		return Result{}, ErrLogoutCookie
 	}
 
-	user, err := auth.Authorize(api.users, loginForm)
-	if err != nil {
-		http.Error(w, `{"error":"wrong_input"}`, http.StatusBadRequest)
-		return
-	}
-
-	auth.SetSession(w, api.sessions, uint32(user.ID))
-
-	w.WriteHeader(http.StatusOK)
-
-	bodyResponse := map[string]interface{}{
-		"id": user.ID,
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(&Result{Body: bodyResponse})
-	if err != nil {
-		log.Println(err)
+	err := auth.RemoveSessionContext(ctx, api.sessions, session.Value)
+	if err == nil {
+		return Result{}, nil
+	} else {
+		return Result{}, ErrLogoutDeleteSession
 	}
 }
+
 
 func (api *RepoHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
@@ -189,6 +111,15 @@ func (api *RepoHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Error(w, `{"error":"user_logout"}`, http.StatusInternalServerError)
 	}
+}
+
+
+func (api *RepoHandler) IsAuthorizedStrategy(ctx context.Context, form EmptyForm) (Result, error) {
+	if auth.CheckAuthorizationByCookie(ctx.Value(sessionIDKey{}).(*http.Cookie), api.sessions) {
+		return Result{Body: map[string]interface{}{"is_authorized": true}}, nil
+	}
+	
+	return Result{Body: map[string]interface{}{"is_authorized": false}}, ErrUnathorized
 }
 
 func (api *RepoHandler) IsAuthorized(w http.ResponseWriter, r *http.Request) {

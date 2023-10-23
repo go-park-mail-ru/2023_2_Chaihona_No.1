@@ -7,27 +7,11 @@ import (
 	"net/http"
 
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
+	"github.com/gorilla/mux"
 )
 
 const (
 	maxBytesToRead = 1024 * 2
-)
-
-var (
-	validationErr = ErrorHttp{
-		StatusCode: http.StatusBadRequest,
-		Msg:        `{"error":"user_validation"}`,
-	}
-
-	decodingErr = ErrorHttp{
-		StatusCode: http.StatusBadRequest,
-		Msg:        `{"error":"wrong_json"}`,
-	}
-
-	encodingErr = ErrorHttp{
-		StatusCode: http.StatusInternalServerError,
-		Msg:        `{"error":"encoding_json"}`,
-	}
 )
 
 type IValidatable interface {
@@ -38,29 +22,38 @@ type Wrapper[Req IValidatable, Resp any] struct {
 	fn func(ctx context.Context, req Req) (Resp, error)
 }
 
+// возможно хорошо бы валидатор отдельно сделать, но пока так
 func NewWrapper[Req IValidatable, Resp any](fn func(ctx context.Context, req Req) (Resp, error)) *Wrapper[Req, Resp] {
 	return &Wrapper[Req, Resp]{
 		fn: fn,
 	}
 }
 
+type sessionIDKey struct{}
+type routesVarsKey struct{}
+
 func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 	w.Header().Add("Content-Type", "application/json")
 
 	ctx := auth.AddWriter(r.Context(), w)
+	ctx = context.WithValue(ctx, routesVarsKey{}, mux.Vars(r))
+	cookie, err := r.Cookie("session_id")
+	if err == nil {
+		ctx = context.WithValue(ctx, sessionIDKey{}, cookie)
+	}
 
 	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
 
 	var request Req
-	err := json.NewDecoder(body).Decode(&request)
+	err = json.NewDecoder(body).Decode(&request)
 	if err != nil {
-		WriteHttpError(w, decodingErr)
+		WriteHttpError(w, ErrDecoding)
 		return
 	}
 
 	if !request.IsValide() {
-		WriteHttpError(w, validationErr)
+		WriteHttpError(w, ErrValidation)
 		return
 	}
 
@@ -73,7 +66,7 @@ func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Reque
 
 	rawJSON, err := json.Marshal(response)
 	if err != nil {
-		WriteHttpError(w, encodingErr)
+		WriteHttpError(w, ErrEncoding)
 		return
 	}
 
