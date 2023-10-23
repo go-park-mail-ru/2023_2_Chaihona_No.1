@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -35,7 +34,7 @@ func CreateRepoHandler(
 
 func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm) (*Result, error) {
 	user := &model.User{
-		Login: form.Login,
+		Login:    form.Login,
 		Password: form.Password,
 		UserType: form.UserType,
 	}
@@ -63,7 +62,7 @@ func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm)
 	return &Result{Body: bodyResponse}, nil
 }
 
-func (api *RepoHandler) LoginStrategy(ctx context.Context, form auth.LoginForm) (*Result, error){
+func (api *RepoHandler) LoginStrategy(ctx context.Context, form auth.LoginForm) (*Result, error) {
 	loginForm := &auth.LoginForm{}
 
 	user, err := auth.Authorize(api.users, loginForm)
@@ -82,6 +81,10 @@ func (api *RepoHandler) LoginStrategy(ctx context.Context, form auth.LoginForm) 
 
 type EmptyForm struct{}
 
+func (f EmptyForm) IsValide() bool {
+	return true
+}
+
 func (api *RepoHandler) LogoutStrategy(ctx context.Context, form EmptyForm) (Result, error) {
 	session := ctx.Value(sessionIDKey{}).(*http.Cookie)
 	if session == nil {
@@ -95,7 +98,6 @@ func (api *RepoHandler) LogoutStrategy(ctx context.Context, form EmptyForm) (Res
 		return Result{}, ErrLogoutDeleteSession
 	}
 }
-
 
 func (api *RepoHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
@@ -113,12 +115,11 @@ func (api *RepoHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
 func (api *RepoHandler) IsAuthorizedStrategy(ctx context.Context, form EmptyForm) (Result, error) {
 	if auth.CheckAuthorizationByCookie(ctx.Value(sessionIDKey{}).(*http.Cookie), api.sessions) {
 		return Result{Body: map[string]interface{}{"is_authorized": true}}, nil
 	}
-	
+
 	return Result{Body: map[string]interface{}{"is_authorized": false}}, ErrUnathorized
 }
 
