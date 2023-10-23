@@ -42,7 +42,8 @@ func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	if err == nil {
 		ctx = context.WithValue(ctx, sessionIDKey{}, cookie)
 	}
-
+	
+	defer log.Println(err)
 	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
 
 	var request Req
