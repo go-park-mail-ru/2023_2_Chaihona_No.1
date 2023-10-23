@@ -43,13 +43,13 @@ func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		ctx = context.WithValue(ctx, sessionIDKey{}, cookie)
 	}
 	
-	defer log.Println(err)
 	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
 
 	var request Req
 	err = json.NewDecoder(body).Decode(&request)
 	if err != nil {
 		WriteHttpError(w, ErrDecoding)
+		log.Println(err)
 		return
 	}
 
@@ -67,6 +67,7 @@ func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Reque
 
 	rawJSON, err := json.Marshal(response)
 	if err != nil {
+		log.Println(err)
 		WriteHttpError(w, ErrEncoding)
 		return
 	}
