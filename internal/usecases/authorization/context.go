@@ -10,7 +10,11 @@ type sessionIDKey struct{}
 type routesVarsKey struct{}
 
 func GetSession(ctx context.Context) *http.Cookie {
-	return ctx.Value(sessionIDKey{}).(*http.Cookie)
+	if ctx.Value(sessionIDKey{}) != nil {
+		return ctx.Value(sessionIDKey{}).(*http.Cookie)
+	}
+
+	return nil
 }
 
 func AddSession(ctx context.Context, cookie *http.Cookie) context.Context {
@@ -18,7 +22,11 @@ func AddSession(ctx context.Context, cookie *http.Cookie) context.Context {
 }
 
 func GetVars(ctx context.Context) map[string]string {
-	return ctx.Value(routesVarsKey{}).(map[string]string)
+	if ctx.Value(routesVarsKey{}) != nil {
+		return ctx.Value(routesVarsKey{}).(map[string]string)
+	}
+
+	return nil
 }
 
 func AddVars(ctx context.Context, vars map[string]string) context.Context {
@@ -30,5 +38,9 @@ func AddWriter(ctx context.Context, w http.ResponseWriter) context.Context {
 }
 
 func GetWriter(ctx context.Context) http.ResponseWriter {
-	return ctx.Value(writerKey{}).(http.ResponseWriter)
+	if ctx.Value(writerKey{}) != nil {
+		return ctx.Value(writerKey{}).(http.ResponseWriter)
+	}
+
+	return nil
 }
