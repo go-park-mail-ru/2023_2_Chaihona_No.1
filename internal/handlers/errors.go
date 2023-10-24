@@ -67,6 +67,16 @@ var (
 		StatusCode: http.StatusBadRequest,
 		Msg:        `{"error":"no vars"}`,
 	}
+
+	ErrNoCookie = ErrorHttp{
+		StatusCode: http.StatusBadRequest,
+		Msg:        `{"error":"no cookie"}`,
+	}
+
+	ErrNoProfile = ErrorHttp{
+		StatusCode: http.StatusBadRequest,
+		Msg:        `{"error":"no profile"}`,
+	}
 )
 
 func WriteHttpError(w http.ResponseWriter, err error) {
