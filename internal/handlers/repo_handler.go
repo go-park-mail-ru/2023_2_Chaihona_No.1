@@ -2,9 +2,6 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
-	"log"
-	"net/http"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
@@ -101,46 +98,10 @@ func (api *RepoHandler) LogoutStrategy(ctx context.Context, form EmptyForm) (Res
 	}
 }
 
-func (api *RepoHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
-	session, err := r.Cookie("session_id")
-	if err != nil {
-		http.Error(w, `{"error":"user_logout"}`, http.StatusBadRequest)
-		return
-	}
-
-	err = auth.RemoveSession(w, api.sessions, session.Value)
-	if err == nil {
-		w.WriteHeader(http.StatusOK)
-	} else {
-		http.Error(w, `{"error":"user_logout"}`, http.StatusInternalServerError)
-	}
-}
-
 func (api *RepoHandler) IsAuthorizedStrategy(ctx context.Context, form EmptyForm) (Result, error) {
 	if auth.CheckAuthorizationByContext(ctx, api.sessions) {
 		return Result{Body: map[string]interface{}{"is_authorized": true}}, nil
 	}
 
 	return Result{Body: map[string]interface{}{"is_authorized": false}}, nil
-}
-
-func (api *RepoHandler) IsAuthorized(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
-	w.Header().Add("Content-Type", "application/json")
-	if auth.CheckAuthorization(r, api.sessions) {
-		w.WriteHeader(http.StatusOK)
-		err := json.NewEncoder(w).
-			Encode(&Result{Body: map[string]interface{}{"is_authorized": true}})
-		if err != nil {
-			log.Println(err)
-		}
-		return
-	}
-	w.WriteHeader(http.StatusUnauthorized)
-	err := json.NewEncoder(w).
-		Encode(&Result{Body: map[string]interface{}{"is_authorized": false}})
-	if err != nil {
-		log.Println(err)
-	}
 }
