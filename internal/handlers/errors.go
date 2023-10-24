@@ -50,7 +50,22 @@ var (
 
 	ErrUnathorized = ErrorHttp{
 		StatusCode: http.StatusUnauthorized,
-		Msg:        `{"error":"user_unauthorized"}`,
+		Msg:        `{"error":"unauthorized"}`,
+	}
+
+	ErrDataBase = ErrorHttp{
+		StatusCode: http.StatusInternalServerError,
+		Msg:        `{"error":"db"}`,
+	}
+
+	ErrBadID = ErrorHttp{
+		StatusCode: http.StatusBadRequest,
+		Msg:        `{"error":"bad id"}`,
+	}
+
+	ErrNoVars = ErrorHttp{
+		StatusCode: http.StatusBadRequest,
+		Msg:        `{"error":"no vars"}`,
 	}
 )
 

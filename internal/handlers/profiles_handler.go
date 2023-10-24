@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -8,10 +9,10 @@ import (
 
 	"github.com/gorilla/mux"
 
-	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 )
 
 type BodyProfile struct {
@@ -60,4 +61,28 @@ func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+		return Result{}, ErrUnathorized
+	}
+
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	} 
+	
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return Result{}, ErrBadID
+	}
+
+	profile, ok := p.Profiles.GetProfile(uint(id))
+	if !ok {
+		return Result{}, ErrDataBase
+	}
+
+	return Result{Body: BodyProfile{Profile: *profile}}, nil
+	
 }
