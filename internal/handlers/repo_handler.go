@@ -122,7 +122,7 @@ func (api *RepoHandler) IsAuthorizedStrategy(ctx context.Context, form EmptyForm
 		return Result{Body: map[string]interface{}{"is_authorized": true}}, nil
 	}
 
-	return Result{Body: map[string]interface{}{"is_authorized": false}}, ErrUnathorized
+	return Result{Body: map[string]interface{}{"is_authorized": false}}, nil
 }
 
 func (api *RepoHandler) IsAuthorized(w http.ResponseWriter, r *http.Request) {
