@@ -1,50 +1,57 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"net/http"
+	"os"
 
-	"github.com/gorilla/mux"
-
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
-	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
-	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
-	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
-	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
-	configs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/testdata"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
-	sessionStorage := sessrep.CreateSessionStorage()
-	userStoarge := usrep.CreateUserStorage()
-	profileStorage := profsrep.CreateProfileStorage()
-	postStorage := postsrep.CreatePostStorage()
-
-	for _, testUser := range testdata.Users {
-		userStoarge.RegisterNewUser(&testUser)
+	conn, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
 	}
-	for _, testProfile := range testdata.Profiles {
-		profileStorage.RegisterNewProfile(&testProfile)
-	}
-	for _, testPost := range testdata.Posts {
-		postStorage.CreateNewPost(testPost)
+	defer conn.Close()
+	var greeting string
+	err = conn.QueryRow(context.Background(), "select 'Hello, world!'").Scan(&greeting)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
+		os.Exit(1)
 	}
 
-	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, profileStorage)
-	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, profileStorage)
-	postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, profileStorage)
-	r := mux.NewRouter()
+	fmt.Println(greeting)
+	// sessionStorage := sessrep.CreateSessionStorage()
+	// userStoarge := usrep.CreateUserStorage()
+	// profileStorage := profsrep.CreateProfileStorage()
+	// postStorage := postsrep.CreatePostStorage()
 
-	r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
-	r.HandleFunc("/api/v1/login", rep.Login).Methods("POST")
-	r.HandleFunc("/api/v1/logout", rep.Logout).Methods("POST")
-	r.HandleFunc("/api/v1/registration", rep.Signup).Methods("POST")
-	r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")
-	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
-	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
+	// for _, testUser := range testdata.Users {
+	// 	userStoarge.RegisterNewUser(&testUser)
+	// }
+	// for _, testProfile := range testdata.Profiles {
+	// 	profileStorage.RegisterNewProfile(&testProfile)
+	// }
+	// for _, testPost := range testdata.Posts {
+	// 	postStorage.CreateNewPost(testPost)
+	// }
 
-	fmt.Println("Server started")
-	err := http.ListenAndServe(configs.BackendServerPort, r)
-	fmt.Println(err)
+	// rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, profileStorage)
+	// profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, profileStorage)
+	// postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, profileStorage)
+	// r := mux.NewRouter()
+
+	// r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
+	// r.HandleFunc("/api/v1/login", rep.Login).Methods("POST")
+	// r.HandleFunc("/api/v1/logout", rep.Logout).Methods("POST")
+	// r.HandleFunc("/api/v1/registration", rep.Signup).Methods("POST")
+	// r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")
+	// r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
+	// r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
+
+	// fmt.Println("Server started")
+	// err := http.ListenAndServe(configs.BackendServerPort, r)
+	// fmt.Println(err)
 }
