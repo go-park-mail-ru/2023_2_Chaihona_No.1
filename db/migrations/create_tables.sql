@@ -10,8 +10,8 @@ CREATE TABLE user
     avatar_path     varchar(100) DEFAULT 'static/default_avatar.png',
     background_path varchar(100) DEFAULT 'static/default_background.png',
     description     text,
-    creation_date   timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    last_update     timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    created_at   timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at     timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
 );
 
 CREATE TABLE notification
@@ -24,8 +24,8 @@ CREATE TABLE notification
                   FOREIGN KEY (user_id) 
                   REFERENCES user (id) 
                   ON DELETE CASCADE
-    creation_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-    last_update   timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at   timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
 );
 
 CREATE TABLE subscription_level
@@ -49,8 +49,8 @@ CREATE TABLE subscription_level
                   FOREIGN KEY (creator_id) 
                   REFERENCES user (id) 
                   ON DELETE CASCADE,
-  creation_date   timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-  last_update     timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  created_at   timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  updated_at     timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
 );
 
 CREATE TABLE post
@@ -69,8 +69,8 @@ CREATE TABLE post
                             FOREIGN KEY (min_subscription_level_id) 
                             REFERENCES subscription_level (id) 
                             ON DELETE RESTRICT,
-  creation_date             timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-  last_update               timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  created_at             timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  updated_at               timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
 );
 
 CREATE TABLE post_attach
@@ -83,7 +83,7 @@ CREATE TABLE post_attach
                   FOREIGN KEY (post_id) 
                   REFERENCES post (id) 
                   ON DELETE CASCADE
-  creation_date   timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  created_at   timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
 );
 
 CREATE TABLE payment
@@ -107,8 +107,8 @@ CREATE TABLE payment
                      FOREIGN KEY (creator_id) 
                      REFERENCES user (id) 
                      ON DELETE RESTRICT,
-  creation_date      timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-  last_update        timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  created_at      timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  updated_at        timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
 );
 
 CREATE TABLE post_comment
@@ -126,8 +126,8 @@ CREATE TABLE post_comment
                 FOREIGN KEY (post_id) 
                 REFERENCES post (id) 
                 ON DELETE CASCADE,
-  creation_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-  last_update   timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  updated_at   timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
 );
 
 CREATE TABLE post_like
@@ -144,7 +144,7 @@ CREATE TABLE post_like
                 FOREIGN KEY (post_id) 
                 REFERENCES post (id) 
                 ON DELETE CASCADE,
-  creation_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
 );
 
 CREATE TABLE subscription
@@ -166,6 +166,6 @@ CREATE TABLE subscription
                        FOREIGN KEY (subscription_level_id) 
                        REFERENCES subscription_level (id) 
                        ON DELETE RESTRICT,
- creation_date      timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
- last_update        timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+ created_at      timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+ updated_at        timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
 );
