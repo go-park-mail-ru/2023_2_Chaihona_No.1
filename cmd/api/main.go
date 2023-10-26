@@ -9,6 +9,8 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
 	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	levels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscribe_levels"
+	subs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	"github.com/gorilla/mux"
 )
@@ -45,7 +47,9 @@ func main() {
 
 	sessionStorage := sessrep.CreateSessionStorage()
 	userStoarge := usrep.CreateUserStorage(db.GetDB())
-	profileStorage := profsrep.CreateProfileStorage()
+	profileStorage := profsrep.CreateProfileStorage(db.GetDB())
+	levelStorage := levels.CreateSubscribeLevelStorage(db.GetDB())
+	subsStorage := subs.CreateSubscriptionsStorage(db.GetDB())
 	// postStorage := postsrep.CreatePostStorage()
 
 	// for _, testUser := range testdata.Users {
@@ -59,7 +63,7 @@ func main() {
 	// }
 
 	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, profileStorage)
-	// profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, profileStorage)
+	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, profileStorage, userStoarge, levelStorage, subsStorage)
 	// postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, profileStorage)
 	r := mux.NewRouter()
 
@@ -68,7 +72,7 @@ func main() {
 	r.HandleFunc("/api/v1/logout", rep.Logout).Methods("POST")
 	r.HandleFunc("/api/v1/registration", rep.Signup).Methods("POST")
 	r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")
-	// r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
+	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
 	// r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
 
 	fmt.Println("Server started")

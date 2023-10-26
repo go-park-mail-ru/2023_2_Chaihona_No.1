@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"sync"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/dbscan"
@@ -36,6 +35,25 @@ func SelectUserSQL(login string) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
+func SelectUserByIdSQL(id int) squirrel.SelectBuilder {
+	return squirrel.Select("*").
+		From(configs.UserTable).
+		Where(squirrel.Eq{"id": id}).
+		PlaceholderFormat(squirrel.Dollar)
+}
+
+func SelectUserByIdSQLWithSubscribers(id int) squirrel.SelectBuilder {
+	return squirrel.Select(
+		fmt.Sprintf("%s.id, %s.nickname, %s.email, %s.is_author, %s.status, %s.avatar_path, %s.background_path, %s.description, COUNT(*) as subscribers",
+			configs.UserTable, configs.UserTable, configs.UserTable,
+			configs.UserTable, configs.UserTable, configs.UserTable,
+			configs.UserTable, configs.UserTable)).
+		From(configs.UserTable + ", " + configs.SubscriptionTable).
+		Suffix(fmt.Sprintf("WHERE %s.id = %s.creator_id and %s.id = %d",
+			configs.UserTable, configs.SubscriptionTable, configs.UserTable, id)).
+		Suffix("GROUP BY " + configs.UserTable + ".id")
+}
+
 func UpdateUserSQL(user model.User) squirrel.UpdateBuilder {
 	return squirrel.Update(configs.UserTable).
 		SetMap(map[string]interface{}{
@@ -53,10 +71,7 @@ func UpdateUserSQL(user model.User) squirrel.UpdateBuilder {
 }
 
 type UserStorage struct {
-	Users map[string]model.User
-	Mu    sync.RWMutex
-	db    *sql.DB
-	Size  uint32
+	db *sql.DB
 }
 
 func CreateUserStorage(db *sql.DB) *UserStorage {
@@ -96,10 +111,38 @@ func (storage *UserStorage) CheckUser(login string) (*model.User, error) {
 	var users []*model.User
 	err = dbscan.ScanAll(&users, rows)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	return users[0], nil
+}
+
+func (storage *UserStorage) GetUser(id int) (model.User, error) {
+	rows, err := SelectUserByIdSQL(id).RunWith(storage.db).Query()
+	if err != nil {
+		return model.User{}, err
+	}
+	var users []*model.User
+	err = dbscan.ScanAll(&users, rows)
+	if err != nil {
+		return model.User{}, err
+	}
+	return *users[0], nil
+}
+
+func (storage *UserStorage) GetUserWithSubscribers(id int) (model.User, error) {
+	rows, err := SelectUserByIdSQLWithSubscribers(id).RunWith(storage.db).Query()
+	if err != nil {
+		return model.User{}, err
+	}
+	var users []model.User
+	err = dbscan.ScanAll(&users, rows)
+	if err != nil {
+		return model.User{}, err
+	}
+	if len(users) > 0 {
+		return users[0], nil
+	}
+	return model.User{}, nil
 }
 
 func (storage *UserStorage) ChangeUser(user model.User) error {
@@ -111,16 +154,5 @@ func (storage *UserStorage) ChangeUser(user model.User) error {
 }
 
 func (storage *UserStorage) GetUsers() ([]model.User, error) {
-	storage.Mu.RLock()
-	defer storage.Mu.RUnlock()
-
-	users := make([]model.User, storage.Size)
-
-	i := 0
-	for _, user := range storage.Users {
-		users[i] = user
-		i++
-	}
-
-	return users, nil
+	return make([]model.User, 0), nil
 }

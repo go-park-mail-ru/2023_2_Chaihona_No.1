@@ -1,25 +1,28 @@
 package profiles
 
 import (
+	"database/sql"
 	"sync"
 
+	"github.com/Masterminds/squirrel"
 	model "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 )
+
+func SelectProfileSQL(id int) squirrel.SelectBuilder {
+	return squirrel.Select("*")
+}
 
 type ProfileStorage struct {
 	Profiles map[string]model.Profile
 	Mu       sync.RWMutex
 	Size     uint32
+	db       *sql.DB
 }
 
-func CreateProfileStorage() *ProfileStorage {
-	storage := &ProfileStorage{
-		Profiles: make(map[string]model.Profile),
-		Mu:       sync.RWMutex{},
-		Size:     0,
+func CreateProfileStorage(db *sql.DB) *ProfileStorage {
+	return &ProfileStorage{
+		db: db,
 	}
-
-	return storage
 }
 
 func (storage *ProfileStorage) RegisterNewProfile(Profile *model.Profile) error {
@@ -60,8 +63,6 @@ func (storage *ProfileStorage) CheckProfile(login string) (*model.Profile, bool)
 }
 
 func (storage *ProfileStorage) GetProfile(id uint) (*model.Profile, bool) {
-	storage.Mu.Lock()
-	defer storage.Mu.Unlock()
 
 	for _, profile := range storage.Profiles {
 		if profile.User.ID == id {

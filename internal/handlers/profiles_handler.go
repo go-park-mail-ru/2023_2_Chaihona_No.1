@@ -8,10 +8,13 @@ import (
 
 	"github.com/gorilla/mux"
 
-	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	subscribelevels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscribe_levels"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 )
 
 type BodyProfile struct {
@@ -19,17 +22,26 @@ type BodyProfile struct {
 }
 
 type ProfileHandler struct {
-	Session  sessions.SessionRepository
-	Profiles profiles.ProfileRepository
+	Session       sessions.SessionRepository
+	Profiles      profiles.ProfileRepository
+	Users         users.UserRepository
+	Levels        subscribelevels.SubscribeLevelRepository
+	Subscriptions subscriptions.SubscriptionRepository
 }
 
 func CreateProfileHandlerViaRepos(
 	session sessions.SessionRepository,
 	profiles profiles.ProfileRepository,
+	users users.UserRepository,
+	levels subscribelevels.SubscribeLevelRepository,
+	subscriptions subscriptions.SubscriptionRepository,
 ) *ProfileHandler {
 	return &ProfileHandler{
 		session,
 		profiles,
+		users,
+		levels,
+		subscriptions,
 	}
 }
 
@@ -47,13 +59,45 @@ func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profile, ok := p.Profiles.GetProfile(uint(id))
-	if !ok {
-		http.Error(w, `{"error":"db"}`, 500)
+	user, err := p.Users.GetUserWithSubscribers(id)
+	if err != nil {
+		http.Error(w, `{"error":"db1"}`, 500)
 		return
 	}
+	var profile model.Profile
+	if user.Is_author {
+		levels, err := p.Levels.GetUserLevels(uint(id))
+		if err != nil {
+			http.Error(w, `{"error":"db"}`, 500)
+			return
+		}
+		user.UserType = model.CreatorStatus
+		profile = model.Profile{
+			User:            user,
+			Subscribers:     user.Subscribers,
+			SubscribeLevels: levels,
+		}
+	} else {
+		subscriptions, err := p.Subscriptions.GetUserSubscriptions(id)
+		if err != nil {
+			http.Error(w, `{"error":"db"}`, 500)
+			return
+		}
 
-	result := Result{Body: BodyProfile{Profile: *profile}}
+		// donated, err := p.Payments.SumUserPayments(id)
+		// if err != nil {
+		// 	http.Error(w, `{"error":"db"}`, 500)
+		// 	return
+		// }
+
+		user.UserType = model.SimpleUserStatus
+		profile = model.Profile{
+			User:          user,
+			Subscriptions: subscriptions,
+		}
+	}
+
+	result := Result{Body: BodyProfile{Profile: profile}}
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(&result)

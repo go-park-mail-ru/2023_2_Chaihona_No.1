@@ -14,7 +14,9 @@ const (
 	DatabaseURL          = DatabaseDMS + "://" + DatabaseUser +
 		":" + DatabaseUserPassword + "@" + DatabaseServerIP +
 		":" + DatabaseServerPort + "/" + DatabaseName
-	MigrationsPath = "db/migrations"
-	SourceDriver   = "file://"
-	UserTable      = "public.user"
+	MigrationsPath      = "db/migrations"
+	SourceDriver        = "file://"
+	UserTable           = "public.user"
+	SubscribeLevelTable = "public.subscription_level"
+	SubscriptionTable   = "public.subscription"
 )
