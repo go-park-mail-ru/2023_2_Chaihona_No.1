@@ -2,12 +2,55 @@ package users
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"sync"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/georgysavva/scany/v2/dbscan"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 )
+
+func InsertUserSQL(user model.User) squirrel.InsertBuilder {
+	is_author := true
+	if user.UserType == model.SimpleUserStatus {
+		is_author = false
+	}
+	return squirrel.Insert(configs.UserTable).
+		Columns("nickname", "email", "password", "is_author", "status", "avatar_path", "background_path", "description").
+		Values(user.Nickname, user.Login, user.Password, is_author, user.Status, user.Avatar, user.Background, user.Description).
+		Suffix("RETURNING \"id\"").
+		PlaceholderFormat(squirrel.Dollar)
+}
+
+func DeleteUserSQL(id int) squirrel.DeleteBuilder {
+	return squirrel.Delete(configs.UserTable).
+		Where(squirrel.Eq{"id": id})
+}
+
+func SelectUserSQL(login string) squirrel.SelectBuilder {
+	return squirrel.Select("*").
+		From(configs.UserTable).
+		Where("email LIKE (?)", login).
+		PlaceholderFormat(squirrel.Dollar)
+}
+
+func UpdateUserSQL(user model.User) squirrel.UpdateBuilder {
+	return squirrel.Update(configs.UserTable).
+		SetMap(map[string]interface{}{
+			"email":           user.Login,
+			"nickname":        user.Nickname,
+			"password":        user.Password,
+			"is_author":       user.Is_author,
+			"status":          user.Status,
+			"avatar_path":     user.Avatar,
+			"background_path": user.Background,
+			"description":     user.Description,
+			//update_at: time.Now(),
+		}).
+		Where(squirrel.Eq{"id": user.ID})
+}
 
 type UserStorage struct {
 	Users map[string]model.User
@@ -22,58 +65,49 @@ func CreateUserStorage(db *sql.DB) *UserStorage {
 	}
 }
 
-func (storage *UserStorage) RegisterNewUser(user *model.User) error {
-	storage.Mu.Lock()
-	defer storage.Mu.Unlock()
-
-	is_author := true
-	if user.UserType == model.SimpleUserStatus {
-		is_author = false
-	}
-	query := squirrel.Insert("public.user").
-		Columns("nickname", "email", "password", "is_author", "status", "avatar_path", "background_path", "description").
-		Values(user.Nickname, user.Login, user.Password, is_author, user.Status, user.Avatar, user.Background, user.Description).
-		Suffix("RETURING \"id\"").
-		RunWith(storage.db)
+func (storage *UserStorage) RegisterNewUser(user *model.User) (int, error) {
 	var userId int
-	err := query.QueryRow().Scan(userId)
+	err := InsertUserSQL(*user).RunWith(storage.db).QueryRow().Scan(&userId)
 	if err != nil {
-		return ErrorUserRegistration{
+		return 0, ErrorUserRegistration{
 			ErrUserLoginAlreadyExists,
 			http.StatusBadRequest,
 		}
 	}
-	//return userId
+	return userId, nil
+}
+
+func (storage *UserStorage) DeleteUser(id int) error {
+	_, err := DeleteUserSQL(id).RunWith(storage.db).Query()
+	if err != nil {
+		return ErrorUserRegistration{
+			ErrNoSuchUser,
+			http.StatusBadRequest,
+		}
+	}
 	return nil
 }
 
-func (storage *UserStorage) DeleteUser(login string) error {
-	storage.Mu.Lock()
-	defer storage.Mu.Unlock()
-
-	if _, ok := storage.Users[login]; !ok {
-		return ErrNoSuchUser
+func (storage *UserStorage) CheckUser(login string) (*model.User, error) {
+	rows, err := SelectUserSQL(login).RunWith(storage.db).Query()
+	if err != nil {
+		return nil, err
 	}
-
-	delete(storage.Users, login)
-	storage.Size--
-
-	return nil
+	var users []*model.User
+	err = dbscan.ScanAll(&users, rows)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	return users[0], nil
 }
 
-func (storage *UserStorage) CheckUser(login string) (*model.User, bool) {
-	storage.Mu.RLock()
-	defer storage.Mu.RUnlock()
-
-	val, ok := storage.Users[login]
-
-	if ok {
-		copy := val
-
-		return &copy, true
+func (storage *UserStorage) ChangeUser(user model.User) error {
+	_, err := UpdateUserSQL(user).RunWith(storage.db).Query()
+	if err != nil {
+		return err
 	}
-
-	return nil, false
+	return nil
 }
 
 func (storage *UserStorage) GetUsers() ([]model.User, error) {

@@ -17,9 +17,9 @@ const (
 )
 
 func Authorize(users usrep.UserRepository, form *LoginForm) (*model.User, error) {
-	user, ok := users.CheckUser(form.Login)
+	user, err := users.CheckUser(form.Login)
 
-	if !ok {
+	if err != nil {
 		return nil, ErrWrongLogin
 	}
 

@@ -5,8 +5,9 @@ import (
 )
 
 type UserRepository interface {
-	RegisterNewUser(user *model.User) error
-	DeleteUser(login string) error
-	CheckUser(login string) (*model.User, bool)
+	RegisterNewUser(user *model.User) (int, error)
+	DeleteUser(id int) error
+	CheckUser(login string) (*model.User, error)
+	ChangeUser(user model.User) error
 	GetUsers() ([]model.User, error)
 }

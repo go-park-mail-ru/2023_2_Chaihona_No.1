@@ -6,12 +6,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
-	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
-	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/registration"
 	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
+	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/registration"
 )
 
 const (
@@ -36,7 +35,6 @@ func CreateRepoHandler(
 	}
 }
 
-
 func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 
@@ -57,7 +55,7 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	errReg := api.users.RegisterNewUser(user)
+	id, errReg := api.users.RegisterNewUser(user)
 	if err != nil {
 		switch errReg.(type) {
 		case usrep.ErrorUserRegistration:
@@ -67,24 +65,10 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	profile := model.Profile{
-		User: *user,
-	}
-
-	errReg = api.profiles.RegisterNewProfile(&profile)
-	if errReg != nil {
-		switch errReg.(type) {
-		case profsrep.ErrorProfileRegistration:
-			errReg := errReg.(profsrep.ErrorProfileRegistration)
-			http.Error(w, fmt.Sprintf(`{"error":"%v"}`, errReg.Err), errReg.StatusCode)
-			return
-		}
-	}
-
 	auth.SetSession(w, api.sessions, uint32(user.ID))
 
 	bodyResponse := map[string]interface{}{
-		"id": user.ID,
+		"id": id,
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -116,8 +100,6 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	auth.SetSession(w, api.sessions, uint32(user.ID))
-
-	w.WriteHeader(http.StatusOK)
 
 	bodyResponse := map[string]interface{}{
 		"id": user.ID,

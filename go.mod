@@ -6,6 +6,7 @@ require github.com/google/uuid v1.3.1
 
 require (
 	github.com/Masterminds/squirrel v1.5.4 // indirect
+	github.com/georgysavva/scany/v2 v2.0.0 // indirect
 	github.com/golang-migrate/migrate/v4 v4.16.2 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect

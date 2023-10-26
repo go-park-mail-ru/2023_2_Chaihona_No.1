@@ -1,7 +1,7 @@
 package configs
 
 const (
-	FrontendServerIP     = "http://212.233.89.163"
+	FrontendServerIP     = "http://localhost"
 	FrontendServerPort   = ":8000"
 	BackendServerPort    = ":8001"
 	DriverSQL            = "pgx"
@@ -16,4 +16,5 @@ const (
 		":" + DatabaseServerPort + "/" + DatabaseName
 	MigrationsPath = "db/migrations"
 	SourceDriver   = "file://"
+	UserTable      = "public.user"
 )
