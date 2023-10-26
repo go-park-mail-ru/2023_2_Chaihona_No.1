@@ -1,28 +1,41 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"os"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/db/postgresql"
 )
 
 func main() {
-	conn, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+	var db postgresql.Database
+	err := db.Connect()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+		fmt.Println(err)
+		return
 	}
-	defer conn.Close()
-	var greeting string
-	err = conn.QueryRow(context.Background(), "select 'Hello, world!'").Scan(&greeting)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "QueryRow failed: %v\n", err)
-		os.Exit(1)
-	}
+	defer db.Close()
+	// err = db.MigrateUp()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
 
-	fmt.Println(greeting)
+	// users := squirrel.Select("*").From("public.notification")
+	// type answ struct {
+	// 	A string
+	// 	B string
+	// 	C string
+	// 	D string
+	// 	E string
+	// }
+	// var answ_ins answ
+	// ans := []interface{}{&answ_ins.A, &answ_ins.B, &answ_ins.C, &answ_ins.D, &answ_ins.E}
+	// err = users.RunWith(db).QueryRow().Scan(ans...)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// fmt.Println(*ans[0].(*string))
+
 	// sessionStorage := sessrep.CreateSessionStorage()
 	// userStoarge := usrep.CreateUserStorage()
 	// profileStorage := profsrep.CreateProfileStorage()
