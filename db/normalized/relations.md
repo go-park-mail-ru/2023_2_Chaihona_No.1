@@ -5,7 +5,7 @@ erDiagram
     string nickname
     string email
     string password
-    bool is_author
+
     string status
     string avatar_path
     string background_path
@@ -107,13 +107,6 @@ erDiagram
   user ||--o{ post_comment
 
   user ||--o{ notification
-```
-```mermaid
-graph TD;
-    A-->B;
-    A-->C;
-    B-->D;
-    C-->D;
 ```
 
 ### USER
