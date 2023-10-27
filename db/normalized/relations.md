@@ -1,11 +1,11 @@
 ```mermaid
 erDiagram
   user {
-    int id PK
+    int id 
     string nickname
     string email
     string password
-
+    bool is_author
     string status
     string avatar_path
     string background_path
@@ -15,27 +15,27 @@ erDiagram
   }
 
   payment  {
-    int id PK
+    int id 
     int payment_integer
     int payment_fractional
     string status
     date created_at
     date updated_at
-    int donater_id FK
-    int creator_id FK
+    int donater_id 
+    int creator_id 
   }
 
   subscription {
-    int id PK
+    int id 
     date created_at
     date updated_at
-    int subscriber_id FK
-    int creator_id FK
-    int subscribe_level_id FK
+    int subscriber_id 
+    int creator_id 
+    int subscribe_level_id 
   }  
 
   subscription_level {
-    int id PK
+    int id 
     int level
     string name
     string description
@@ -44,47 +44,47 @@ erDiagram
     string currency
     date created_at
     date updated_at
-    int creator_id FK
+    int creator_id 
   }
 
   post_like {
-    int id PK
+    int id 
     date created_at
-    int user_id FK
-    int post_id FK
+    int user_id 
+    int post_id 
   }
 
   post_attach {
-    int id PK
+    int id 
     string file_path
     date created_at
-    int post_id FK
+    int post_id 
   }
 
   post {
-    int id PK
+    int id 
     int access
     string header
     string body
     date created_at
     date updated_at
-    int creator_id FK
+    int creator_id 
     int min_subscribe_level
   }
 
   post_comment {
-    int id PK
+    int id 
     date created_at
     date updated_at
     string text
-    int user_id FK
-    int post_id FK
+    int user_id 
+    int post_id 
   }
 
   notification {
-    int id PK
+    int id 
     int event_type
-    int user_id FK
+    int user_id 
     date created_at
     date updated_at
   }
