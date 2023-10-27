@@ -81,8 +81,7 @@ erDiagram
     int user_id FK
     date created_at
     date updated_at
-  }
-   int creator_id FK
+    int creator_id FK
     int subscribe_level_id FK
   }
 
