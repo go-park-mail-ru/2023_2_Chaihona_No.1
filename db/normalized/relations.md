@@ -1,3 +1,114 @@
+```mermaid
+erDiagram
+  user {
+    int id PK
+    string nickname
+    string email
+    string password
+    bool is_author
+    string status
+    string avatar_path
+    string background_path
+    string description
+    date created_at
+    date updated_at
+  }
+
+  payment  {
+    int id PK
+    int payment_integer
+    int payment_fractional
+    string status
+    date created_at
+    date updated_at
+    int donater_id FK
+    int creator_id FK
+  }
+
+  subscription {
+    int id PK
+    date created_at
+    date updated_at
+    int subscriber_id FK
+    int creator_id FK
+    int subscribe_level_id FK
+  }  
+
+  subscription_level {
+    int id PK
+    int level
+    string name
+    string description
+    int cost_integer
+    int cost_fractional
+    string currency
+    date created_at
+    date updated_at
+    int creator_id FK
+  }
+
+  post_like {
+    int id PK
+    date created_at
+    int user_id FK
+    int post_id FK
+  }
+
+  post_attach {
+    int id PK
+    string file_path
+    date created_at
+    int post_id FK
+  }
+
+  post {
+    int id PK
+    int access
+    string header
+    string body
+    date created_at
+    date updated_at
+    int creator_id FK
+    int min_subscribe_level
+  }
+
+  post_comment {
+    int id PK
+    date created_at
+    date updated_at
+    string text
+    int user_id FK
+    int post_id FK
+  }
+
+  notification {
+    int id PK
+    int event_type
+    int user_id FK
+    date created_at
+    date updated_at
+  }
+
+  user ||--o{ payment
+  user ||--o{ payment
+
+  user ||--o{ subscription
+  user ||--o{ subscription
+  user ||--o{ subscription_level
+
+  user ||--o{ subscription_level
+
+  user ||--o{ post_like
+  post ||--o{ post_like
+
+  post ||--o{ post_attach
+
+  post ||--o{ post_comment
+  user ||--o{ post_comment
+
+  user ||--o{ notification
+```
+
 
 ### USER
 Отношение `USER`. Содержит основную информацию о пользователе, его логин, захэшированный пароль, тип пользователя, пути до аватарки и фона
