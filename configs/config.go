@@ -1,7 +1,7 @@
 package configs
 
 const (
-	FrontendServerIP     = "http://212.233.89.163"
+	FrontendServerIP     = "http://localhost"
 	FrontendServerPort   = ":8000"
 	BackendServerPort    = ":8001"
 	DriverSQL            = "pgx"
@@ -14,6 +14,10 @@ const (
 	DatabaseURL          = DatabaseDMS + "://" + DatabaseUser +
 		":" + DatabaseUserPassword + "@" + DatabaseServerIP +
 		":" + DatabaseServerPort + "/" + DatabaseName
-	MigrationsPath = "db/migrations"
-	SourceDriver   = "file://"
+	MigrationsPath      = "db/migrations"
+	SourceDriver        = "file://"
+	UserTable           = "public.user"
+	SubscribeLevelTable = "public.subscription_level"
+	SubscriptionTable   = "public.subscription"
+	PostTable           = "public.post"
 )

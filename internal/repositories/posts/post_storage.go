@@ -1,83 +1,56 @@
 package posts
 
 import (
-	"net/http"
-	"sync"
+	"database/sql"
 
+	"github.com/Masterminds/squirrel"
+	"github.com/georgysavva/scany/v2/dbscan"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 )
 
-type PostStorage struct {
-	posts map[uint]model.Post
-	mu    sync.Mutex
+func SelectUserPostsSQL(authorId uint) squirrel.SelectBuilder {
+	return squirrel.Select("*").
+		From(configs.PostTable).
+		Where(squirrel.Eq{"creator_id": authorId}).
+		PlaceholderFormat(squirrel.Dollar)
 }
 
-func CreatePostStorage() PostRepository {
-	storage := &PostStorage{
-		posts: make(map[uint]model.Post),
-	}
+type PostStorage struct {
+	db *sql.DB
+}
 
-	return storage
+func CreatePostStorage(db *sql.DB) PostRepository {
+	return &PostStorage{
+		db: db,
+	}
 }
 
 func (storage *PostStorage) CreateNewPost(post model.Post) error {
-	storage.mu.Lock()
-	defer storage.mu.Unlock()
-
-	storage.posts[post.ID] = post
-
 	return nil
 }
 
 func (storage *PostStorage) DeletePost(id uint) error {
-	storage.mu.Lock()
-	defer storage.mu.Unlock()
-
-	if _, ok := storage.posts[id]; !ok {
-		return &ErrorPost{ErrNoSuchPost, http.StatusBadRequest}
-	}
-
-	delete(storage.posts, id)
-
 	return nil
 }
 
 func (storage *PostStorage) GetPostById(id uint) (model.Post, error) {
-	storage.mu.Lock()
-	defer storage.mu.Unlock()
-
-	val, ok := storage.posts[id]
-
-	if !ok {
-		return model.Post{}, &ErrorPost{ErrNoSuchPost, http.StatusBadRequest}
-	}
-
-	return val, nil
+	return model.Post{}, nil
 }
 
 func (storage *PostStorage) GetPostsByAuthorId(authorId uint) ([]model.Post, error) {
-	storage.mu.Lock()
-	defer storage.mu.Unlock()
-
-	posts := make([]model.Post, 0)
-	for _, post := range storage.posts {
-		if post.AuthorID == authorId {
-			posts = append(posts, post)
-		}
+	rows, err := SelectUserPostsSQL(authorId).RunWith(storage.db).Query()
+	if err != nil {
+		return []model.Post{}, err
 	}
-
+	var posts []model.Post
+	err = dbscan.ScanAll(&posts, rows)
+	if err != nil {
+		return []model.Post{}, err
+	}
 	return posts, nil
 }
 
 func (storage *PostStorage) GetPosts() ([]model.Post, error) {
-	storage.mu.Lock()
-	defer storage.mu.Unlock()
-
-	posts := make([]model.Post, 0)
-
-	for _, post := range storage.posts {
-		posts = append(posts, post)
-	}
-
-	return posts, nil
+	return []model.Post{}, nil
 }

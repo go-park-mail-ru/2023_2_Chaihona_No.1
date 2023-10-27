@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
-	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
+	"github.com/gorilla/mux"
 )
 
 type BodyPosts struct {
@@ -50,9 +50,9 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID)) 
+	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID))
 
-	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче 
+	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
 	if errPost != nil {
 		switch err.(type) {
 		case postsrep.ErrorPost:
@@ -69,6 +69,7 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, `{"error":"db"}`, errPost.StatusCode)
 			return
 		}
+		return
 	}
 
 	cookie, _ := r.Cookie("session_id")
