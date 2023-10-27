@@ -9,18 +9,19 @@ const (
 )
 
 type Post struct {
-	ID           uint      `json:"id"`
-	AuthorID     uint      `json:"-"`
-	HasAccess    bool      `json:"has_access"`
-	Reason       string    `json:"reason,omitempty"`
-	Access       string    `json:"access"`
-	Payment      float64   `json:"payment,omitempty"`
-	Currency     string    `json:"currency,omitempty"`
-	MinSubLevel  uint      `json:"min_sub_level,omitempty"`
-	CreationDate string    `json:"creation_date"`
-	Header       string    `json:"header"`
-	Body         string    `json:"body,omitempty"`
-	Likes        uint      `json:"likes"`
-	Comments     []Comment `json:"comments,omitempty"`
-	Tags         []Tag     `json:"tags"`
+	ID            uint      `json:"id" db:"id"`
+	AuthorID      uint      `json:"-" db:"creator_id"`
+	HasAccess     bool      `json:"has_access" db:""`
+	Reason        string    `json:"reason,omitempty" db:""`
+	Access        string    `json:"access" db:""`
+	Payment       float64   `json:"payment,omitempty" db:""`
+	Currency      string    `json:"currency,omitempty" db:""`
+	MinSubLevel   uint      `json:"min_sub_level,omitempty" db:""`
+	MinSubLevelId uint      `json:"-" db:"min_subscription_level_id"`
+	CreationDate  string    `json:"creation_date" db:"created_at"`
+	Header        string    `json:"header" db:"header"`
+	Body          string    `json:"body,omitempty" db:"body"`
+	Likes         uint      `json:"likes" db:"likes"`
+	Comments      []Comment `json:"comments,omitempty" db:""`
+	Tags          []Tag     `json:"tags" db:""`
 }
