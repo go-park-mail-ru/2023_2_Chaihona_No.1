@@ -72,6 +72,7 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// probably get user subscriptions from cookie!!!
 	cookie, _ := r.Cookie("session_id")
 	session, _ := p.Sessions.CheckSession(cookie.Value)
 	userID := session.UserID
