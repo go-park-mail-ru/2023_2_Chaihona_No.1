@@ -25,7 +25,8 @@ func InsertUserSQL(user model.User) squirrel.InsertBuilder {
 
 func DeleteUserSQL(id int) squirrel.DeleteBuilder {
 	return squirrel.Delete(configs.UserTable).
-		Where(squirrel.Eq{"id": id})
+		Where(squirrel.Eq{"id": id}).
+		PlaceholderFormat(squirrel.Dollar)
 }
 
 func SelectUserSQL(login string) squirrel.SelectBuilder {
@@ -67,7 +68,8 @@ func UpdateUserSQL(user model.User) squirrel.UpdateBuilder {
 			"description":     user.Description,
 			//update_at: time.Now(),
 		}).
-		Where(squirrel.Eq{"id": user.ID})
+		Where(squirrel.Eq{"id": user.ID}).
+		PlaceholderFormat(squirrel.Dollar)
 }
 
 type UserStorage struct {
