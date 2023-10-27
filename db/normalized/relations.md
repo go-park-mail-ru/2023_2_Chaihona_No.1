@@ -1,7 +1,11 @@
+# Схема БД
+
+## ER Диагрмма
+
 ```mermaid
 erDiagram
   user {
-    int id 
+    int id PK
     string nickname
     string email
     string password
@@ -15,86 +19,87 @@ erDiagram
   }
 
   payment  {
-    int id 
+    int id PK
     int payment_integer
     int payment_fractional
     string status
     date created_at
     date updated_at
-    int donater_id 
-    int creator_id 
+    int donater_id FK
+    int creator_id FK
   }
 
   subscription {
-    int id 
+    int id PK
     date created_at
     date updated_at
-    int subscriber_id 
-    int creator_id 
-    int subscribe_level_id 
-  }  
-
-  subscription_level {
-    int id 
-    int level
-    string name
-    string description
-    int cost_integer
+    int subscriber_id FK
     int cost_fractional
     string currency
     date created_at
     date updated_at
-    int creator_id 
+    int creator_id FK
   }
 
   post_like {
-    int id 
+    int id PK
     date created_at
-    int user_id 
-    int post_id 
+    int user_id FK
+    int post_id FK
   }
 
   post_attach {
-    int id 
+    int id PK
     string file_path
     date created_at
-    int post_id 
+    int post_id FK
   }
 
   post {
-    int id 
+    int id PK
     int access
     string header
     string body
     date created_at
     date updated_at
-    int creator_id 
+    int creator_id FK
     int min_subscribe_level
   }
 
   post_comment {
-    int id 
+    int id PK
     date created_at
     date updated_at
     string text
-    int user_id 
-    int post_id 
+    int user_id FK
+    int post_id FK
   }
 
   notification {
-    int id 
+    int id PK
     int event_type
-    int user_id 
+    int user_id FK
     date created_at
     date updated_at
   }
+   int creator_id FK
+    int subscribe_level_id FK
+  }
 
-  user ||--o{ payment : ""
-  user ||--o{ payment : ""
+  subscription_level {
+    int id PK
+    int level
+    string name
+    string description
+    int cost_integer
+  }
 
-  user ||--o{ subscription : ""
-  user ||--o{ subscription : ""
-  user ||--o{ subscription_level : ""
+  user ||--o{ payment
+  user ||--o{ payment
+
+  user ||--o{ subscription
+  user ||--o{ subscription
+  user ||--o{ subscription_level
 
   user ||--o{ subscription_level
 
@@ -108,6 +113,7 @@ erDiagram
 
   user ||--o{ notification
 ```
+
 
 ### USER
 Отношение `USER`. Содержит основную информацию о пользователе, его логин, захэшированный пароль, тип пользователя, пути до аватарки и фона
