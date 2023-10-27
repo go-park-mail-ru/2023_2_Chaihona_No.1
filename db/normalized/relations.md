@@ -93,24 +93,24 @@ erDiagram
     int cost_integer
   }
 
-  user ||--o{ payment
-  user ||--o{ payment
+  user ||--o{ payment : ""
+  user ||--o{ payment : ""
 
-  user ||--o{ subscription
-  user ||--o{ subscription
-  user ||--o{ subscription_level
+  user ||--o{ subscription : ""
+  user ||--o{ subscription : ""
+  user ||--o{ subscription_level : ""
 
-  user ||--o{ subscription_level
+  user ||--o{ subscription_level : ""
 
-  user ||--o{ post_like
-  post ||--o{ post_like
+  user ||--o{ post_like : ""
+  post ||--o{ post_like : ""
 
-  post ||--o{ post_attach
+  post ||--o{ post_attach : ""
 
-  post ||--o{ post_comment
-  user ||--o{ post_comment
+  post ||--o{ post_comment : ""
+  user ||--o{ post_comment : ""
 
-  user ||--o{ notification
+  user ||--o{ notification : ""
 ```
 
 
