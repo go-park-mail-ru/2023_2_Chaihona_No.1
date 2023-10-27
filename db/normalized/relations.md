@@ -89,12 +89,12 @@ erDiagram
     date updated_at
   }
 
-  user ||--o{ payment
-  user ||--o{ payment
+  user ||--o{ payment : ""
+  user ||--o{ payment : ""
 
-  user ||--o{ subscription
-  user ||--o{ subscription
-  user ||--o{ subscription_level
+  user ||--o{ subscription : ""
+  user ||--o{ subscription : ""
+  user ||--o{ subscription_level : ""
 
   user ||--o{ subscription_level
 
@@ -108,7 +108,13 @@ erDiagram
 
   user ||--o{ notification
 ```
-
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
 
 ### USER
 Отношение `USER`. Содержит основную информацию о пользователе, его логин, захэшированный пароль, тип пользователя, пути до аватарки и фона
