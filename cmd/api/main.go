@@ -7,7 +7,6 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/db/postgresql"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
-	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	levels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscribe_levels"
 	subs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
@@ -47,7 +46,6 @@ func main() {
 
 	sessionStorage := sessrep.CreateSessionStorage()
 	userStoarge := usrep.CreateUserStorage(db.GetDB())
-	profileStorage := profsrep.CreateProfileStorage(db.GetDB())
 	levelStorage := levels.CreateSubscribeLevelStorage(db.GetDB())
 	subsStorage := subs.CreateSubscriptionsStorage(db.GetDB())
 	// postStorage := postsrep.CreatePostStorage()
@@ -62,8 +60,8 @@ func main() {
 	// 	postStorage.CreateNewPost(testPost)
 	// }
 
-	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, profileStorage)
-	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, profileStorage, userStoarge, levelStorage, subsStorage)
+	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge)
+	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, userStoarge, levelStorage, subsStorage)
 	// postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, profileStorage)
 	r := mux.NewRouter()
 
