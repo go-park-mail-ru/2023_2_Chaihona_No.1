@@ -101,3 +101,60 @@ func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 }
+
+func (p *ProfileHandler) ChangeUser(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	if !auth.CheckAuthorization(r, p.Session) {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+
+	// vars := mux.Vars(r)
+	// _, err := strconv.Atoi(vars["id"])
+	// if err != nil {
+	// 	http.Error(w, `{"error":"bad id"}`, 400)
+	// 	return
+	// }
+
+	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
+
+	decoder := json.NewDecoder(body)
+	user := &model.User{}
+
+	err := decoder.Decode(user)
+	if err != nil {
+		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
+		return
+	}
+
+	err = p.Users.ChangeUser(*user)
+	if err != nil {
+		http.Error(w, `{"error":"db"}`, 500)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (p *ProfileHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	if !auth.CheckAuthorization(r, p.Session) {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, `{"error":"bad id"}`, 400)
+		return
+	}
+
+	err = p.Users.DeleteUser(id)
+	if err != nil {
+		http.Error(w, `{"error":"db"}`, 500)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}

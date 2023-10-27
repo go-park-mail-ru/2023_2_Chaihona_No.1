@@ -71,6 +71,8 @@ func main() {
 	r.HandleFunc("/api/v1/registration", rep.Signup).Methods("POST")
 	r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
+	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.ChangeUser).Methods("POST")
+	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.DeleteUser).Methods(http.MethodDelete)
 	// r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
 
 	fmt.Println("Server started")
