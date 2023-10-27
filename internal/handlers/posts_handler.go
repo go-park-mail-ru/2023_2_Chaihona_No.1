@@ -7,12 +7,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
-	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
-	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
+	"github.com/gorilla/mux"
 )
 
 type BodyPosts struct {
@@ -22,16 +21,12 @@ type BodyPosts struct {
 type PostHandler struct {
 	Sessions sessrep.SessionRepository
 	Posts    postsrep.PostRepository
-	Profiles profsrep.ProfileRepository
 }
 
-func CreatePostHandlerViaRepos(session sessrep.SessionRepository, posts postsrep.PostRepository,
-	profiles profsrep.ProfileRepository,
-) *PostHandler {
+func CreatePostHandlerViaRepos(session sessrep.SessionRepository, posts postsrep.PostRepository) *PostHandler {
 	return &PostHandler{
 		session,
 		posts,
-		profiles,
 	}
 }
 
@@ -50,9 +45,9 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID)) 
+	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID))
 
-	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче 
+	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
 	if errPost != nil {
 		switch err.(type) {
 		case postsrep.ErrorPost:
@@ -71,14 +66,15 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	cookie, _ := r.Cookie("session_id")
-	session, _ := p.Sessions.CheckSession(cookie.Value)
-	userID := session.UserID
-	profile, ok := p.Profiles.GetProfile(uint(userID))
-	if !ok {
-		http.Error(w, `{"error":"very bad"}`, 400)
-		return
-	}
+	// cookie, _ := r.Cookie("session_id")
+	// session, _ := p.Sessions.CheckSession(cookie.Value)
+	// userID := session.UserID
+	// profile, ok := p.Profiles.GetProfile(uint(userID))
+	profile := model.Profile{}
+	// if !ok {
+	// 	http.Error(w, `{"error":"very bad"}`, 400)
+	// 	return
+	// }
 	subscriptions := profile.Subscriptions
 	isSubscirber := false
 	for _, user := range subscriptions {

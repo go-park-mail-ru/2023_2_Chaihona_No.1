@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 
-	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
@@ -20,18 +19,15 @@ const (
 type RepoHandler struct {
 	sessions sessrep.SessionRepository
 	users    usrep.UserRepository
-	profiles profsrep.ProfileRepository
 }
 
 func CreateRepoHandler(
 	sessions sessrep.SessionRepository,
 	users usrep.UserRepository,
-	profiles profsrep.ProfileRepository,
 ) *RepoHandler {
 	return &RepoHandler{
 		sessions,
 		users,
-		profiles,
 	}
 }
 

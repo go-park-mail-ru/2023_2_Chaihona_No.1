@@ -9,7 +9,6 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	subscribelevels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscribe_levels"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
@@ -23,7 +22,6 @@ type BodyProfile struct {
 
 type ProfileHandler struct {
 	Session       sessions.SessionRepository
-	Profiles      profiles.ProfileRepository
 	Users         users.UserRepository
 	Levels        subscribelevels.SubscribeLevelRepository
 	Subscriptions subscriptions.SubscriptionRepository
@@ -31,14 +29,12 @@ type ProfileHandler struct {
 
 func CreateProfileHandlerViaRepos(
 	session sessions.SessionRepository,
-	profiles profiles.ProfileRepository,
 	users users.UserRepository,
 	levels subscribelevels.SubscribeLevelRepository,
 	subscriptions subscriptions.SubscriptionRepository,
 ) *ProfileHandler {
 	return &ProfileHandler{
 		session,
-		profiles,
 		users,
 		levels,
 		subscriptions,
