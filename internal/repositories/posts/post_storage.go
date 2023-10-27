@@ -37,6 +37,18 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
+func UpdatePostSQL(post model.Post) squirrel.UpdateBuilder {
+	return squirrel.Update(configs.PostTable).
+		SetMap(map[string]interface{}{
+			"header":                    post.Header,
+			"body":                      post.Body,
+			"cretor_id":                 post.AuthorID,
+			"min_subscription_level_id": post.MinSubLevelId,
+		}).
+		Where(squirrel.Eq{"id": post.ID}).
+		PlaceholderFormat(squirrel.Dollar)
+}
+
 type PostStorage struct {
 	db *sql.DB
 }
@@ -77,6 +89,14 @@ func (storage *PostStorage) GetPostById(postId uint) (model.Post, error) {
 		return posts[0], nil
 	}
 	return model.Post{}, nil
+}
+
+func (storage *PostStorage) ChangePost(post model.Post) error {
+	_, err := UpdatePostSQL(post).RunWith(storage.db).Query()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (storage *PostStorage) GetPostsByAuthorId(authorId uint) ([]model.Post, error) {

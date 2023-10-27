@@ -7,6 +7,7 @@ import (
 type PostRepository interface {
 	CreateNewPost(post model.Post) (int, error)
 	DeletePost(id uint) error
+	ChangePost(post model.Post) error
 	GetPostById(id uint) (model.Post, error)
 	GetPostsByAuthorId(authorID uint) ([]model.Post, error)
 }
