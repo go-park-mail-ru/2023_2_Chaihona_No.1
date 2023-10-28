@@ -6,8 +6,17 @@ import (
 	"sync"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/georgysavva/scany/v2/dbscan"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 )
+
+func SelectUserSQL(login string) squirrel.SelectBuilder {
+	return squirrel.Select("*").
+		From(configs.UserTable).
+		Where("email LIKE (?)", login).
+		PlaceholderFormat(squirrel.Dollar)
+}
 
 type UserStorage struct {
 	Users map[string]model.User
@@ -62,18 +71,16 @@ func (storage *UserStorage) DeleteUser(login string) error {
 }
 
 func (storage *UserStorage) CheckUser(login string) (*model.User, bool) {
-	storage.Mu.RLock()
-	defer storage.Mu.RUnlock()
-
-	val, ok := storage.Users[login]
-
-	if ok {
-		copy := val
-
-		return &copy, true
+	rows, err := SelectUserSQL(login).RunWith(storage.db).Query()
+	if err != nil {
+		return nil, false
 	}
-
-	return nil, false
+	var users []*model.User
+	err = dbscan.ScanAll(&users, rows)
+	if err != nil {
+		return nil, false
+	}
+	return users[0], true
 }
 
 func (storage *UserStorage) GetUsers() ([]model.User, error) {

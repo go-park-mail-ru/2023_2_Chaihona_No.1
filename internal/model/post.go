@@ -11,7 +11,7 @@ const (
 type Post struct {
 	ID            uint      `json:"id" db:"id"`
 	AuthorID      uint      `json:"-" db:"creator_id"`
-	HasAccess     bool      `json:"has_access" db:""`
+	HasAccess     bool      `json:"has_access" db:"has_access"`
 	Reason        string    `json:"reason,omitempty" db:""`
 	Access        string    `json:"access" db:""`
 	Payment       float64   `json:"payment,omitempty" db:""`

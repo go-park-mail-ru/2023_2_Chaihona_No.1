@@ -50,7 +50,12 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID))
+	cookie, _ := r.Cookie("session_id")
+	session, ok := p.Sessions.CheckSession(cookie.Value)
+	if !ok {
+		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
+	}
+	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID), uint(session.UserID))
 
 	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
 	if errPost != nil {
@@ -70,40 +75,6 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		return
-	}
-
-	// probably get user subscriptions from cookie!!!
-	cookie, _ := r.Cookie("session_id")
-	session, _ := p.Sessions.CheckSession(cookie.Value)
-	userID := session.UserID
-	profile, ok := p.Profiles.GetProfile(uint(userID))
-	if !ok {
-		http.Error(w, `{"error":"very bad"}`, 400)
-		return
-	}
-	subscriptions := profile.Subscriptions
-	isSubscirber := false
-	for _, user := range subscriptions {
-		if user.ID == uint(authorID) {
-			isSubscirber = true
-		}
-	}
-
-	if !isSubscirber {
-		for i := range posts {
-			switch posts[i].Access {
-			case model.SubscribersAccess:
-				posts[i].HasAccess = false
-				posts[i].Reason = model.LowLevelReason
-				posts[i].Body = ""
-			case model.EveryoneAccess:
-				posts[i].HasAccess = true
-			}
-		}
-	} else {
-		for i := range posts {
-			posts[i].HasAccess = true
-		}
 	}
 
 	result := Result{Body: BodyPosts{Posts: posts}}

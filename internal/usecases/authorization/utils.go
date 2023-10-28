@@ -1,6 +1,7 @@
 package authorization
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -18,7 +19,7 @@ const (
 
 func Authorize(users usrep.UserRepository, form *LoginForm) (*model.User, error) {
 	user, ok := users.CheckUser(form.Login)
-
+	fmt.Println(user, ok)
 	if !ok {
 		return nil, ErrWrongLogin
 	}
