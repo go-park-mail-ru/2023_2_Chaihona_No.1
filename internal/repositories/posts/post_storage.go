@@ -38,7 +38,7 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 }
 
 func SelectUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder {
-	return squirrel.Select("p, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access, "+
+	return squirrel.Select("p.*, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access, "+
 		"array_agg(pa.file_path) as attaches").
 		From(configs.PostTable+" p").
 		CrossJoin(configs.SubscriptionTable+" s").

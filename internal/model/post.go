@@ -18,11 +18,12 @@ type Post struct {
 	Currency      string    `json:"currency,omitempty" db:""`
 	MinSubLevel   uint      `json:"min_sub_level,omitempty" db:""`
 	MinSubLevelId uint      `json:"-" db:"min_subscription_level_id"`
-	CreationDate  string    `json:"creation_date" db:"created_at"`
+	CreationDate  string    `json:"creation_date" db:"creation_date"`
+	UpdatedAt     string    `json:"last_update" db:"last_update"`
 	Header        string    `json:"header" db:"header"`
 	Body          string    `json:"body,omitempty" db:"body"`
 	Likes         uint      `json:"likes" db:"likes"`
 	Comments      []Comment `json:"comments,omitempty" db:""`
 	Tags          []Tag     `json:"tags" db:""`
-	Attaches      []string  `json:"attaches" db:"attaches"`
+	Attaches      string    `json:"attaches" db:"attaches"`
 }
