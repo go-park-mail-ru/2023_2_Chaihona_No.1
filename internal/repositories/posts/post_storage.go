@@ -2,7 +2,6 @@ package posts
 
 import (
 	"database/sql"
-	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/dbscan"
@@ -24,12 +23,12 @@ func DeletePostSQL(postId uint) squirrel.DeleteBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
-func SelectUserPostsSQL(authorId uint) squirrel.SelectBuilder {
-	return squirrel.Select("*").
-		From(configs.PostTable).
-		Where(squirrel.Eq{"creator_id": authorId}).
-		PlaceholderFormat(squirrel.Dollar)
-}
+// func SelectUserPostsSQL(authorId uint) squirrel.SelectBuilder {
+// 	return squirrel.Select("*").
+// 		From(configs.PostTable).
+// 		Where(squirrel.Eq{"creator_id": authorId}).
+// 		PlaceholderFormat(squirrel.Dollar)
+// }
 
 func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 	return squirrel.Select("*").
@@ -38,17 +37,20 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
-func SelectUserPostByIdWithAccessSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder {
-	return squirrel.Select("p, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access").
-		From(strings.Join([]string{configs.PostTable + " p", configs.SubscribeLevelTable + " sl1",
-			configs.SubscribeLevelTable + " sl2", configs.SubscriptionTable + " s"}, ", ")).
+func SelectUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder {
+	return squirrel.Select("p, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access, "+
+		"array_agg(pa.file_path) as attaches").
+		From(configs.PostTable+" p").
+		CrossJoin(configs.SubscriptionTable+" s").
+		LeftJoin(configs.AttachTable+" pa ON p.id = pa.post_id").
+		InnerJoin(configs.SubscribeLevelTable+" sl1 ON p.min_subscription_level_id = sl1.id").
+		InnerJoin(configs.SubscribeLevelTable+" sl2 ON s.subscription_level_id = sl2.id").
 		Where(squirrel.Eq{
-			"p.creator_id":                authorId,
-			"p.min_subscription_level_id": "sl1.id",
-			"s.subscriber_id":             subscriberId,
-			"s.creator_id":                authorId,
-			"s.subscriber_level_id":       "sl2.id",
+			"p.creator_id":    authorId,
+			"s.subscriber_id": subscriberId,
+			"s.creator_id":    authorId,
 		}).
+		GroupBy("p.id", "sl1.level", "sl2.level").
 		PlaceholderFormat(squirrel.Dollar)
 }
 
@@ -115,7 +117,7 @@ func (storage *PostStorage) ChangePost(post model.Post) error {
 }
 
 func (storage *PostStorage) GetPostsByAuthorId(authorId uint, subscriberId uint) ([]model.Post, error) {
-	rows, err := SelectUserPostByIdWithAccessSQL(authorId, subscriberId).RunWith(storage.db).Query()
+	rows, err := SelectUserPostsSQL(authorId, subscriberId).RunWith(storage.db).Query()
 	if err != nil {
 		return []model.Post{}, err
 	}

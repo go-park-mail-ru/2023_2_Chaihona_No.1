@@ -20,4 +20,5 @@ const (
 	SubscribeLevelTable = "public.subscription_level"
 	SubscriptionTable   = "public.subscription"
 	PostTable           = "public.post"
+	AttachTable         = "public.post_attach"
 )
