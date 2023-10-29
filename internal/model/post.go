@@ -24,5 +24,5 @@ type Post struct {
 	Likes         uint      `json:"likes" db:"likes"`
 	Comments      []Comment `json:"comments,omitempty" db:""`
 	Tags          []Tag     `json:"tags" db:""`
-	Attaches      []Attach  `json:"attaches" db:"attaches"`
+	Attaches      []string  `json:"attaches" db:"attaches"`
 }
