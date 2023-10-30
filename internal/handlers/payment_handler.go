@@ -4,16 +4,19 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	paymentsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/payments"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	pay "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/payment"
+	"github.com/gorilla/mux"
 )
 
 type BodyPayments struct {
-	RedirectURL string `json:"redirect_url"`
+	Payments    []model.Payment `json:"payments,omitempty"`
+	RedirectURL string          `json:"redirect_url,omitempty"`
 }
 
 type PaymentHandler struct {
@@ -58,6 +61,54 @@ func (p *PaymentHandler) Donate(w http.ResponseWriter, r *http.Request) {
 	bodyPayments := BodyPayments{redirectURL}
 
 	result := Result{Body: bodyPayments}
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(&result)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func (p *PaymentHandler) GetUsersDonates(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	if !auth.CheckAuthorization(r, p.Sessions) {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+
+	vars := mux.Vars(r)
+	userId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, `{"error":"bad id"}`, http.StatusBadRequest)
+		return
+	}
+
+	payments, err := p.Payments.GetPaymentsByUserId(uint(userId))
+
+	result := Result{Body: BodyPayments{Payments: payments}}
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(&result)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func (p *PaymentHandler) GetAuthorDonates(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	if !auth.CheckAuthorization(r, p.Sessions) {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+
+	vars := mux.Vars(r)
+	authorId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, `{"error":"bad id"}`, http.StatusBadRequest)
+		return
+	}
+
+	payments, err := p.Payments.GetPaymentsByAuthorId(uint(authorId))
+
+	result := Result{Body: BodyPayments{Payments: payments}}
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(&result)
 	if err != nil {
