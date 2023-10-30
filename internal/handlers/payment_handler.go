@@ -12,6 +12,7 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	paymentsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/payments"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	subscriptionlevels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscription_levels"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	pay "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/payment"
@@ -23,19 +24,22 @@ type BodyPayments struct {
 }
 
 type PaymentHandler struct {
-	Sessions       sessrep.SessionRepository
-	Payments       paymentsrep.PaymentRepository
-	Susbscriptions subscriptions.SubscriptionRepository
+	Sessions           sessrep.SessionRepository
+	Payments           paymentsrep.PaymentRepository
+	Subscriptions      subscriptions.SubscriptionRepository
+	SubscriptionLevels subscriptionlevels.SubscribeLevelRepository
 }
 
 func CreatePaymentHandlerViaRepos(session sessrep.SessionRepository,
 	payments paymentsrep.PaymentRepository,
 	subsciptions subscriptions.SubscriptionRepository,
+	subscriptionLevels subscriptionlevels.SubscribeLevelRepository,
 ) *PaymentHandler {
 	return &PaymentHandler{
-		Sessions:       session,
-		Payments:       payments,
-		Susbscriptions: subsciptions,
+		Sessions:           session,
+		Payments:           payments,
+		Subscriptions:      subsciptions,
+		SubscriptionLevels: subscriptionLevels,
 	}
 }
 
@@ -77,6 +81,30 @@ func (p *PaymentHandler) Donate(w http.ResponseWriter, r *http.Request) {
 	c.AddFunc("* * * * *", func() {
 		pay.CheckPaymentStatusAPI(p.Payments, *payment)
 		if payment.Status != model.PaymentWaitingStatus {
+			levels, err := p.SubscriptionLevels.GetUserLevels(payment.CreatorId)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			for _, level := range levels {
+				if level.CostInteger > payment.PaymentInteger {
+					continue
+				}
+				if level.CostInteger == payment.PaymentInteger && level.CostFractional > payment.PaymentFractional {
+					continue
+				}
+				subscription := model.Subscription{
+					Subscriber_id:         payment.DonaterId,
+					Creator_id:            payment.CreatorId,
+					Subscription_level_id: level.ID,
+				}
+				_, err := p.Subscriptions.AddNewSubscription(subscription)
+				if err != nil {
+					log.Println(err)
+					return
+				}
+				break
+			}
 			c.Stop()
 		}
 	})
