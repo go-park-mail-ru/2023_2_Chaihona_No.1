@@ -2,8 +2,17 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/db/postgresql"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/likes"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -36,35 +45,28 @@ func main() {
 	// }
 	// fmt.Println(*ans[0].(*string))
 
-	// sessionStorage := sessrep.CreateSessionStorage()
-	// userStoarge := usrep.CreateUserStorage()
-	// profileStorage := profsrep.CreateProfileStorage()
-	// postStorage := postsrep.CreatePostStorage()
+	sessionStorage := sessions.CreateSessionStorage()
+	userStoarge := users.CreateUserStorage(db.GetDB())
+	profileStorage := profiles.CreateProfileStorage()
+	postStorage := posts.CreatePostStorage()
+	likeStorage := likes.CreateLikeStorage(db.GetDB())
 
-	// for _, testUser := range testdata.Users {
-	// 	userStoarge.RegisterNewUser(&testUser)
-	// }
-	// for _, testProfile := range testdata.Profiles {
-	// 	profileStorage.RegisterNewProfile(&testProfile)
-	// }
-	// for _, testPost := range testdata.Posts {
-	// 	postStorage.CreateNewPost(testPost)
-	// }
+	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, profileStorage)
+	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, profileStorage)
+	postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, profileStorage, likeStorage)
+	r := mux.NewRouter()
 
-	// rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, profileStorage)
-	// profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, profileStorage)
-	// postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, profileStorage)
-	// r := mux.NewRouter()
+	r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
+	r.HandleFunc("/api/v1/login", rep.Login).Methods("POST")
+	r.HandleFunc("/api/v1/logout", rep.Logout).Methods("POST")
+	r.HandleFunc("/api/v1/registration", rep.Signup).Methods("POST")
+	r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")
+	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
+	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
+	r.HandleFunc("/api/v1/post/like", postHandler.LikePost).Methods("POST")
+	r.HandleFunc("/api/v1/post/unlike", postHandler.UnlikePost).Methods("DELETE")
 
-	// r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
-	// r.HandleFunc("/api/v1/login", rep.Login).Methods("POST")
-	// r.HandleFunc("/api/v1/logout", rep.Logout).Methods("POST")
-	// r.HandleFunc("/api/v1/registration", rep.Signup).Methods("POST")
-	// r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")
-	// r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
-	// r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
-
-	// fmt.Println("Server started")
-	// err := http.ListenAndServe(configs.BackendServerPort, r)
-	// fmt.Println(err)
+	fmt.Println("Server started")
+	err = http.ListenAndServe(configs.BackendServerPort, r)
+	fmt.Println(err)
 }

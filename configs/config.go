@@ -16,4 +16,5 @@ const (
 		":" + DatabaseServerPort + "/" + DatabaseName
 	MigrationsPath = "db/migrations"
 	SourceDriver   = "file://"
+	LikeTable      = "public.post_like"
 )

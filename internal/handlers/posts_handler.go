@@ -7,31 +7,38 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
-	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
+	likesrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/likes"
 	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
+	"github.com/gorilla/mux"
 )
 
 type BodyPosts struct {
 	Posts []model.Post `json:"posts"`
 }
 
+type BodyLike struct {
+	PostId int `json:"post_id"`
+}
+
 type PostHandler struct {
 	Sessions sessrep.SessionRepository
 	Posts    postsrep.PostRepository
 	Profiles profsrep.ProfileRepository
+	Likes    likesrep.LikeRepository
 }
 
 func CreatePostHandlerViaRepos(session sessrep.SessionRepository, posts postsrep.PostRepository,
-	profiles profsrep.ProfileRepository,
+	profiles profsrep.ProfileRepository, likes likesrep.LikeRepository,
 ) *PostHandler {
 	return &PostHandler{
 		session,
 		posts,
 		profiles,
+		likes,
 	}
 }
 
@@ -50,9 +57,9 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID)) 
+	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID))
 
-	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче 
+	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
 	if errPost != nil {
 		switch err.(type) {
 		case postsrep.ErrorPost:
@@ -111,4 +118,68 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func (p *PostHandler) LikePost(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	if !auth.CheckAuthorization(r, p.Sessions) {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
+
+	decoder := json.NewDecoder(body)
+	bodyLike := &BodyLike{}
+	err := decoder.Decode(bodyLike)
+	if err != nil {
+		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
+		return
+	}
+
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Error(w, `{"error": "wrong cookie"}`, http.StatusBadRequest)
+	}
+	session, ok := p.Sessions.CheckSession(cookie.Value)
+	if !ok {
+		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
+	}
+	err = p.Likes.CreateNewLike(int(session.UserID), bodyLike.PostId)
+	if err != nil {
+		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (p *PostHandler) UnlikePost(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	if !auth.CheckAuthorization(r, p.Sessions) {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
+
+	decoder := json.NewDecoder(body)
+	bodyLike := &BodyLike{}
+	err := decoder.Decode(bodyLike)
+	if err != nil {
+		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
+		return
+	}
+
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Error(w, `{"error": "wrong cookie"}`, http.StatusBadRequest)
+	}
+	session, ok := p.Sessions.CheckSession(cookie.Value)
+	if !ok {
+		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
+	}
+	err = p.Likes.DeleteLike(int(session.UserID), bodyLike.PostId)
+	if err != nil {
+		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
