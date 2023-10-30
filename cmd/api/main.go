@@ -11,6 +11,7 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	"github.com/gorilla/mux"
 )
@@ -23,6 +24,7 @@ func main() {
 		return
 	}
 	defer db.Close()
+
 	// err = db.MigrateUp()
 	// if err != nil {
 	// 	fmt.Println(err)
@@ -50,6 +52,7 @@ func main() {
 	profileStorage := profiles.CreateProfileStorage()
 	postStorage := posts.CreatePostStorage()
 	paymentStorage := payments.CreatePaymentStorage(db.GetDB())
+	subscriptionsStorage := subscriptions.CreateSubscriptionsStorage(db.GetDB())
 
 	// for _, testUser := range testdata.Users {
 	// 	userStoarge.RegisterNewUser(&testUser)
@@ -64,7 +67,8 @@ func main() {
 	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, profileStorage)
 	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, profileStorage)
 	postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, profileStorage)
-	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessionStorage, paymentStorage)
+	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessionStorage, paymentStorage, subscriptionsStorage)
+
 	r := mux.NewRouter()
 
 	r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)

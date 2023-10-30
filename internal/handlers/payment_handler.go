@@ -6,12 +6,15 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gorilla/mux"
+	"github.com/robfig/cron/v3"
+
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	paymentsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/payments"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	pay "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/payment"
-	"github.com/gorilla/mux"
 )
 
 type BodyPayments struct {
@@ -20,16 +23,19 @@ type BodyPayments struct {
 }
 
 type PaymentHandler struct {
-	Sessions sessrep.SessionRepository
-	Payments paymentsrep.PaymentRepository
+	Sessions       sessrep.SessionRepository
+	Payments       paymentsrep.PaymentRepository
+	Susbscriptions subscriptions.SubscriptionRepository
 }
 
 func CreatePaymentHandlerViaRepos(session sessrep.SessionRepository,
 	payments paymentsrep.PaymentRepository,
+	subsciptions subscriptions.SubscriptionRepository,
 ) *PaymentHandler {
 	return &PaymentHandler{
-		session,
-		payments,
+		Sessions:       session,
+		Payments:       payments,
+		Susbscriptions: subsciptions,
 	}
 }
 
@@ -53,12 +59,29 @@ func (p *PaymentHandler) Donate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	paymentId, redirectURL, err := pay.Donate(*payment)
+	if err != nil {
+		http.Error(w, `{"error":"bad id"}`, http.StatusBadRequest)
+		return
+	}
 
 	payment.Status = model.PaymentWaitingStatus
 	payment.UUID = paymentId
 
 	_, err = p.Payments.CreateNewPayment(*payment)
-	bodyPayments := BodyPayments{redirectURL}
+	if err != nil {
+		http.Error(w, `{"error":"bad id"}`, http.StatusBadRequest)
+		return
+	}
+
+	c := cron.New()
+	c.AddFunc("* * * * *", func() {
+		pay.CheckPaymentStatusAPI(p.Payments, *payment)
+		if payment.Status != model.PaymentWaitingStatus {
+			c.Stop()
+		}
+	})
+
+	bodyPayments := BodyPayments{RedirectURL: redirectURL}
 
 	result := Result{Body: bodyPayments}
 	w.WriteHeader(http.StatusOK)
@@ -83,6 +106,10 @@ func (p *PaymentHandler) GetUsersDonates(w http.ResponseWriter, r *http.Request)
 	}
 
 	payments, err := p.Payments.GetPaymentsByUserId(uint(userId))
+	if err != nil {
+		http.Error(w, `{"error":"bad id"}`, http.StatusBadRequest)
+		return
+	}
 
 	result := Result{Body: BodyPayments{Payments: payments}}
 	w.WriteHeader(http.StatusOK)
@@ -107,6 +134,10 @@ func (p *PaymentHandler) GetAuthorDonates(w http.ResponseWriter, r *http.Request
 	}
 
 	payments, err := p.Payments.GetPaymentsByAuthorId(uint(authorId))
+	if err != nil {
+		http.Error(w, `{"error":"bad id"}`, http.StatusBadRequest)
+		return
+	}
 
 	result := Result{Body: BodyPayments{Payments: payments}}
 	w.WriteHeader(http.StatusOK)
