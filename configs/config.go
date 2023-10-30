@@ -14,6 +14,12 @@ const (
 	DatabaseURL          = DatabaseDMS + "://" + DatabaseUser +
 		":" + DatabaseUserPassword + "@" + DatabaseServerIP +
 		":" + DatabaseServerPort + "/" + DatabaseName
-	MigrationsPath = "db/migrations"
-	SourceDriver   = "file://"
+	MigrationsPath  = "db/migrations"
+	PaymentTable    = "public.payment"
+	SourceDriver    = "file://"
+	PaymentAPI      = "https://api.yookassa.ru/v3/"
+	PaymentKeyPath  = "API_key"
+	ShopId          = "273632"
+	ReturnURL       = FrontendServerIP + FrontendServerPort + "/payment"
+	FakeRedirectURL = "https://yoomoney.ru/payments/external/confirmation?orderId=22e12f66-000f-5000-8000-18db351245c7"
 )
