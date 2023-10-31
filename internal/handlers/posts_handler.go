@@ -210,3 +210,47 @@ func (p *PostHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
+func (p *PostHandler) GetFeed(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	w.Header().Add("Content-Type", "application/json")
+	if !auth.CheckAuthorization(r, p.Sessions) {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+
+	cookie, _ := r.Cookie("session_id")
+	session, ok := p.Sessions.CheckSession(cookie.Value)
+	if !ok {
+		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
+	}
+	posts, errPost := p.Posts.GetUsersFeed(uint(session.UserID))
+
+	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
+	if errPost != nil {
+		switch errPost.(type) {
+		case postsrep.ErrorPost:
+			errPost := errPost.(postsrep.ErrorPost)
+			if errors.Is(ErrorNotAuthor, errPost.Err) {
+				res := Result{Err: errPost.Err.Error()}
+				errJSON, err := json.Marshal(res)
+				if err != nil {
+					errJSON = []byte{}
+				}
+				http.Error(w, string(errJSON), errPost.StatusCode)
+				return
+			}
+			http.Error(w, `{"error":"db"}`, errPost.StatusCode)
+			return
+		}
+		return
+	}
+
+	result := Result{Body: BodyPosts{Posts: posts}}
+
+	w.WriteHeader(http.StatusOK)
+	err := json.NewEncoder(w).Encode(&result)
+	if err != nil {
+		log.Println(err)
+	}
+}

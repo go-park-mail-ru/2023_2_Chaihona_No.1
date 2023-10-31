@@ -10,4 +10,5 @@ type PostRepository interface {
 	ChangePost(post model.Post) error
 	GetPostById(id uint) (model.Post, error)
 	GetPostsByAuthorId(authorID uint, subscriberId uint) ([]model.Post, error)
+	GetUsersFeed(userId uint) ([]model.Post, error)
 }
