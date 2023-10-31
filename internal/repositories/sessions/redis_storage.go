@@ -2,7 +2,6 @@ package sessions
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 	"time"
 
