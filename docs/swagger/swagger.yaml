@@ -1,6 +1,17 @@
 basePath: /api/v1/
 consumes:
     - application/json
+definitions:
+    result:
+        properties:
+            body:
+                x-go-name: Body
+            error:
+                type: string
+                x-go-name: Err
+        type: object
+        x-go-name: Result
+        x-go-package: github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers
 host: localhost:8001
 info:
     description: Documentation of our kopilka API.
@@ -13,11 +24,17 @@ paths:
             operationId: IsAuthorized
             responses:
                 "200":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
                 "400":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
                 "500":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
             tags:
                 - Auth
         options:
@@ -25,7 +42,9 @@ paths:
             operationId: IsAuthorizedOptions
             responses:
                 "200":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
             tags:
                 - Auth
     /api/v1/login:
@@ -34,7 +53,9 @@ paths:
             operationId: LoginOptions
             responses:
                 "200":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
             tags:
                 - Auth
         post:
@@ -42,11 +63,17 @@ paths:
             operationId: Login
             responses:
                 "200":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
                 "400":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
                 "500":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
             tags:
                 - Auth
     /api/v1/logout:
@@ -55,7 +82,9 @@ paths:
             operationId: LogoutOptions
             responses:
                 "200":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
             tags:
                 - Auth
         post:
@@ -63,11 +92,17 @@ paths:
             operationId: Logout
             responses:
                 "200":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
                 "400":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
                 "500":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
             tags:
                 - Auth
     /api/v1/profile/{id}:
@@ -83,13 +118,21 @@ paths:
                   type: integer
             responses:
                 "200":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
                 "400":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
                 "401":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
                 "500":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
             tags:
                 - Profile
         options:
@@ -97,7 +140,9 @@ paths:
             operationId: GetInfoOptions
             responses:
                 "200":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
             tags:
                 - Profile
     /api/v1/profile/{id}/post:
@@ -113,13 +158,21 @@ paths:
                   type: integer
             responses:
                 "200":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
                 "400":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
                 "401":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
                 "500":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
             tags:
                 - Post
         options:
@@ -127,7 +180,9 @@ paths:
             operationId: GetAllUserPostsOptions
             responses:
                 "200":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
             tags:
                 - Post
     /api/v1/registration:
@@ -136,7 +191,9 @@ paths:
             operationId: SignUpOptions
             responses:
                 "200":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
             tags:
                 - Auth
         post:
@@ -160,26 +217,24 @@ paths:
                   x-go-name: Body
             responses:
                 "200":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
                 "400":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
                 "500":
-                    $ref: '#/responses/result'
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
             tags:
                 - Auth
 produces:
     - application/json
 schemes:
     - http
-security:
-    - api_key: []
 securityDefinitions:
-    oauth2:
-        authorizationUrl: /oauth2/auth
-        flow: accessCode
-        in: header
-        scopes:
-            bar: foo
-        tokenUrl: /oauth2/token
-        type: oauth2
+    basic:
+        type: basic
 swagger: "2.0"
