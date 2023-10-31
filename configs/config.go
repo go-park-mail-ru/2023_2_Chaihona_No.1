@@ -21,4 +21,5 @@ const (
 	SubscriptionTable   = "public.subscription"
 	PostTable           = "public.post"
 	AttachTable         = "public.post_attach"
+	LikeTable           = "public.post_like"
 )

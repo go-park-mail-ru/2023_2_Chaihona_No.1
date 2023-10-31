@@ -28,36 +28,10 @@ func main() {
 	// 	return
 	// }
 
-	// users := squirrel.Select("*").From("public.notification")
-	// type answ struct {
-	// 	A string
-	// 	B string
-	// 	C string
-	// 	D string
-	// 	E string
-	// }
-	// var answ_ins answ
-	// ans := []interface{}{&answ_ins.A, &answ_ins.B, &answ_ins.C, &answ_ins.D, &answ_ins.E}
-	// err = users.RunWith(db).QueryRow().Scan(ans...)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Println(*ans[0].(*string))
-
 	sessionStorage := sessrep.CreateSessionStorage()
 	userStoarge := usrep.CreateUserStorage(db.GetDB())
 	profileStorage := profsrep.CreateProfileStorage()
 	postStorage := postsrep.CreatePostStorage(db.GetDB())
-
-	// for _, testUser := range testdata.Users {
-	// 	userStoarge.RegisterNewUser(&testUser)
-	// }
-	// for _, testProfile := range testdata.Profiles {
-	// 	profileStorage.RegisterNewProfile(&testProfile)
-	// }
-	// for _, testPost := range testdata.Posts {
-	// 	postStorage.CreateNewPost(testPost)
-	// }
 
 	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, profileStorage)
 	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, profileStorage)
@@ -71,6 +45,10 @@ func main() {
 	r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
+	r.HandleFunc("/api/v1/post/{id:[0-9]+}", postHandler.ChangePost).Methods("POST")
+	r.HandleFunc("/api/v1/post", postHandler.CreateNewPost).Methods("POST")
+	r.HandleFunc("/api/v1/post/{id:[0-9]+}", postHandler.DeletePost).Methods("DELETE")
+	r.HandleFunc("/api/v1/feed", postHandler.GetFeed).Methods("GET")
 
 	fmt.Println("Server started")
 	err = http.ListenAndServe(configs.BackendServerPort, r)
