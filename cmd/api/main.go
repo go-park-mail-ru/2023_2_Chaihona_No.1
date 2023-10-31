@@ -45,6 +45,9 @@ func main() {
 	r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
+	r.HandleFunc("/api/v1/post/{id:[0-9]+}", postHandler.ChangePost).Methods("POST")
+	r.HandleFunc("/api/v1/post", postHandler.CreateNewPost).Methods("POST")
+	r.HandleFunc("/api/v1/post/{id:[0-9]+}", postHandler.DeletePost).Methods("DELETE")
 	r.HandleFunc("/api/v1/feed", postHandler.GetFeed).Methods("GET")
 
 	fmt.Println("Server started")

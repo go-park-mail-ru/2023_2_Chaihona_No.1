@@ -111,6 +111,12 @@ func (p *PostHandler) ChangePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cookie, _ := r.Cookie("session_id")
+	session, ok := p.Sessions.CheckSession(cookie.Value)
+	if !ok {
+		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
+	}
+	post.AuthorID = uint(session.UserID)
 	errPost := p.Posts.ChangePost(*post)
 
 	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
@@ -188,7 +194,7 @@ func (p *PostHandler) CreateNewPost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (p *PostHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+func (p *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 	if !auth.CheckAuthorization(r, p.Sessions) {
 		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)

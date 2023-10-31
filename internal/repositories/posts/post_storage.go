@@ -78,10 +78,9 @@ func UpdatePostSQL(post model.Post) squirrel.UpdateBuilder {
 		SetMap(map[string]interface{}{
 			"header":                    post.Header,
 			"body":                      post.Body,
-			"cretor_id":                 post.AuthorID,
 			"min_subscription_level_id": post.MinSubLevelId,
 		}).
-		Where(squirrel.Eq{"id": post.ID}).
+		Where(squirrel.Eq{"id": post.ID, "creator_id": post.AuthorID}).
 		PlaceholderFormat(squirrel.Dollar)
 }
 
