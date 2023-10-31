@@ -41,7 +41,7 @@ func (storage *SessionRedisStorage) CheckSession(sessionId string) (*Session, bo
 	data, err := redis.Bytes(storage.redisConn.Do("GET", sessionId))
 
 	if err != nil {
-		err = errors.Join(ErrRedisCantGetData, err)
+		// err = errors.Join(ErrRedisCantGetData, err)
 		log.Println(err.Error())
 
 		return nil, false
@@ -51,7 +51,7 @@ func (storage *SessionRedisStorage) CheckSession(sessionId string) (*Session, bo
 
 	err = json.Unmarshal(data, sess)
 	if err != nil {
-		err = errors.Join(ErrRedisCantUnpackSessionData, err)
+		// err = errors.Join(ErrRedisCantUnpackSessionData, err)
 		log.Println(err.Error())
 
 		return nil, false
@@ -64,7 +64,7 @@ func (storage *SessionRedisStorage) DeleteSession(sessionID string) error {
 	_, err := redis.Int(storage.redisConn.Do("DEL", sessionID))
 
 	if err != nil {
-		err = errors.Join(ErrRedis, err)
+		// err = errors.Join(ErrRedis, err)
 		log.Println(err.Error())
 
 		return err
