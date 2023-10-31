@@ -7,12 +7,12 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
-	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
+	"github.com/gorilla/mux"
 )
 
 type BodyPosts struct {
@@ -35,6 +35,29 @@ func CreatePostHandlerViaRepos(session sessrep.SessionRepository, posts postsrep
 	}
 }
 
+// swagger:route OPTIONS /api/v1/profile/{id}/post Post GetAllUserPostsOptions
+// Handle OPTIONS request
+// Responses:
+//
+//	200: result
+
+// swagger:route GET /api/v1/profile/{id}/post Post GetAllUserPosts
+// Get user's posts
+//
+// Parameters:
+//   + name: id
+//     in: path
+//     description: ID of user
+//     required: true
+//     type: integer
+//     format: int
+//
+// Responses:
+//
+//	200: result
+//	400: result
+//	401: result
+//	500: result
 func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 	w.Header().Add("Content-Type", "application/json")

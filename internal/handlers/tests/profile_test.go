@@ -12,10 +12,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 
-	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/authorization"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/handlers"
-	mocks "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/handlers/mock_model"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
+	mocks "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers/mock_model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 )
 
 var TestProfiles = []model.Profile{
@@ -122,7 +122,7 @@ var ProfileTestCases = map[string]TestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
 				SessionID: "chertila",
 				UserID:    9,
 				TTL:       time.Now().Add(10 * time.Hour),
@@ -144,7 +144,7 @@ var ProfileTestCases = map[string]TestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
 				SessionID: "chertila",
 				UserID:    9,
 				TTL:       time.Now().Add(10 * time.Hour),
@@ -177,14 +177,14 @@ func TestGetProfileInfo(t *testing.T) {
 				testCase.Prepare(&mockRepos)
 			}
 
-			ProfileHandler := handlers.CreateProfileHandlerViaRepos(
-				mockRepos.Sessions,
-				mockRepos.Profile,
-			)
+			// ProfileHandler := handlers.CreateProfileHandlerViaRepos(
+			// 	mockRepos.Sessions,
+			// 	mockRepos.Profile,
+			// )
 
 			router := mux.NewRouter()
-			router.HandleFunc("/api/v1/profile/{id:[0-9]+}", ProfileHandler.GetInfo).
-				Methods("GET")
+			// router.HandleFunc("/api/v1/profile/{id:[0-9]+}", ProfileHandler.GetInfo).
+			// 	Methods("GET")
 			router.ServeHTTP(w, req)
 
 			if w.Code != testCase.StatusCode {

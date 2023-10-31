@@ -7,11 +7,11 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
-	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
-	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/registration"
 	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
+	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/registration"
 )
 
 const (
@@ -36,7 +36,20 @@ func CreateRepoHandler(
 	}
 }
 
+// swagger:route OPTIONS /api/v1/registration Auth SignUpOptions
+// Handle OPTIONS request
+// Responses:
+//
+//	200: result
 
+// swagger:route POST /api/v1/registration Auth SignUp
+// SignUp user
+//
+// Responses:
+//
+//	200: result
+//	400: result
+//	500: result
 func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 
@@ -95,6 +108,20 @@ func (api *RepoHandler) Signup(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// swagger:route OPTIONS /api/v1/login Auth LoginOptions
+// Handle OPTIONS request
+// Responses:
+//
+//	200: result
+
+// swagger:route POST /api/v1/login Auth Login
+// Login user
+//
+// Responses:
+//
+//	200: result
+//	400: result
+//	500: result
 func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 
@@ -131,6 +158,20 @@ func (api *RepoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// swagger:route OPTIONS /api/v1/logout Auth LogoutOptions
+// Handle OPTIONS request
+// Responses:
+//
+//	200: result
+
+// swagger:route POST /api/v1/logout Auth Logout
+// Logout user
+//
+// Responses:
+//
+//	200: result
+//	400: result
+//	500: result
 func (api *RepoHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 	session, err := r.Cookie("session_id")
@@ -147,6 +188,20 @@ func (api *RepoHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// swagger:route OPTIONS /api/v1/is_authorized Auth IsAuthorizedOptions
+// Handle OPTIONS request
+// Responses:
+//
+//	200: result
+
+// swagger:route GET /api/v1/is_authorized Auth IsAuthorized
+// Check Authorization
+//
+// Responses:
+//
+//	200: result
+//	400: result
+//	500: result
 func (api *RepoHandler) IsAuthorized(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 	w.Header().Add("Content-Type", "application/json")

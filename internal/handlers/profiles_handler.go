@@ -8,10 +8,10 @@ import (
 
 	"github.com/gorilla/mux"
 
-	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 )
 
 type BodyProfile struct {
@@ -33,6 +33,30 @@ func CreateProfileHandlerViaRepos(
 	}
 }
 
+// swagger:route OPTIONS /api/v1/profile/{id} Profile GetInfoOptions
+// Handle OPTIONS request
+// Responses:
+//
+//	200: result
+
+// swagger:route GET /api/v1/profile/{id} Profile GetInfo
+// Get profile info
+//
+// 
+// Parameters:
+//   + name: id
+//     in: path
+//     description: ID of user
+//     required: true
+//     type: integer
+//     format: int
+//
+// Responses:
+//
+//	200: result
+//	400: result
+//	401: result
+//	500: result
 func (p *ProfileHandler) GetInfo(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 	if !auth.CheckAuthorization(r, p.Session) {

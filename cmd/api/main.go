@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gorilla/mux"
-
+	configs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
+	_ "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/docs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
 	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
-	configs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/testdata"
+	_ "github.com/go-swagger/go-swagger"
+	"github.com/gorilla/mux"
 )
 
 func main() {

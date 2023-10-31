@@ -1,0 +1,185 @@
+basePath: /api/v1/
+consumes:
+    - application/json
+host: localhost:8001
+info:
+    description: Documentation of our kopilka API.
+    title: kopilka.
+    version: 1.0.0
+paths:
+    /api/v1/is_authorized:
+        get:
+            description: Check Authorization
+            operationId: IsAuthorized
+            responses:
+                "200":
+                    $ref: '#/responses/result'
+                "400":
+                    $ref: '#/responses/result'
+                "500":
+                    $ref: '#/responses/result'
+            tags:
+                - Auth
+        options:
+            description: Handle OPTIONS request
+            operationId: IsAuthorizedOptions
+            responses:
+                "200":
+                    $ref: '#/responses/result'
+            tags:
+                - Auth
+    /api/v1/login:
+        options:
+            description: Handle OPTIONS request
+            operationId: LoginOptions
+            responses:
+                "200":
+                    $ref: '#/responses/result'
+            tags:
+                - Auth
+        post:
+            description: Login user
+            operationId: Login
+            responses:
+                "200":
+                    $ref: '#/responses/result'
+                "400":
+                    $ref: '#/responses/result'
+                "500":
+                    $ref: '#/responses/result'
+            tags:
+                - Auth
+    /api/v1/logout:
+        options:
+            description: Handle OPTIONS request
+            operationId: LogoutOptions
+            responses:
+                "200":
+                    $ref: '#/responses/result'
+            tags:
+                - Auth
+        post:
+            description: Logout user
+            operationId: Logout
+            responses:
+                "200":
+                    $ref: '#/responses/result'
+                "400":
+                    $ref: '#/responses/result'
+                "500":
+                    $ref: '#/responses/result'
+            tags:
+                - Auth
+    /api/v1/profile/{id}:
+        get:
+            description: Get profile info
+            operationId: GetInfo
+            parameters:
+                - description: ID of user
+                  format: int
+                  in: path
+                  name: id
+                  required: true
+                  type: integer
+            responses:
+                "200":
+                    $ref: '#/responses/result'
+                "400":
+                    $ref: '#/responses/result'
+                "401":
+                    $ref: '#/responses/result'
+                "500":
+                    $ref: '#/responses/result'
+            tags:
+                - Profile
+        options:
+            description: Handle OPTIONS request
+            operationId: GetInfoOptions
+            responses:
+                "200":
+                    $ref: '#/responses/result'
+            tags:
+                - Profile
+    /api/v1/profile/{id}/post:
+        get:
+            description: Get user's posts
+            operationId: GetAllUserPosts
+            parameters:
+                - description: ID of user
+                  format: int
+                  in: path
+                  name: id
+                  required: true
+                  type: integer
+            responses:
+                "200":
+                    $ref: '#/responses/result'
+                "400":
+                    $ref: '#/responses/result'
+                "401":
+                    $ref: '#/responses/result'
+                "500":
+                    $ref: '#/responses/result'
+            tags:
+                - Post
+        options:
+            description: Handle OPTIONS request
+            operationId: GetAllUserPostsOptions
+            responses:
+                "200":
+                    $ref: '#/responses/result'
+            tags:
+                - Post
+    /api/v1/registration:
+        options:
+            description: Handle OPTIONS request
+            operationId: SignUpOptions
+            responses:
+                "200":
+                    $ref: '#/responses/result'
+            tags:
+                - Auth
+        post:
+            description: SignUp user
+            operationId: SignUp
+            parameters:
+                - in: body
+                  name: body
+                  schema:
+                    properties:
+                        login:
+                            type: string
+                            x-go-name: Login
+                        password:
+                            type: string
+                            x-go-name: Password
+                        user_type:
+                            type: string
+                            x-go-name: UserType
+                    type: object
+                  x-go-name: Body
+            responses:
+                "200":
+                    $ref: '#/responses/result'
+                "400":
+                    $ref: '#/responses/result'
+                "500":
+                    $ref: '#/responses/result'
+            tags:
+                - Auth
+produces:
+    - application/json
+schemes:
+    - http
+security:
+    - api_key: []
+securityDefinitions:
+    oauth2:
+        authorizationUrl: /oauth2/auth
+        flow: accessCode
+        in: header
+        scopes:
+            bar: foo
+        tokenUrl: /oauth2/token
+        type: oauth2
+swagger: "2.0"
