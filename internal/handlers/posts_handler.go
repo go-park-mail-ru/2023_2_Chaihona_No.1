@@ -51,9 +51,9 @@ func (p *PostHandler) GetAllUserPosts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID)) 
+	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID))
 
-	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче 
+	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
 	if errPost != nil {
 		switch err.(type) {
 		case postsrep.ErrorPost:
@@ -129,9 +129,9 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 		return Result{}, ErrBadID
 	}
 
-	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID)) 
+	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID))
 
-	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче 
+	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
 	if errPost != nil {
 		switch err.(type) {
 		case postsrep.ErrorPost:

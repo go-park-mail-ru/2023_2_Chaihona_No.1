@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
+	"github.com/gomodule/redigo/redis"
 	"github.com/gorilla/mux"
 
 	configs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
@@ -16,7 +18,13 @@ import (
 )
 
 func main() {
-	sessionStorage := sessrep.CreateSessionStorage()
+	conn, err := redis.DialURL(fmt.Sprintf("redis://@%s:%s", configs.RedisServerIP, configs.RedisServerPort))
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	sessionStorage := sessrep.CreateRedisSessionStorage(conn)
 	userStoarge := usrep.CreateUserStorage()
 	profileStorage := profsrep.CreateProfileStorage()
 	postStorage := postsrep.CreatePostStorage()
@@ -45,6 +53,6 @@ func main() {
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", handlers.NewWrapper(postHandler.GetAllUserPostsStrategy).ServeHTTP).Methods("GET")
 
 	fmt.Println("Server started")
-	err := http.ListenAndServe(configs.BackendServerPort, r)
+	err = http.ListenAndServe(configs.BackendServerPort, r)
 	fmt.Println(err)
 }
