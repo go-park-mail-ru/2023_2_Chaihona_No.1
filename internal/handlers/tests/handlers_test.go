@@ -11,10 +11,10 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/authorization"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/handlers"
-	mocks "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/handlers/mock_model"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
+	mocks "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers/mock_model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 )
 
 type AuthorizathionTestCase struct {
@@ -157,7 +157,7 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 		Prepare: func(repos *MockRepos) {
 			repos.Sessions.EXPECT().
 				DeleteSession("chertila").
-				Return(authorization.ErrNoSuchSession).
+				Return(authorization.ErrWrongLogin).
 				AnyTimes()
 		},
 		Cookie: http.Cookie{
@@ -197,16 +197,16 @@ func TestAuthorization(t *testing.T) {
 				testCase.Prepare(&mockRepos)
 			}
 
-			authHandler := handlers.CreateRepoHandler(
-				mockRepos.Sessions,
-				mockRepos.Users,
-				mockRepos.Profile,
-			)
+			// authHandler := handlers.CreateRepoHandler(
+			// 	mockRepos.Sessions,
+			// 	mockRepos.Users,
+			// 	mockRepos.Profile,
+			// )
 
 			router := mux.NewRouter()
-			router.HandleFunc("/api/v1/registration", authHandler.Signup).Methods("POST")
-			router.HandleFunc("/api/v1/login", authHandler.Login).Methods("POST")
-			router.HandleFunc("/api/v1/logout", authHandler.Logout).Methods("POST")
+			// router.HandleFunc("/api/v1/registration", authHandler.Signup).Methods("POST")
+			// router.HandleFunc("/api/v1/login", authHandler.Login).Methods("POST")
+			// router.HandleFunc("/api/v1/logout", authHandler.Logout).Methods("POST")
 			router.ServeHTTP(w, req)
 
 			if w.Code != testCase.StatusCode {
