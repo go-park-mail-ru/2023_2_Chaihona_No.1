@@ -113,7 +113,7 @@ func (storage *UserStorage) CheckUser(login string) (*model.User, error) {
 	var users []*model.User
 	err = dbscan.ScanAll(&users, rows)
 	if err != nil {
-		return nil, err
+		return nil, ErrNoSuchUser
 	}
 	return users[0], nil
 }

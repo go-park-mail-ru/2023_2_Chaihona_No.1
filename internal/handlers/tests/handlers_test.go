@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -11,11 +12,25 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/authorization"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/handlers"
-	mocks "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/handlers/mock_model"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
+	mocks "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers/tests/mock_model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 )
+
+type MockRepos struct {
+	Users               *mocks.MockUserRepository
+	Sessions            *mocks.MockSessionRepository
+	Posts               *mocks.MockPostRepository
+	Subscriptions       *mocks.MockSubscriptionRepository
+	Subscription_levels *mocks.MockSubscribeLevelRepository
+}
+
+func JSONEncode(posts interface{}) string {
+	res, _ := json.Marshal(posts)
+	return string(res)
+}
 
 type AuthorizathionTestCase struct {
 	Response   string
@@ -62,15 +77,7 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 				Login:    TestUsers[0].Login,
 				Password: TestUsers[0].Password,
 				UserType: TestUsers[0].UserType,
-			}).Return(nil).AnyTimes()
-
-			repos.Profile.EXPECT().RegisterNewProfile(&model.Profile{
-				User: model.User{
-					Login:    TestUsers[0].Login,
-					Password: TestUsers[0].Password,
-					UserType: TestUsers[0].UserType,
-				},
-			}).Return(nil).AnyTimes()
+			}).Return(0, nil).AnyTimes()
 
 			repos.Sessions.EXPECT().RegisterNewSession(gomock.Any()).AnyTimes()
 		},
@@ -93,7 +100,7 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 				Login:    TestUsers[2].Login,
 				Password: TestUsers[2].Password,
 				UserType: TestUsers[2].UserType,
-			}, true).AnyTimes()
+			}, nil).AnyTimes()
 
 			repos.Sessions.EXPECT().RegisterNewSession(gomock.Any()).AnyTimes()
 		},
@@ -104,7 +111,7 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 		Response:   `{"error":"wrong_input"}`,
 		StatusCode: http.StatusBadRequest,
 		Prepare: func(repos *MockRepos) {
-			repos.Users.EXPECT().CheckUser("chertila").Return(nil, false).AnyTimes()
+			repos.Users.EXPECT().CheckUser("chertila").Return(nil, users.ErrNoSuchUser).AnyTimes()
 		},
 	},
 	"unsuccessful simple user login": {
@@ -117,7 +124,7 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 				Login:    TestUsers[2].Login,
 				Password: "bla bla bla",
 				UserType: TestUsers[2].UserType,
-			}, true).AnyTimes()
+			}, nil).AnyTimes()
 		},
 	},
 	"successful simple user logout": {
@@ -157,7 +164,7 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 		Prepare: func(repos *MockRepos) {
 			repos.Sessions.EXPECT().
 				DeleteSession("chertila").
-				Return(authorization.ErrNoSuchSession).
+				Return(sessions.ErrNoSuchSession).
 				AnyTimes()
 		},
 		Cookie: http.Cookie{
@@ -172,6 +179,7 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 func TestAuthorization(t *testing.T) {
 	for caseName, testCase := range SignupTestCases {
 		testCase := testCase
+		caseName := caseName
 		t.Run(caseName, func(t *testing.T) {
 			t.Parallel()
 			url := "/api/v1/" + testCase.APIMethod
@@ -190,7 +198,6 @@ func TestAuthorization(t *testing.T) {
 			mockRepos := MockRepos{
 				Users:    mocks.NewMockUserRepository(ctrl),
 				Sessions: mocks.NewMockSessionRepository(ctrl),
-				Profile:  mocks.NewMockProfileRepository(ctrl),
 			}
 
 			if testCase.Prepare != nil {
@@ -200,7 +207,6 @@ func TestAuthorization(t *testing.T) {
 			authHandler := handlers.CreateRepoHandler(
 				mockRepos.Sessions,
 				mockRepos.Users,
-				mockRepos.Profile,
 			)
 
 			router := mux.NewRouter()

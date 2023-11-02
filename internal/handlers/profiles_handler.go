@@ -126,6 +126,20 @@ func (p *ProfileHandler) ChangeUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
 		return
 	}
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Error(w, `{"error":"wrong_cookie"}`, http.StatusBadRequest)
+		return
+	}
+	session, ok := p.Session.CheckSession(cookie.Value)
+	if !ok {
+		http.Error(w, `{"error":"wrong_session"}`, http.StatusBadRequest)
+		return
+	}
+	if session.UserID != uint32(user.ID) {
+		http.Error(w, `{"error":"wrong_change"}`, http.StatusBadRequest)
+		return
+	}
 
 	err = p.Users.ChangeUser(*user)
 	if err != nil {
@@ -147,6 +161,21 @@ func (p *ProfileHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		http.Error(w, `{"error":"bad id"}`, 400)
+		return
+	}
+
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Error(w, `{"error":"wrong_cookie"}`, http.StatusBadRequest)
+		return
+	}
+	session, ok := p.Session.CheckSession(cookie.Value)
+	if !ok {
+		http.Error(w, `{"error":"wrong_session"}`, http.StatusBadRequest)
+		return
+	}
+	if session.UserID != uint32(id) {
+		http.Error(w, `{"error":"wrong_change"}`, http.StatusBadRequest)
 		return
 	}
 
