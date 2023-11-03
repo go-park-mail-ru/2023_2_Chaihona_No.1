@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"log"
+	"net/http"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
@@ -104,4 +106,20 @@ func (api *RepoHandler) IsAuthorizedStrategy(ctx context.Context, form EmptyForm
 	}
 
 	return Result{Body: map[string]interface{}{"is_authorized": false}}, nil
+}
+
+func (api *RepoHandler) AuthorizeMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Println("AuthorizeMiddleware", r.URL.Path)
+
+		ok := auth.CheckAuthorization(r, api.sessions)
+		if ok {
+			log.Println("not authorized at", r.URL.Path)
+			http.Redirect(w, r, "/", http.StatusFound)
+
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
