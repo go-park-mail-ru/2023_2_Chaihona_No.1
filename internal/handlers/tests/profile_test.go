@@ -13,11 +13,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
-<<<<<<< HEAD
-	mocks "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers/mock_model"
-=======
 	mocks "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers/tests/mock_model"
->>>>>>> CH-25_profile
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 )
@@ -315,16 +311,6 @@ func TestGetProfileInfo(t *testing.T) {
 				testCase.Prepare(&mockRepos)
 			}
 
-<<<<<<< HEAD
-			// ProfileHandler := handlers.CreateProfileHandlerViaRepos(
-			// 	mockRepos.Sessions,
-			// 	mockRepos.Profile,
-			// )
-
-			router := mux.NewRouter()
-			// router.HandleFunc("/api/v1/profile/{id:[0-9]+}", ProfileHandler.GetInfo).
-			// 	Methods("GET")
-=======
 			ProfileHandler := handlers.CreateProfileHandlerViaRepos(
 				mockRepos.Sessions,
 				mockRepos.Users,
@@ -339,7 +325,7 @@ func TestGetProfileInfo(t *testing.T) {
 				Methods("POST")
 			router.HandleFunc("/api/v1/profile/{id:[0-9]+}", ProfileHandler.DeleteUser).
 				Methods("DELETE")
->>>>>>> CH-25_profile
+
 			router.ServeHTTP(w, req)
 
 			if w.Code != testCase.StatusCode {

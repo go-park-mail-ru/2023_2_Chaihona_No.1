@@ -20,6 +20,9 @@ const (
 	UserTable           = "public.user"
 	SubscribeLevelTable = "public.subscription_level"
 	SubscriptionTable   = "public.subscription"
+	PostTable           = "public.post"
+	AttachTable         = "public.post_attach"
+	LikeTable           = "public.post_like"
 
 	RedisServerIP   = "127.0.0.1"
 	RedisServerPort = "6379"

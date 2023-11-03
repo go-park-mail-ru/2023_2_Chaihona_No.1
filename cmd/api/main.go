@@ -9,7 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/db/postgresql"
 	_ "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/docs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
+	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	levels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscribe_levels"
 	subs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
@@ -57,7 +57,7 @@ func main() {
 	userStoarge := usrep.CreateUserStorage(db.GetDB())
 	levelStorage := levels.CreateSubscribeLevelStorage(db.GetDB())
 	subsStorage := subs.CreateSubscriptionsStorage(db.GetDB())
-	postStorage := posts.CreatePostStorage()
+	postStorage := posts.CreatePostStorage(db.GetDB())
 
 	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge)
 	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, userStoarge, levelStorage, subsStorage)
@@ -73,6 +73,10 @@ func main() {
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.ChangeUser).Methods("POST")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.DeleteUser).Methods(http.MethodDelete)
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
+	r.HandleFunc("/api/v1/post/{id:[0-9]+}", postHandler.ChangePost).Methods("POST")
+	r.HandleFunc("/api/v1/post", postHandler.CreateNewPost).Methods("POST")
+	r.HandleFunc("/api/v1/post/{id:[0-9]+}", postHandler.DeletePost).Methods("DELETE")
+	r.HandleFunc("/api/v1/feed", postHandler.GetFeed).Methods("GET")
 
 	fmt.Println("Server started")
 	err = http.ListenAndServe(configs.BackendServerPort, r)

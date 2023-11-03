@@ -65,7 +65,15 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 		return Result{}, ErrBadID
 	}
 
-	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID))
+	cookie := auth.GetSession(ctx)
+	if cookie == nil {
+		return Result{}, ErrNoCookie
+	}
+	session, ok := p.Sessions.CheckSession(auth.cookie.Value)
+	if !ok {
+		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
+	}
+	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID), uint(session.UserID))
 
 	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
 	if errPost != nil {
@@ -84,43 +92,183 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 			}
 			return Result{}, ErrDataBase
 		}
-	}
-
-	cookie := auth.GetSession(ctx)
-	if cookie == nil {
-		return Result{}, ErrNoCookie
-	}
-
-	session, _ := p.Sessions.CheckSession(cookie.Value)
-	userID := session.UserID
-	profile, ok := p.Profiles.GetProfile(uint(userID))
-	if !ok {
-		return Result{}, ErrNoProfile
-	}
-	subscriptions := profile.Subscriptions
-	isSubscirber := false
-	for _, user := range subscriptions {
-		if user.ID == uint(authorID) {
-			isSubscirber = true
-		}
-	}
-
-	if !isSubscirber {
-		for i := range posts {
-			switch posts[i].Access {
-			case model.SubscribersAccess:
-				posts[i].HasAccess = false
-				posts[i].Reason = model.LowLevelReason
-				posts[i].Body = ""
-			case model.EveryoneAccess:
-				posts[i].HasAccess = true
-			}
-		}
-	} else {
-		for i := range posts {
-			posts[i].HasAccess = true
-		}
+		return
 	}
 
 	return Result{Body: BodyPosts{Posts: posts}}, nil
+}
+
+func (p *PostHandler) ChangePost(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	if !auth.CheckAuthorization(r, p.Sessions) {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+
+	vars := mux.Vars(r)
+	_, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, `{"error":"bad id"}`, http.StatusBadRequest)
+		return
+	}
+
+	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
+
+	decoder := json.NewDecoder(body)
+	post := &model.Post{}
+
+	err = decoder.Decode(post)
+	if err != nil {
+		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
+		return
+	}
+
+	cookie, _ := r.Cookie("session_id")
+	session, ok := p.Sessions.CheckSession(cookie.Value)
+	if !ok {
+		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
+	}
+	post.AuthorID = uint(session.UserID)
+	errPost := p.Posts.ChangePost(*post)
+
+	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
+	if errPost != nil {
+		switch err.(type) {
+		case postsrep.ErrorPost:
+			errPost := errPost.(postsrep.ErrorPost)
+			if errors.Is(ErrorNotAuthor, errPost.Err) {
+				res := Result{Err: errPost.Err.Error()}
+				errJSON, err := json.Marshal(res)
+				if err != nil {
+					errJSON = []byte{}
+				}
+				http.Error(w, string(errJSON), errPost.StatusCode)
+				return
+			}
+			http.Error(w, `{"error":"db"}`, errPost.StatusCode)
+			return
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (p *PostHandler) CreateNewPost(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	if !auth.CheckAuthorization(r, p.Sessions) {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+
+	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
+
+	decoder := json.NewDecoder(body)
+	post := &model.Post{}
+
+	err := decoder.Decode(post)
+	if err != nil {
+		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
+		return
+	}
+
+	postId, errPost := p.Posts.CreateNewPost(*post)
+
+	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
+	if errPost != nil {
+		switch err.(type) {
+		case postsrep.ErrorPost:
+			errPost := errPost.(postsrep.ErrorPost)
+			if errors.Is(ErrorNotAuthor, errPost.Err) {
+				res := Result{Err: errPost.Err.Error()}
+				errJSON, err := json.Marshal(res)
+				if err != nil {
+					errJSON = []byte{}
+				}
+				http.Error(w, string(errJSON), errPost.StatusCode)
+				return
+			}
+			http.Error(w, `{"error":"db"}`, errPost.StatusCode)
+			return
+		}
+		return
+	}
+
+	bodyResponse := map[string]interface{}{
+		"id": postId,
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(&Result{Body: bodyResponse})
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func (p *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	if !auth.CheckAuthorization(r, p.Sessions) {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, `{"error":"bad id"}`, 400)
+		return
+	}
+
+	err = p.Posts.DeletePost(uint(id))
+	if err != nil {
+		http.Error(w, `{"error":"db"}`, 500)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (p *PostHandler) GetFeed(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	w.Header().Add("Content-Type", "application/json")
+	if !auth.CheckAuthorization(r, p.Sessions) {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+
+	cookie, _ := r.Cookie("session_id")
+	session, ok := p.Sessions.CheckSession(cookie.Value)
+	if !ok {
+		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
+	}
+	posts, errPost := p.Posts.GetUsersFeed(uint(session.UserID))
+
+	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
+	if errPost != nil {
+		switch errPost.(type) {
+		case postsrep.ErrorPost:
+			errPost := errPost.(postsrep.ErrorPost)
+			if errors.Is(ErrorNotAuthor, errPost.Err) {
+				res := Result{Err: errPost.Err.Error()}
+				errJSON, err := json.Marshal(res)
+				if err != nil {
+					errJSON = []byte{}
+				}
+				http.Error(w, string(errJSON), errPost.StatusCode)
+				return
+			}
+			http.Error(w, `{"error":"db"}`, errPost.StatusCode)
+			return
+		}
+		return
+	}
+
+	result := Result{Body: BodyPosts{Posts: posts}}
+
+	w.WriteHeader(http.StatusOK)
+	err := json.NewEncoder(w).Encode(&result)
+	if err != nil {
+		log.Println(err)
+	}
 }

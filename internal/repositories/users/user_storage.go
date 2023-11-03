@@ -131,6 +131,19 @@ func (storage *UserStorage) GetUser(id int) (model.User, error) {
 	return *users[0], nil
 }
 
+func (storage *UserStorage) CheckUser(login string) (*model.User, bool) {
+	rows, err := SelectUserSQL(login).RunWith(storage.db).Query()
+	if err != nil {
+		return nil, false
+	}
+	var users []*model.User
+	err = dbscan.ScanAll(&users, rows)
+	if err != nil {
+		return model.User{}, err
+	}
+	return users[0], nil
+}
+
 func (storage *UserStorage) GetUserWithSubscribers(id int) (model.User, error) {
 	rows, err := SelectUserByIdSQLWithSubscribers(id).RunWith(storage.db).Query()
 	if err != nil {

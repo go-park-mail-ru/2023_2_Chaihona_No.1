@@ -16,6 +16,7 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
 	mocks "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers/mock_model"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 )
 
@@ -184,11 +185,11 @@ var PostTestCases = map[string]TestCase{
 				},
 			}, nil).AnyTimes()
 
-			// repos.Sessions.EXPECT().CheckSession("chertila").Return(&auth.Session{
-			// 	SessionID: "chertila",
-			// 	UserID:    9,
-			// 	TTL:       time.Now().Add(10 * time.Hour),
-			// }, true).AnyTimes()
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
+				SessionID: "chertila",
+				UserID:    9,
+				TTL:       time.Now().Add(10 * time.Hour),
+			}, true).AnyTimes()
 
 			repos.Profile.EXPECT().GetProfile(uint(9)).Return(&model.Profile{
 				User: model.User{
@@ -213,7 +214,7 @@ var PostTestCases = map[string]TestCase{
 		Prepare: func(repos *MockRepos) {
 			repos.Posts.EXPECT().
 				GetPostsByAuthorId(uint(4)).
-				// Return([]model.Post{}, &model.ErrorPost{Err: handlers.ErrorNotAuthor, StatusCode: http.StatusBadRequest}).
+				Return([]model.Post{}, &posts.ErrorPost{Err: handlers.ErrorNotAuthor, StatusCode: http.StatusBadRequest}).
 				AnyTimes()
 			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
 				SessionID: "chertila",
@@ -255,7 +256,7 @@ func TestGetPosts(t *testing.T) {
 
 			router := mux.NewRouter()
 			// router.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", PostHandler.GetAllUserPosts).
-			// 	Methods("GET")
+			// Methods("GET")
 			router.ServeHTTP(w, req)
 
 			if w.Code != testCase.StatusCode {

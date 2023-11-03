@@ -5,9 +5,10 @@ import (
 )
 
 type PostRepository interface {
-	CreateNewPost(post model.Post) error
+	CreateNewPost(post model.Post) (int, error)
 	DeletePost(id uint) error
+	ChangePost(post model.Post) error
 	GetPostById(id uint) (model.Post, error)
-	GetPostsByAuthorId(authorID uint) ([]model.Post, error)
-	GetPosts() ([]model.Post, error)
+	GetPostsByAuthorId(authorID uint, subscriberId uint) ([]model.Post, error)
+	GetUsersFeed(userId uint) ([]model.Post, error)
 }
