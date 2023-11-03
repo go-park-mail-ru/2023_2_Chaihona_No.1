@@ -81,9 +81,9 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 	if cookie == nil {
 		return Result{}, ErrNoCookie
 	}
-	session, ok := p.Sessions.CheckSession(auth.cookie.Value)
+	session, ok := p.Sessions.CheckSession(cookie.Value)
 	if !ok {
-		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
+		return Result{}, ErrNoSession
 	}
 	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID), uint(session.UserID))
 
@@ -104,7 +104,8 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 			}
 			return Result{}, ErrDataBase
 		}
-		return
+		//подумать
+		return Result{}, errPost
 	}
 
 	return Result{Body: BodyPosts{Posts: posts}}, nil

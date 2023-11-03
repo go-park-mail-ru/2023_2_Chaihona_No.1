@@ -3,14 +3,11 @@ package handlers
 import (
 	"context"
 
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/registration"
-)
-
-const (
-	maxBytesToRead = 1024 * 2
 )
 
 type RepoHandler struct {
@@ -54,12 +51,12 @@ func CreateRepoHandler(
 //	500: result
 func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm) (*Result, error) {
 	user := &model.User{
-		Login:    form.Login,
-		Password: form.Password,
-		UserType: form.UserType,
+		Login:    form.Body.Login,
+		Password: form.Body.Password,
+		UserType: form.Body.UserType,
 	}
 
-	errReg := api.users.RegisterNewUser(user)
+	id, errReg := api.users.RegisterNewUser(user)
 	if errReg != nil {
 		return nil, errReg
 	}

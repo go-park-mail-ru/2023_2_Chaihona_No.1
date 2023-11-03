@@ -30,9 +30,8 @@ func (form SignupForm) Validate() (*model.User, error) {
 }
 
 func (form SignupForm) IsValide() bool {
-	isLenCorrect := len(form.Login) > 0 && len(form.Password) > 0
-	isUserTypeCorrect := form.UserType == "simple_user" || form.UserType == "creator"
-
+	isLenCorrect := len(form.Body.Login) > 0 && len(form.Body.Password) > 0
+	isUserTypeCorrect := form.Body.UserType == "simple_user" || form.Body.UserType == "creator"
 
 	return isLenCorrect && isUserTypeCorrect
 }

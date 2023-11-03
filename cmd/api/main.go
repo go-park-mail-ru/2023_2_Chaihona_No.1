@@ -11,10 +11,11 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/likes"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/payments"
-	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	levels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscribe_levels"
 	subscriptionlevels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscription_levels"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
 	subs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	_ "github.com/go-swagger/go-swagger"
@@ -29,35 +30,20 @@ func main() {
 		return
 	}
 
-	sessionStorage := sessrep.CreateRedisSessionStorage(conn)
-	userStoarge := usrep.CreateUserStorage()
-	profileStorage := profsrep.CreateProfileStorage()
-	postStorage := postsrep.CreatePostStorage()
-
-	for _, testUser := range testdata.Users {
-		userStoarge.RegisterNewUser(&testUser)
-	}
-	for _, testProfile := range testdata.Profiles {
-		profileStorage.RegisterNewProfile(&testProfile)
-	}
-	for _, testPost := range testdata.Posts {
-		postStorage.CreateNewPost(testPost)
-	}
 	var db postgresql.Database
-	err := db.Connect()
+	err = db.Connect()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	defer db.Close()
-
 	// err = db.MigrateUp()
 	// if err != nil {
 	// 	fmt.Println(err)
 	// 	return
 	// }
 
-	sessionStorage := sessrep.CreateSessionStorage()
+	sessionStorage := sessrep.CreateRedisSessionStorage(conn)
 	userStoarge := usrep.CreateUserStorage(db.GetDB())
 	levelStorage := levels.CreateSubscribeLevelStorage(db.GetDB())
 	subsStorage := subs.CreateSubscriptionsStorage(db.GetDB())
@@ -75,14 +61,14 @@ func main() {
 	r := mux.NewRouter()
 
 	r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
-	r.HandleFunc("/api/v1/login", rep.Login).Methods("POST")
-	r.HandleFunc("/api/v1/logout", rep.Logout).Methods("POST")
-	r.HandleFunc("/api/v1/registration", rep.Signup).Methods("POST")
-	r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")
-	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
+	r.HandleFunc("/api/v1/login", handlers.NewWrapper(rep.LoginStrategy).ServeHTTP).Methods("POST")
+	r.HandleFunc("/api/v1/logout", handlers.NewWrapper(rep.LogoutStrategy).ServeHTTP).Methods("POST")
+	r.HandleFunc("/api/v1/registration", handlers.NewWrapper(rep.SignupStrategy).ServeHTTP).Methods("POST")
+	r.HandleFunc("/api/v1/is_authorized", handlers.NewWrapper(rep.IsAuthorizedStrategy).ServeHTTP).Methods("GET")
+	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", handlers.NewWrapper(profileHandler.GetInfoStrategy).ServeHTTP).Methods("GET")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.ChangeUser).Methods("POST")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.DeleteUser).Methods(http.MethodDelete)
-	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
+	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", handlers.NewWrapper(postHandler.GetAllUserPostsStrategy).ServeHTTP).Methods("GET")
 	r.HandleFunc("/api/v1/post/{id:[0-9]+}", postHandler.ChangePost).Methods("POST")
 	r.HandleFunc("/api/v1/post", postHandler.CreateNewPost).Methods("POST")
 	r.HandleFunc("/api/v1/post/{id:[0-9]+}", postHandler.DeletePost).Methods("DELETE")

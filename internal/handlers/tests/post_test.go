@@ -14,7 +14,7 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
-	mocks "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers/mock_model"
+	mocks "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers/tests/mock_model"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"

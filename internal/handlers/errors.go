@@ -7,7 +7,6 @@ import (
 	"net/http"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 )
 
@@ -73,6 +72,11 @@ var (
 		Msg:        `{"error":"no cookie"}`,
 	}
 
+	ErrNoSession = ErrorHttp{
+		StatusCode: http.StatusBadRequest,
+		Msg:        `{"error":"no session"}`,
+	}
+
 	ErrNoProfile = ErrorHttp{
 		StatusCode: http.StatusBadRequest,
 		Msg:        `{"error":"no profile"}`,
@@ -92,11 +96,6 @@ func WriteHttpError(w http.ResponseWriter, err error) {
 
 	case users.ErrorUserRegistration:
 		err := err.(users.ErrorUserRegistration)
-		jsonErr, _ := json.Marshal(err)
-		http.Error(w, string(jsonErr), err.StatusCode)
-
-	case profiles.ErrorProfileRegistration:
-		err := err.(profiles.ErrorProfileRegistration)
 		jsonErr, _ := json.Marshal(err)
 		http.Error(w, string(jsonErr), err.StatusCode)
 

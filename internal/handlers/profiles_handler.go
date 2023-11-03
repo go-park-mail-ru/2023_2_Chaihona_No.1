@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
@@ -10,6 +12,7 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
+	"github.com/gorilla/mux"
 )
 
 type BodyProfile struct {
@@ -77,15 +80,13 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 
 	user, err := p.Users.GetUserWithSubscribers(id)
 	if err != nil {
-		http.Error(w, `{"error":"db1"}`, 500)
-		return
+		return Result{}, err
 	}
 	var profile model.Profile
 	if user.Is_author {
 		levels, err := p.Levels.GetUserLevels(uint(id))
 		if err != nil {
-			http.Error(w, `{"error":"db"}`, 500)
-			return
+			return Result{}, err
 		}
 		user.UserType = model.CreatorStatus
 		profile = model.Profile{
@@ -96,8 +97,7 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 	} else {
 		subscriptions, err := p.Subscriptions.GetUserSubscriptions(id)
 		if err != nil {
-			http.Error(w, `{"error":"db"}`, 500)
-			return
+			return Result{}, err
 		}
 
 		// donated, err := p.Payments.SumUserPayments(id)
@@ -112,7 +112,7 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 			Subscriptions: subscriptions,
 		}
 	}
-	return Result{Body: BodyProfile{Profile: *profile}}, nil
+	return Result{Body: BodyProfile{Profile: profile}}, nil
 
 }
 
