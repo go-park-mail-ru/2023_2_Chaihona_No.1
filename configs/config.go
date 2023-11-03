@@ -14,6 +14,8 @@ const (
 	DatabaseURL          = DatabaseDMS + "://" + DatabaseUser +
 		":" + DatabaseUserPassword + "@" + DatabaseServerIP +
 		":" + DatabaseServerPort + "/" + DatabaseName
-	MigrationsPath = "db/migrations"
-	SourceDriver   = "file://"
+	MigrationsPath  = "db/migrations"
+	SourceDriver    = "file://"
+	RedisServerIP   = "127.0.0.1"
+	RedisServerPort = "6379"
 )

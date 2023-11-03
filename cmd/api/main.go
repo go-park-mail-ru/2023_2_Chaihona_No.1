@@ -2,13 +2,42 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/db/postgresql"
 	_ "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/docs"
 	_ "github.com/go-swagger/go-swagger"
+	"github.com/gomodule/redigo/redis"
+
+	configs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
+	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
+	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
+	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/testdata"
 )
 
 func main() {
+	conn, err := redis.DialURL(fmt.Sprintf("redis://@%s:%s", configs.RedisServerIP, configs.RedisServerPort))
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	sessionStorage := sessrep.CreateRedisSessionStorage(conn)
+	userStoarge := usrep.CreateUserStorage()
+	profileStorage := profsrep.CreateProfileStorage()
+	postStorage := postsrep.CreatePostStorage()
+
+	for _, testUser := range testdata.Users {
+		userStoarge.RegisterNewUser(&testUser)
+	}
+	for _, testProfile := range testdata.Profiles {
+		profileStorage.RegisterNewProfile(&testProfile)
+	}
+	for _, testPost := range testdata.Posts {
+		postStorage.CreateNewPost(testPost)
+	}
 	var db postgresql.Database
 	err := db.Connect()
 	if err != nil {

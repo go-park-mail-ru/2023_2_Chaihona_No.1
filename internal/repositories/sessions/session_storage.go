@@ -58,16 +58,3 @@ func (storage *SessionStorage) CheckSession(sessionId string) (*Session, bool) {
 
 	return nil, false
 }
-
-func (storage *SessionStorage) GetSessions() ([]Session, error) {
-	storage.Mu.RLock()
-	defer storage.Mu.RUnlock()
-
-	sessions := make([]Session, 0, len(storage.Sessions))
-
-	for _, session := range storage.Sessions {
-		sessions = append(sessions, session)
-	}
-
-	return sessions, nil
-}
