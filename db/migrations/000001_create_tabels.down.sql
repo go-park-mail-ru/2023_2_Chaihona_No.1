@@ -1,0 +1,21 @@
+BEGIN;
+
+DROP TABLE IF EXISTS notification;
+
+DROP TABLE IF EXISTS subscription;
+
+DROP TABLE IF EXISTS post_attach;
+
+DROP TABLE IF EXISTS post_comment;
+
+DROP TABLE IF EXISTS post_like;
+
+DROP TABLE IF EXISTS post;
+
+DROP TABLE IF EXISTS subscription_level;
+
+DROP TABLE IF EXISTS payment;
+
+DROP TABLE IF EXISTS public.user;
+
+COMMIT;

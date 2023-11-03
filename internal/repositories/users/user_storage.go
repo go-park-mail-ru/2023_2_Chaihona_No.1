@@ -1,45 +1,49 @@
 package users
 
 import (
+	"database/sql"
 	"net/http"
 	"sync"
 
+	"github.com/Masterminds/squirrel"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 )
 
 type UserStorage struct {
 	Users map[string]model.User
 	Mu    sync.RWMutex
+	db    *sql.DB
 	Size  uint32
 }
 
-func CreateUserStorage() *UserStorage {
-	storage := &UserStorage{
-		Users: make(map[string]model.User),
-		Mu:    sync.RWMutex{},
-		Size:  0,
+func CreateUserStorage(db *sql.DB) *UserStorage {
+	return &UserStorage{
+		db: db,
 	}
-
-	return storage
 }
 
 func (storage *UserStorage) RegisterNewUser(user *model.User) error {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
 
-	_, ok := storage.Users[user.Login]
-
-	if ok {
+	is_author := true
+	if user.UserType == model.SimpleUserStatus {
+		is_author = false
+	}
+	query := squirrel.Insert("public.user").
+		Columns("nickname", "email", "password", "is_author", "status", "avatar_path", "background_path", "description").
+		Values(user.Nickname, user.Login, user.Password, is_author, user.Status, user.Avatar, user.Background, user.Description).
+		Suffix("RETURING \"id\"").
+		RunWith(storage.db)
+	var userId int
+	err := query.QueryRow().Scan(userId)
+	if err != nil {
 		return ErrorUserRegistration{
 			ErrUserLoginAlreadyExists,
 			http.StatusBadRequest,
 		}
 	}
-
-	user.ID = uint(storage.Size)
-	storage.Size++
-	storage.Users[user.Login] = *user
-
+	//return userId
 	return nil
 }
 

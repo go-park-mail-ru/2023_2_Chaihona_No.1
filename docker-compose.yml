@@ -1,0 +1,26 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: "12345"
+      POSTGRES_USER: "kopilka"
+      POSTGRES_DB: "kopilka"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    ports:
+      - "5432:5432"
+    volumes: 
+      - ./db/dumps/:/docker-entrypoint-initdb.d
+      - ../.:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kopilka -d ../."]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 4G
