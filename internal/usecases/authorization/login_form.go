@@ -1,8 +1,12 @@
 package authorization
 
+// swager:parameters Login
 type LoginForm struct {
-	Login    string `json:"login"`
-	Password string `json:"password"`
+	// in:body
+	Body struct {
+		Login    string `json:"login"`
+		Password string `json:"password"`
+	} `json:"body"`
 }
 
 func (form LoginForm) Validate() bool {

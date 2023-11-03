@@ -9,6 +9,13 @@ import (
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/registration"
+<<<<<<< HEAD
+=======
+)
+
+const (
+	maxBytesToRead = 1024 * 2
+>>>>>>> CH-24_swagger
 )
 
 type RepoHandler struct {
@@ -39,6 +46,20 @@ func CreateRepoHandler(
 	}
 }
 
+// swagger:route OPTIONS /api/v1/registration Auth SignUpOptions
+// Handle OPTIONS request
+// Responses:
+//
+//	200: result
+
+// swagger:route POST /api/v1/registration Auth SignUp
+// SignUp user
+//
+// Responses:
+//
+//	200: result
+//	400: result
+//	500: result
 func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm) (*Result, error) {
 	user := &model.User{
 		Login:    form.Login,
@@ -69,6 +90,20 @@ func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm)
 	return &Result{Body: bodyResponse}, nil
 }
 
+// swagger:route OPTIONS /api/v1/login Auth LoginOptions
+// Handle OPTIONS request
+// Responses:
+//
+//	200: result
+
+// swagger:route POST /api/v1/login Auth Login
+// Login user
+//
+// Responses:
+//
+//	200: result
+//	400: result
+//	500: result
 func (api *RepoHandler) LoginStrategy(ctx context.Context, form auth.LoginForm) (*Result, error) {
 	user, err := auth.Authorize(api.users, &form)
 	if err != nil {
@@ -84,6 +119,20 @@ func (api *RepoHandler) LoginStrategy(ctx context.Context, form auth.LoginForm) 
 	return &Result{Body: bodyResponse}, nil
 }
 
+// swagger:route OPTIONS /api/v1/logout Auth LogoutOptions
+// Handle OPTIONS request
+// Responses:
+//
+//	200: result
+
+// swagger:route POST /api/v1/logout Auth Logout
+// Logout user
+//
+// Responses:
+//
+//	200: result
+//	400: result
+//	500: result
 func (api *RepoHandler) LogoutStrategy(ctx context.Context, form EmptyForm) (Result, error) {
 	session := auth.GetSession(ctx)
 	if session == nil {
@@ -98,6 +147,20 @@ func (api *RepoHandler) LogoutStrategy(ctx context.Context, form EmptyForm) (Res
 	}
 }
 
+// swagger:route OPTIONS /api/v1/is_authorized Auth IsAuthorizedOptions
+// Handle OPTIONS request
+// Responses:
+//
+//	200: result
+
+// swagger:route GET /api/v1/is_authorized Auth IsAuthorized
+// Check Authorization
+//
+// Responses:
+//
+//	200: result
+//	400: result
+//	500: result
 func (api *RepoHandler) IsAuthorizedStrategy(ctx context.Context, form EmptyForm) (Result, error) {
 	if auth.CheckAuthorizationByContext(ctx, api.sessions) {
 		return Result{Body: map[string]interface{}{"is_authorized": true}}, nil

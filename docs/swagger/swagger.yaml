@@ -1,0 +1,240 @@
+basePath: /api/v1/
+consumes:
+    - application/json
+definitions:
+    result:
+        properties:
+            body:
+                x-go-name: Body
+            error:
+                type: string
+                x-go-name: Err
+        type: object
+        x-go-name: Result
+        x-go-package: github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers
+host: localhost:8001
+info:
+    description: Documentation of our kopilka API.
+    title: kopilka.
+    version: 1.0.0
+paths:
+    /api/v1/is_authorized:
+        get:
+            description: Check Authorization
+            operationId: IsAuthorized
+            responses:
+                "200":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+                "400":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+                "500":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+            tags:
+                - Auth
+        options:
+            description: Handle OPTIONS request
+            operationId: IsAuthorizedOptions
+            responses:
+                "200":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+            tags:
+                - Auth
+    /api/v1/login:
+        options:
+            description: Handle OPTIONS request
+            operationId: LoginOptions
+            responses:
+                "200":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+            tags:
+                - Auth
+        post:
+            description: Login user
+            operationId: Login
+            responses:
+                "200":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+                "400":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+                "500":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+            tags:
+                - Auth
+    /api/v1/logout:
+        options:
+            description: Handle OPTIONS request
+            operationId: LogoutOptions
+            responses:
+                "200":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+            tags:
+                - Auth
+        post:
+            description: Logout user
+            operationId: Logout
+            responses:
+                "200":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+                "400":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+                "500":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+            tags:
+                - Auth
+    /api/v1/profile/{id}:
+        get:
+            description: Get profile info
+            operationId: GetInfo
+            parameters:
+                - description: ID of user
+                  format: int
+                  in: path
+                  name: id
+                  required: true
+                  type: integer
+            responses:
+                "200":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+                "400":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+                "401":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+                "500":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+            tags:
+                - Profile
+        options:
+            description: Handle OPTIONS request
+            operationId: GetInfoOptions
+            responses:
+                "200":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+            tags:
+                - Profile
+    /api/v1/profile/{id}/post:
+        get:
+            description: Get user's posts
+            operationId: GetAllUserPosts
+            parameters:
+                - description: ID of user
+                  format: int
+                  in: path
+                  name: id
+                  required: true
+                  type: integer
+            responses:
+                "200":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+                "400":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+                "401":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+                "500":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+            tags:
+                - Post
+        options:
+            description: Handle OPTIONS request
+            operationId: GetAllUserPostsOptions
+            responses:
+                "200":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+            tags:
+                - Post
+    /api/v1/registration:
+        options:
+            description: Handle OPTIONS request
+            operationId: SignUpOptions
+            responses:
+                "200":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+            tags:
+                - Auth
+        post:
+            description: SignUp user
+            operationId: SignUp
+            parameters:
+                - in: body
+                  name: body
+                  schema:
+                    properties:
+                        login:
+                            type: string
+                            x-go-name: Login
+                        password:
+                            type: string
+                            x-go-name: Password
+                        user_type:
+                            type: string
+                            x-go-name: UserType
+                    type: object
+                  x-go-name: Body
+            responses:
+                "200":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+                "400":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+                "500":
+                    description: result
+                    schema:
+                        $ref: '#/definitions/result'
+            tags:
+                - Auth
+produces:
+    - application/json
+schemes:
+    - http
+securityDefinitions:
+    basic:
+        type: basic
+swagger: "2.0"
