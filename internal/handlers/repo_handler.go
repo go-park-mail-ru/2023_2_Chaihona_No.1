@@ -3,25 +3,19 @@ package handlers
 import (
 	"context"
 
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
-	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/registration"
-<<<<<<< HEAD
-=======
 )
 
 const (
 	maxBytesToRead = 1024 * 2
->>>>>>> CH-24_swagger
 )
 
 type RepoHandler struct {
 	sessions sessrep.SessionRepository
 	users    usrep.UserRepository
-	profiles profsrep.ProfileRepository
 }
 
 type EmptyForm struct{}
@@ -37,12 +31,10 @@ func (f EmptyForm) IsEmpty() bool {
 func CreateRepoHandler(
 	sessions sessrep.SessionRepository,
 	users usrep.UserRepository,
-	profiles profsrep.ProfileRepository,
 ) *RepoHandler {
 	return &RepoHandler{
 		sessions,
 		users,
-		profiles,
 	}
 }
 
@@ -72,19 +64,10 @@ func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm)
 		return nil, errReg
 	}
 
-	profile := model.Profile{
-		User: *user,
-	}
-
-	errReg = api.profiles.RegisterNewProfile(&profile)
-	if errReg != nil {
-		return nil, errReg
-	}
-
 	auth.SetSessionContext(ctx, api.sessions, uint32(user.ID))
 
 	bodyResponse := map[string]interface{}{
-		"id": user.ID,
+		"id": id,
 	}
 
 	return &Result{Body: bodyResponse}, nil

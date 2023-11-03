@@ -24,6 +24,9 @@ require (
 	github.com/go-openapi/swag v0.22.4 // indirect
 	github.com/go-openapi/validate v0.22.1 // indirect
 	github.com/go-swagger/go-swagger v0.30.5 // indirect
+	github.com/DATA-DOG/go-sqlmock v1.5.0 // indirect
+	github.com/Masterminds/squirrel v1.5.4 // indirect
+	github.com/georgysavva/scany/v2 v2.0.0 // indirect
 	github.com/golang-migrate/migrate/v4 v4.16.2 // indirect
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/gorilla/handlers v1.5.1 // indirect
@@ -86,6 +89,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/tools v0.14.0 // indirect
+	golang.org/x/tools/cmd/cover v0.1.0-deprecated // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	github.com/golang/mock v1.6.0
 	github.com/gomodule/redigo v1.8.9

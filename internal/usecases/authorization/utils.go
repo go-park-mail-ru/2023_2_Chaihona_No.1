@@ -20,7 +20,7 @@ const (
 func Authorize(users usrep.UserRepository, form *LoginForm) (*model.User, error) {
 	user, ok := users.CheckUser(form.Body.Login)
 
-	if !ok {
+	if err != nil {
 		return nil, ErrWrongLogin
 	}
 
@@ -46,7 +46,7 @@ func CheckAuthorization(r *http.Request, sessions sessrep.SessionRepository) boo
 // стоит заменить на мидлвару в будущем думаю
 func CheckAuthorizationByContext(ctx context.Context, sessions sessrep.SessionRepository) bool {
 	session := GetSession(ctx)
-	
+
 	if session != nil {
 		_, authorized := sessions.CheckSession(session.Value)
 		return authorized

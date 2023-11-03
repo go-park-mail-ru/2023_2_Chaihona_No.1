@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
-	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 )
@@ -19,16 +18,12 @@ type BodyPosts struct {
 type PostHandler struct {
 	Sessions sessrep.SessionRepository
 	Posts    postsrep.PostRepository
-	Profiles profsrep.ProfileRepository
 }
 
-func CreatePostHandlerViaRepos(session sessrep.SessionRepository, posts postsrep.PostRepository,
-	profiles profsrep.ProfileRepository,
-) *PostHandler {
+func CreatePostHandlerViaRepos(session sessrep.SessionRepository, posts postsrep.PostRepository) *PostHandler {
 	return &PostHandler{
 		session,
 		posts,
-		profiles,
 	}
 }
 

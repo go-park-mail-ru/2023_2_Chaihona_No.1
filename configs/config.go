@@ -1,9 +1,10 @@
 package configs
 
 const (
-	FrontendServerIP     = "http://212.233.89.163"
-	FrontendServerPort   = ":8000"
-	BackendServerPort    = ":8001"
+	FrontendServerIP   = "http://localhost"
+	FrontendServerPort = ":8000"
+	BackendServerPort  = ":8001"
+
 	DriverSQL            = "pgx"
 	DatabaseDMS          = "postgres"
 	DatabaseUser         = "kopilka"
@@ -14,8 +15,12 @@ const (
 	DatabaseURL          = DatabaseDMS + "://" + DatabaseUser +
 		":" + DatabaseUserPassword + "@" + DatabaseServerIP +
 		":" + DatabaseServerPort + "/" + DatabaseName
-	MigrationsPath  = "db/migrations"
-	SourceDriver    = "file://"
+	MigrationsPath      = "db/migrations"
+	SourceDriver        = "file://"
+	UserTable           = "public.user"
+	SubscribeLevelTable = "public.subscription_level"
+	SubscriptionTable   = "public.subscription"
+
 	RedisServerIP   = "127.0.0.1"
 	RedisServerPort = "6379"
 )

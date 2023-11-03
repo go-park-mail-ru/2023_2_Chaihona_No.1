@@ -3,18 +3,20 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/db/postgresql"
 	_ "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/docs"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
+	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	levels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscribe_levels"
+	subs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
+	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	_ "github.com/go-swagger/go-swagger"
 	"github.com/gomodule/redigo/redis"
-
-	configs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
-	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
-	profsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/profiles"
-	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
-	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/testdata"
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -51,51 +53,28 @@ func main() {
 	// 	return
 	// }
 
-	// users := squirrel.Select("*").From("public.notification")
-	// type answ struct {
-	// 	A string
-	// 	B string
-	// 	C string
-	// 	D string
-	// 	E string
-	// }
-	// var answ_ins answ
-	// ans := []interface{}{&answ_ins.A, &answ_ins.B, &answ_ins.C, &answ_ins.D, &answ_ins.E}
-	// err = users.RunWith(db).QueryRow().Scan(ans...)
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Println(*ans[0].(*string))
+	sessionStorage := sessrep.CreateSessionStorage()
+	userStoarge := usrep.CreateUserStorage(db.GetDB())
+	levelStorage := levels.CreateSubscribeLevelStorage(db.GetDB())
+	subsStorage := subs.CreateSubscriptionsStorage(db.GetDB())
+	postStorage := posts.CreatePostStorage()
 
-	// sessionStorage := sessrep.CreateSessionStorage()
-	// userStoarge := usrep.CreateUserStorage()
-	// profileStorage := profsrep.CreateProfileStorage()
-	// postStorage := postsrep.CreatePostStorage()
+	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge)
+	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, userStoarge, levelStorage, subsStorage)
+	postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage)
+	r := mux.NewRouter()
 
-	// for _, testUser := range testdata.Users {
-	// 	userStoarge.RegisterNewUser(&testUser)
-	// }
-	// for _, testProfile := range testdata.Profiles {
-	// 	profileStorage.RegisterNewProfile(&testProfile)
-	// }
-	// for _, testPost := range testdata.Posts {
-	// 	postStorage.CreateNewPost(testPost)
-	// }
+	r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
+	r.HandleFunc("/api/v1/login", rep.Login).Methods("POST")
+	r.HandleFunc("/api/v1/logout", rep.Logout).Methods("POST")
+	r.HandleFunc("/api/v1/registration", rep.Signup).Methods("POST")
+	r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")
+	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
+	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.ChangeUser).Methods("POST")
+	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.DeleteUser).Methods(http.MethodDelete)
+	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
 
-	// rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, profileStorage)
-	// profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, profileStorage)
-	// postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, profileStorage)
-	// r := mux.NewRouter()
-
-	// r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
-	// r.HandleFunc("/api/v1/login", rep.Login).Methods("POST")
-	// r.HandleFunc("/api/v1/logout", rep.Logout).Methods("POST")
-	// r.HandleFunc("/api/v1/registration", rep.Signup).Methods("POST")
-	// r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")
-	// r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
-	// r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
-
-	// fmt.Println("Server started")
-	// err := http.ListenAndServe(configs.BackendServerPort, r)
-	// fmt.Println(err)
+	fmt.Println("Server started")
+	err = http.ListenAndServe(configs.BackendServerPort, r)
+	fmt.Println(err)
 }
