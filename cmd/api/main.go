@@ -9,6 +9,7 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/db/postgresql"
 	_ "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/docs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/likes"
 	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	levels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscribe_levels"
@@ -58,10 +59,11 @@ func main() {
 	levelStorage := levels.CreateSubscribeLevelStorage(db.GetDB())
 	subsStorage := subs.CreateSubscriptionsStorage(db.GetDB())
 	postStorage := posts.CreatePostStorage(db.GetDB())
+	likeStorage := likes.CreateLikeStorage(db.GetDB())
 
 	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge)
 	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, userStoarge, levelStorage, subsStorage)
-	postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage)
+	postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, likeStorage)
 	r := mux.NewRouter()
 
 	r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
@@ -77,6 +79,8 @@ func main() {
 	r.HandleFunc("/api/v1/post", postHandler.CreateNewPost).Methods("POST")
 	r.HandleFunc("/api/v1/post/{id:[0-9]+}", postHandler.DeletePost).Methods("DELETE")
 	r.HandleFunc("/api/v1/feed", postHandler.GetFeed).Methods("GET")
+	r.HandleFunc("/api/v1/post/like", postHandler.LikePost).Methods("POST")
+	r.HandleFunc("/api/v1/post/unlike", postHandler.UnlikePost).Methods("DELETE")
 
 	fmt.Println("Server started")
 	err = http.ListenAndServe(configs.BackendServerPort, r)

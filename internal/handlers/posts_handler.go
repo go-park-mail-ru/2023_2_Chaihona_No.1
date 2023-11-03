@@ -2,28 +2,40 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"log"
+	"net/http"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
+	likesrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/likes"
 	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
+	"github.com/gorilla/mux"
 )
 
 type BodyPosts struct {
 	Posts []model.Post `json:"posts"`
 }
 
+type BodyLike struct {
+	PostId int `json:"post_id"`
+}
+
 type PostHandler struct {
 	Sessions sessrep.SessionRepository
 	Posts    postsrep.PostRepository
+	Likes    likesrep.LikeRepository
 }
 
-func CreatePostHandlerViaRepos(session sessrep.SessionRepository, posts postsrep.PostRepository) *PostHandler {
+func CreatePostHandlerViaRepos(session sessrep.SessionRepository, posts postsrep.PostRepository,
+	likes likesrep.LikeRepository) *PostHandler {
 	return &PostHandler{
 		session,
 		posts,
+		likes,
 	}
 }
 
@@ -271,4 +283,68 @@ func (p *PostHandler) GetFeed(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func (p *PostHandler) LikePost(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	if !auth.CheckAuthorization(r, p.Sessions) {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
+
+	decoder := json.NewDecoder(body)
+	bodyLike := &BodyLike{}
+	err := decoder.Decode(bodyLike)
+	if err != nil {
+		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
+		return
+	}
+
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Error(w, `{"error": "wrong cookie"}`, http.StatusBadRequest)
+	}
+	session, ok := p.Sessions.CheckSession(cookie.Value)
+	if !ok {
+		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
+	}
+	err = p.Likes.CreateNewLike(int(session.UserID), bodyLike.PostId)
+	if err != nil {
+		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (p *PostHandler) UnlikePost(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	if !auth.CheckAuthorization(r, p.Sessions) {
+		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
+	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
+
+	decoder := json.NewDecoder(body)
+	bodyLike := &BodyLike{}
+	err := decoder.Decode(bodyLike)
+	if err != nil {
+		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
+		return
+	}
+
+	cookie, err := r.Cookie("session_id")
+	if err != nil {
+		http.Error(w, `{"error": "wrong cookie"}`, http.StatusBadRequest)
+	}
+	session, ok := p.Sessions.CheckSession(cookie.Value)
+	if !ok {
+		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
+	}
+	err = p.Likes.DeleteLike(int(session.UserID), bodyLike.PostId)
+	if err != nil {
+		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
