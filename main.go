@@ -41,7 +41,6 @@ func main() {
 	r.HandleFunc("/api/v1/is_authorized", rep.IsAuthorized).Methods("GET")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", profileHandler.GetInfo).Methods("GET")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", postHandler.GetAllUserPosts).Methods("GET")
-
 	fmt.Println("Server started")
 	err := http.ListenAndServe(":8001", r)
 	fmt.Println(err)
