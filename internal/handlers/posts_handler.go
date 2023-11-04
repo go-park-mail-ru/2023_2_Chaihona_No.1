@@ -145,23 +145,24 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 		return Result{}, ErrUnathorized
 	}
 
-	vars := auth.GetVars(ctx)
-	if vars == nil {
-		return Result{}, ErrNoVars
+	
+	cookie := auth.GetSession(ctx)
+	if cookie == nil {
+		return Result{}, ErrNoCookie
 	}
-	_, err := strconv.Atoi(vars["id"])
-	if err != nil {
-		return Result{}, ErrBadID
+	session, ok := p.Sessions.CheckSession(cookie.Value)
+	if !ok {
+		return Result{}, ErrNoSession
 	}
-
+	
 	post := model.Post{
 		ID: form.Body.ID,
+		AuthorID: uint(session.UserID),
 		MinSubLevelId: form.Body.MinSubLevelId,
 		Header: form.Body.Header,
 		Body: form.Body.Body,
 		Likes: form.Body.Likes,
 	}
-
 	postId, err := p.Posts.CreateNewPost(post)
 	if err != nil {
 		//think
