@@ -67,44 +67,46 @@ func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm)
 	}
 
 	auth.SetSessionContext(ctx, api.sessions, uint32(user.ID))
-	firstLevel := model.SubscribeLevel{
-		Name: "BOMJ",
-		Level: 1,
-		Description: "mda",
-		CostInteger: 100,
-		CostFractional: 0,
-		Currency: "RUB",
-		CreatorID: uint(id),
-	}
-	secondLevel := model.SubscribeLevel{
-		Name: "Normis",
-		Level: 2,
-		Description: "mda",
-		CostInteger: 1000,
-		CostFractional: 0,
-		Currency: "RUB",
-		CreatorID: uint(id),
-	}
-	thirdLevel := model.SubscribeLevel{
-		Name: "King",
-		Level: 3,
-		Description: "mda",
-		CostInteger: 10000,
-		CostFractional: 0,
-		Currency: "RUB",
-		CreatorID: uint(id),
-	}
-	_, err := api.levels.AddNewLevel(firstLevel)
-	if err != nil {
-		return nil, err
-	}
-	_, err = api.levels.AddNewLevel(secondLevel)
-	if err != nil {
-		return nil, err
-	}
-	_, err = api.levels.AddNewLevel(thirdLevel)
-	if err != nil {
-		return nil, err
+	if user.Is_author {
+		firstLevel := model.SubscribeLevel{
+			Name: "BOMJ",
+			Level: 1,
+			Description: "mda",
+			CostInteger: 100,
+			CostFractional: 0,
+			Currency: "RUB",
+			CreatorID: uint(id),
+		}
+		secondLevel := model.SubscribeLevel{
+			Name: "Normis",
+			Level: 2,
+			Description: "mda",
+			CostInteger: 1000,
+			CostFractional: 0,
+			Currency: "RUB",
+			CreatorID: uint(id),
+		}
+		thirdLevel := model.SubscribeLevel{
+			Name: "King",
+			Level: 3,
+			Description: "mda",
+			CostInteger: 10000,
+			CostFractional: 0,
+			Currency: "RUB",
+			CreatorID: uint(id),
+		}
+		_, err := api.levels.AddNewLevel(firstLevel)
+		if err != nil {
+			return nil, err
+		}
+		_, err = api.levels.AddNewLevel(secondLevel)
+		if err != nil {
+			return nil, err
+		}
+		_, err = api.levels.AddNewLevel(thirdLevel)
+		if err != nil {
+			return nil, err
+		}
 	}
 	bodyResponse := map[string]interface{}{
 		"id": id,
