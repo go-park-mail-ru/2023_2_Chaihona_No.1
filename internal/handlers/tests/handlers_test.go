@@ -2,7 +2,7 @@ package handlers_test
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -17,7 +17,6 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 )
 
 type MockRepos struct {
@@ -28,13 +27,8 @@ type MockRepos struct {
 	Subscription_levels *mocks.MockSubscribeLevelRepository
 }
 
-func JSONEncode(posts interface{}) string {
-	res, _ := json.Marshal(posts)
-	return string(res)
-}
-
 type AuthorizathionTestCase struct {
-	Response   string
+	Response   handlers.Result
 	User       TestUser
 	APIMethod  string
 	Prepare    func(repos *MockRepos)
@@ -69,9 +63,9 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 	"successful simple user sign up": {
 		User:      TestUsers[0],
 		APIMethod: "registration",
-		Response: JSONEncode(handlers.Result{Body: map[string]interface{}{
+		Response: handlers.Result{Body: map[string]interface{}{
 			"id": 0,
-		}}),
+		}},
 		StatusCode: http.StatusOK,
 		Prepare: func(repos *MockRepos) {
 			repos.Users.EXPECT().RegisterNewUser(&model.User{
@@ -86,15 +80,15 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 	"unsuccessful simple user sign up": {
 		User:       TestUsers[1],
 		APIMethod:  "registration",
-		Response:   `{"error":"user_validation"}`,
+		Response: handlers.Result{Err: "user_validation"},
 		StatusCode: http.StatusBadRequest,
 	},
 	"successful simple user login": {
 		User:      TestUsers[2],
 		APIMethod: "login",
-		Response: JSONEncode(handlers.Result{Body: map[string]interface{}{
+		Response: handlers.Result{Body: map[string]interface{}{
 			"id": 0,
-		}}),
+		}},
 		StatusCode: http.StatusOK,
 		Prepare: func(repos *MockRepos) {
 			repos.Users.EXPECT().CheckUser("chertila").Return(&model.User{
@@ -109,7 +103,7 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 	"unsuccessful non-existent user login": {
 		User:       TestUsers[2],
 		APIMethod:  "login",
-		Response:   `{"error":"wrong_input"}`,
+		Response: handlers.Result{Err: "wrong_input"},
 		StatusCode: http.StatusBadRequest,
 		Prepare: func(repos *MockRepos) {
 			repos.Users.EXPECT().CheckUser("chertila").Return(nil, users.ErrNoSuchUser).AnyTimes()
@@ -118,7 +112,7 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 	"unsuccessful simple user login": {
 		User:       TestUsers[2],
 		APIMethod:  "login",
-		Response:   `{"error":"wrong_input"}`,
+		Response: handlers.Result{Err: "wrong_input"},
 		StatusCode: http.StatusBadRequest,
 		Prepare: func(repos *MockRepos) {
 			repos.Users.EXPECT().CheckUser("chertila").Return(&model.User{
@@ -131,9 +125,9 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 	"successful simple user logout": {
 		User:      TestUsers[2],
 		APIMethod: "logout",
-		Response: JSONEncode(handlers.Result{Body: map[string]interface{}{
+		Response: handlers.Result{Body: map[string]interface{}{
 			"id": 0,
-		}}),
+		}},
 		StatusCode: http.StatusOK,
 		Prepare: func(repos *MockRepos) {
 			repos.Sessions.EXPECT().DeleteSession("chertila").Return(nil).AnyTimes()
@@ -148,7 +142,7 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 	"unsuccessful simple user logout: wrong Cookie": {
 		User:       TestUsers[2],
 		APIMethod:  "logout",
-		Response:   `{"error":"user_logout"}`,
+		Response: handlers.Result{Err: "user_logout"},
 		StatusCode: http.StatusBadRequest,
 		Cookie: http.Cookie{
 			Name:     "bla bla bla",
@@ -160,7 +154,7 @@ var SignupTestCases = map[string]AuthorizathionTestCase{
 	"unsuccessful simple user logout: non-existent session": {
 		User:       TestUsers[2],
 		APIMethod:  "logout",
-		Response:   `{"error":"user_logout"}`,
+		Response: handlers.Result{Err: "user_logout"},
 		StatusCode: http.StatusInternalServerError,
 		Prepare: func(repos *MockRepos) {
 			repos.Sessions.EXPECT().
@@ -185,7 +179,11 @@ func TestAuthorization(t *testing.T) {
 			t.Parallel()
 			url := "/api/v1/" + testCase.APIMethod
 			postBody := httptest.NewRecorder().Body
-			postBody.Write([]byte(JSONEncode(testCase.User)))
+			body, err := json.Marshal(testCase.User)
+			if err != nil {
+				t.Errorf("%s", err)
+			}
+			postBody.Write([]byte(body))
 			req := httptest.NewRequest("POST", url, postBody)
 			w := httptest.NewRecorder()
 
@@ -210,7 +208,7 @@ func TestAuthorization(t *testing.T) {
 				mockRepos.Users,
 			)
 			router := mux.NewRouter()
-			// router.HandleFunc("/api/v1/registration", authHandler.Signup).Methods("POST")
+			router.HandleFunc("/api/v1/registration", handlers.NewWrapper(authHandler.SignupStrategy).ServeHTTP).Methods("POST")
 			// router.HandleFunc("/api/v1/login", authHandler.Login).Methods("POST")
 			// router.HandleFunc("/api/v1/logout", authHandler.Logout).Methods("POST")
 			router.ServeHTTP(w, req)
@@ -221,10 +219,17 @@ func TestAuthorization(t *testing.T) {
 			}
 
 			resp := w.Result()
-			body, err := ioutil.ReadAll(resp.Body)
-
+			body, err = io.ReadAll(resp.Body)
+			if err != nil {
+				t.Errorf("%s", err)
+			}
+			expected, err := json.Marshal(testCase.Response)
+			if err != nil {
+				t.Errorf("%s", err)
+			}
+			
 			bodyStr := string(body)
-			if err != nil && !reflect.DeepEqual(bodyStr[:len(body)-1], testCase.Response) {
+			if err != nil && !reflect.DeepEqual(bodyStr[:len(body)-1], expected) {
 				t.Errorf("[%s] wrong Response: got %+v, expected %+v",
 					caseName, bodyStr, testCase.Response)
 			}

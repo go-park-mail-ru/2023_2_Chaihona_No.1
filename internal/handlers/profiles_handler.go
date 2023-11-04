@@ -2,8 +2,7 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
-	"net/http"
+	"fmt"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
@@ -12,7 +11,6 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
-	"github.com/gorilla/mux"
 )
 
 type BodyProfile struct {
@@ -72,7 +70,6 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 	if vars == nil {
 		return Result{}, ErrNoVars
 	}
-
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		return Result{}, ErrBadID
@@ -116,90 +113,64 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 
 }
 
-// func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form UserForm) (Result, error)
-
-func (p *ProfileHandler) ChangeUser(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
-	if !auth.CheckAuthorization(r, p.Session) {
-		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-		return
+func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form UserForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+		return Result{}, ErrUnathorized
 	}
 
-	// vars := mux.Vars(r)
-	// _, err := strconv.Atoi(vars["id"])
-	// if err != nil {
-	// 	http.Error(w, `{"error":"bad id"}`, 400)
-	// 	return
-	// }
-
-	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
-
-	decoder := json.NewDecoder(body)
-	user := &model.User{}
-
-	err := decoder.Decode(user)
-	if err != nil {
-		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
-		return
-	}
-	cookie, err := r.Cookie("session_id")
-	if err != nil {
-		http.Error(w, `{"error":"wrong_cookie"}`, http.StatusBadRequest)
-		return
-	}
+	cookie := auth.GetSession(ctx)
 	session, ok := p.Session.CheckSession(cookie.Value)
 	if !ok {
-		http.Error(w, `{"error":"wrong_session"}`, http.StatusBadRequest)
-		return
+		return Result{}, ErrNoSession
 	}
-	if session.UserID != uint32(user.ID) {
-		http.Error(w, `{"error":"wrong_change"}`, http.StatusBadRequest)
-		return
+	if session.UserID != uint32(form.Body.ID) {
+		return Result{}, fmt.Errorf("%s", "wrong_change")
 	}
 
-	err = p.Users.ChangeUser(*user)
+	user := model.User{
+		ID: form.Body.ID,
+		Nickname: form.Body.Nickname,
+		Login: form.Body.Login,
+		UserType: form.Body.UserType,
+		Status: form.Body.Status,
+		Avatar: form.Body.Avatar,
+		Background: form.Body.Background,
+		Description: form.Body.Description,
+	}
+	err := p.Users.ChangeUser(user)
 	if err != nil {
-		http.Error(w, `{"error":"db"}`, 500)
-		return
+		return Result{}, ErrDataBase
 	}
-
-	w.WriteHeader(http.StatusOK)
+	return Result{}, nil
 }
 
-func (p *ProfileHandler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
-	if !auth.CheckAuthorization(r, p.Session) {
-		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-		return
+func (p *ProfileHandler) DeleteUserStratagy(ctx context.Context, form EmptyForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+		return Result{}, ErrUnathorized
 	}
 
-	vars := mux.Vars(r)
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, `{"error":"bad id"}`, 400)
-		return
+		return Result{}, ErrBadID
 	}
 
-	cookie, err := r.Cookie("session_id")
-	if err != nil {
-		http.Error(w, `{"error":"wrong_cookie"}`, http.StatusBadRequest)
-		return
-	}
+	cookie := auth.GetSession(ctx)
 	session, ok := p.Session.CheckSession(cookie.Value)
 	if !ok {
-		http.Error(w, `{"error":"wrong_session"}`, http.StatusBadRequest)
-		return
+		return Result{}, ErrNoSession
 	}
+
 	if session.UserID != uint32(id) {
-		http.Error(w, `{"error":"wrong_change"}`, http.StatusBadRequest)
-		return
+		return Result{}, fmt.Errorf("%s", "wrong_delete")
 	}
 
 	err = p.Users.DeleteUser(id)
 	if err != nil {
-		http.Error(w, `{"error":"db"}`, 500)
-		return
+		return Result{}, ErrDataBase
 	}
-
-	w.WriteHeader(http.StatusOK)
+	return Result{}, nil
 }

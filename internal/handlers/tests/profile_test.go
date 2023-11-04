@@ -1,8 +1,9 @@
 package handlers_test
 
 import (
+	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -18,9 +19,9 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 )
 
-type TestCase struct {
+type ProfileTestCase struct {
 	ID         string
-	Response   string
+	Response   handlers.Result
 	User       model.User
 	Prepare    func(repos *MockRepos)
 	StatusCode int
@@ -123,14 +124,14 @@ var SubscrebeLevels = []model.SubscribeLevel{
 	},
 }
 
-var ProfileTestCases = map[string]TestCase{
+var ProfileTestCases = map[string]ProfileTestCase{
 	"get simple user's profile": {
 		MethodHTTP: "GET",
 		MethodAPI:  "GetInfo",
 		ID:         "5",
-		Response: JSONEncode(handlers.Result{Body: map[string]interface{}{
+		Response: handlers.Result{Body: map[string]interface{}{
 			"profile": TestProfiles[0],
-		}}),
+		}},
 		StatusCode: 200,
 		Cookie: http.Cookie{
 			Name:     "session_id",
@@ -153,9 +154,9 @@ var ProfileTestCases = map[string]TestCase{
 		MethodHTTP: "GET",
 		MethodAPI:  "GetInfo",
 		ID:         "5",
-		Response: JSONEncode(handlers.Result{Body: map[string]interface{}{
+		Response: handlers.Result{Body: map[string]interface{}{
 			"profile": TestProfiles[1],
-		}}),
+		}},
 		StatusCode: 200,
 		Cookie: http.Cookie{
 			Name:     "session_id",
@@ -199,7 +200,7 @@ var ProfileTestCases = map[string]TestCase{
 		MethodAPI:  "ChangeUser",
 		ID:         "5",
 		StatusCode: 400,
-		Response:   `{"error":"wrong_change"}`,
+		Response: handlers.Result{Err: "wrong_change"},
 		Cookie: http.Cookie{
 			Name:     "session_id",
 			Value:    "chertila",
@@ -262,7 +263,7 @@ var ProfileTestCases = map[string]TestCase{
 		MethodHTTP: "DELETE",
 		MethodAPI:  "ChangeUser",
 		ID:         "5",
-		Response:   `{"error":"wrong_change"}`,
+		Response: handlers.Result{Err: "wrong_change"},
 		StatusCode: 400,
 		Cookie: http.Cookie{
 			Name:     "session_id",
@@ -292,7 +293,11 @@ func TestGetProfileInfo(t *testing.T) {
 			w := httptest.NewRecorder()
 			postBody := httptest.NewRecorder().Body
 			if testCase.MethodHTTP == "POST" {
-				postBody.Write([]byte(JSONEncode(testCase.User)))
+				body, err := json.Marshal(testCase.User)
+				if err != nil {
+					t.Errorf("%s", err)
+				}
+				postBody.Write([]byte(body))
 			}
 			req := httptest.NewRequest(testCase.MethodHTTP, url, postBody)
 			req.AddCookie(&testCase.Cookie)
@@ -319,7 +324,7 @@ func TestGetProfileInfo(t *testing.T) {
 			)
 
 			router := mux.NewRouter()
-			router.HandleFunc("/api/v1/profile/{id:[0-9]+}", ProfileHandler.GetInfo).
+			router.HandleFunc("/api/v1/profile/{id:[0-9]+}", handlers.NewWrapper(ProfileHandler.GetInfoStrategy).ServeHTTP).
 				Methods("GET")
 			router.HandleFunc("/api/v1/profile/{id:[0-9]+}", ProfileHandler.ChangeUser).
 				Methods("POST")
@@ -335,10 +340,14 @@ func TestGetProfileInfo(t *testing.T) {
 
 			if testCase.MethodAPI == "GetInfo" {
 				resp := w.Result()
-				body, _ := ioutil.ReadAll(resp.Body)
+				body, _ := io.ReadAll(resp.Body)
+				expected, err := json.Marshal(testCase.Response)
+				if err != nil {
+					t.Errorf("%s", err)
+				}
 
 				bodyStr := string(body)
-				if !reflect.DeepEqual(bodyStr[:len(body)-1], testCase.Response) {
+				if !reflect.DeepEqual(bodyStr[:len(body)-1], expected) {
 					t.Errorf("[%s] wrong Response: got %+v, expected %+v",
 						caseName, bodyStr, testCase.Response)
 				}

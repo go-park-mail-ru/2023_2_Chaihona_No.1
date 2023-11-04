@@ -1,12 +1,10 @@
 package handlers
 
 import (
-	"encoding/json"
+	"context"
 	"log"
-	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/robfig/cron/v3"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
@@ -43,43 +41,35 @@ func CreatePaymentHandlerViaRepos(session sessrep.SessionRepository,
 	}
 }
 
-func (p *PaymentHandler) Donate(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
-	if !auth.CheckAuthorization(r, p.Sessions) {
-		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-		return
-	}
-	w.Header().Add("Content-Type", "application/json")
-
-	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
-
-	decoder := json.NewDecoder(body)
-	payment := &model.Payment{}
-
-	err := decoder.Decode(payment)
-	if err != nil {
-		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
-		return
+func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+		return Result{}, ErrUnathorized
 	}
 
-	paymentId, redirectURL, err := pay.Donate(*payment)
+	payment := model.Payment{
+		DonaterId: form.DonaterId,
+		CreatorId: form.CreatorId,
+		Currency: form.Currency,
+		Value: form.Value,
+	}
+	paymentId, redirectURL, err := pay.Donate(payment)
 	if err != nil {
-		http.Error(w, `{"error":"bad id"}`, http.StatusBadRequest)
-		return
+		//think
+		return Result{}, ErrDataBase
 	}
 
 	payment.Status = model.PaymentWaitingStatus
 	payment.UUID = paymentId
 
-	_, err = p.Payments.CreateNewPayment(*payment)
+	_, err = p.Payments.CreateNewPayment(payment)
 	if err != nil {
-		http.Error(w, `{"error":"bad id"}`, http.StatusBadRequest)
-		return
+		//think
+		return Result{}, ErrDataBase
 	}
 
 	c := cron.New()
-	c.AddFunc("* * * * *", func() {
-		pay.CheckPaymentStatusAPI(p.Payments, *payment)
+	_, err = c.AddFunc("* * * * *", func() {
+		pay.CheckPaymentStatusAPI(p.Payments, payment)
 		if payment.Status != model.PaymentWaitingStatus {
 			levels, err := p.SubscriptionLevels.GetUserLevels(payment.CreatorId)
 			if err != nil {
@@ -109,68 +99,55 @@ func (p *PaymentHandler) Donate(w http.ResponseWriter, r *http.Request) {
 		}
 	})
 
-	bodyPayments := BodyPayments{RedirectURL: redirectURL}
-
-	result := Result{Body: bodyPayments}
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(&result)
 	if err != nil {
-		log.Println(err)
+		//think
+		return Result{}, ErrDataBase 
 	}
+
+	return Result{Body: BodyPayments{RedirectURL: redirectURL}}, nil
 }
 
-func (p *PaymentHandler) GetUsersDonates(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
-	if !auth.CheckAuthorization(r, p.Sessions) {
-		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-		return
+func (p *PaymentHandler) GetUsersDonatesStratagy(ctx context.Context, form PaymentForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+		return Result{}, ErrUnathorized
 	}
 
-	vars := mux.Vars(r)
-	userId, err := strconv.Atoi(vars["id"])
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, `{"error":"bad id"}`, http.StatusBadRequest)
-		return
+		return Result{}, ErrBadID
 	}
 
-	payments, err := p.Payments.GetPaymentsByUserId(uint(userId))
+	payments, err := p.Payments.GetPaymentsByUserId(uint(id))
 	if err != nil {
-		http.Error(w, `{"error":"bad id"}`, http.StatusBadRequest)
-		return
+		//think
+		return Result{}, ErrDataBase 
 	}
-
-	result := Result{Body: BodyPayments{Payments: payments}}
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(&result)
-	if err != nil {
-		log.Println(err)
-	}
+	return Result{Body: BodyPayments{Payments: payments}}, nil
 }
 
-func (p *PaymentHandler) GetAuthorDonates(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
-	if !auth.CheckAuthorization(r, p.Sessions) {
-		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-		return
+func (p *PaymentHandler) GetAuthorDonatesStratagy(ctx context.Context, form PaymentForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+		return Result{}, ErrUnathorized
 	}
 
-	vars := mux.Vars(r)
-	authorId, err := strconv.Atoi(vars["id"])
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, `{"error":"bad id"}`, http.StatusBadRequest)
-		return
+		return Result{}, ErrBadID
 	}
 
-	payments, err := p.Payments.GetPaymentsByAuthorId(uint(authorId))
+	payments, err := p.Payments.GetPaymentsByAuthorId(uint(id))
 	if err != nil {
-		http.Error(w, `{"error":"bad id"}`, http.StatusBadRequest)
-		return
+		//think
+		return Result{}, ErrDataBase 
 	}
 
-	result := Result{Body: BodyPayments{Payments: payments}}
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(&result)
-	if err != nil {
-		log.Println(err)
-	}
+	 return Result{Body: BodyPayments{Payments: payments}}, nil
 }

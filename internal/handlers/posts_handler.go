@@ -2,10 +2,7 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"log"
-	"net/http"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
@@ -13,7 +10,6 @@ import (
 	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
-	"github.com/gorilla/mux"
 )
 
 type BodyPosts struct {
@@ -93,14 +89,7 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 		case postsrep.ErrorPost:
 			errPost := errPost.(postsrep.ErrorPost)
 			if errors.Is(ErrorNotAuthor, errPost.Err) {
-				res := Result{Err: errPost.Err.Error()}
-
-				// не понял, зачем нужен закомментированный кусок куда (с присваиванием пустого массива байт)
-				// errJSON, err := json.Marshal(res)
-				// if err != nil {
-				// 	errJSON = []byte{}
-				// }
-				return res, errPost
+				return Result{}, errPost
 			}
 			return Result{}, ErrDataBase
 		}
@@ -111,241 +100,183 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 	return Result{Body: BodyPosts{Posts: posts}}, nil
 }
 
-func (p *PostHandler) ChangePost(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
-	if !auth.CheckAuthorization(r, p.Sessions) {
-		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-		return
+func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+		return Result{}, ErrUnathorized
 	}
 
-	vars := mux.Vars(r)
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
 	_, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, `{"error":"bad id"}`, http.StatusBadRequest)
-		return
+		return Result{}, ErrBadID
 	}
 
-	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
-
-	decoder := json.NewDecoder(body)
-	post := &model.Post{}
-
-	err = decoder.Decode(post)
-	if err != nil {
-		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
-		return
+	post := model.Post{
+		ID: form.Body.ID,
+		MinSubLevelId: form.Body.MinSubLevelId,
+		Header: form.Body.Header,
+		Body: form.Body.Body,
+		Likes: form.Body.Likes,
 	}
 
-	cookie, _ := r.Cookie("session_id")
+	cookie := auth.GetSession(ctx)
+	if cookie == nil {
+		return Result{}, ErrNoCookie
+	}
 	session, ok := p.Sessions.CheckSession(cookie.Value)
 	if !ok {
-		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
+		return Result{}, ErrNoSession
 	}
+
 	post.AuthorID = uint(session.UserID)
-	errPost := p.Posts.ChangePost(*post)
-
-	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
-	if errPost != nil {
-		switch err.(type) {
-		case postsrep.ErrorPost:
-			errPost := errPost.(postsrep.ErrorPost)
-			if errors.Is(ErrorNotAuthor, errPost.Err) {
-				res := Result{Err: errPost.Err.Error()}
-				errJSON, err := json.Marshal(res)
-				if err != nil {
-					errJSON = []byte{}
-				}
-				http.Error(w, string(errJSON), errPost.StatusCode)
-				return
-			}
-			http.Error(w, `{"error":"db"}`, errPost.StatusCode)
-			return
-		}
-		return
+	err = p.Posts.ChangePost(post)
+	if err != nil {
+		//think
+		return Result{}, ErrDataBase
 	}
-
-	w.WriteHeader(http.StatusOK)
+	return Result{}, nil
 }
 
-func (p *PostHandler) CreateNewPost(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
-	if !auth.CheckAuthorization(r, p.Sessions) {
-		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-		return
+func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+		return Result{}, ErrUnathorized
 	}
 
-	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
-
-	decoder := json.NewDecoder(body)
-	post := &model.Post{}
-
-	err := decoder.Decode(post)
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
+	_, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
-		return
+		return Result{}, ErrBadID
 	}
 
-	postId, errPost := p.Posts.CreateNewPost(*post)
+	post := model.Post{
+		ID: form.Body.ID,
+		MinSubLevelId: form.Body.MinSubLevelId,
+		Header: form.Body.Header,
+		Body: form.Body.Body,
+		Likes: form.Body.Likes,
+	}
 
-	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
-	if errPost != nil {
-		switch err.(type) {
-		case postsrep.ErrorPost:
-			errPost := errPost.(postsrep.ErrorPost)
-			if errors.Is(ErrorNotAuthor, errPost.Err) {
-				res := Result{Err: errPost.Err.Error()}
-				errJSON, err := json.Marshal(res)
-				if err != nil {
-					errJSON = []byte{}
-				}
-				http.Error(w, string(errJSON), errPost.StatusCode)
-				return
-			}
-			http.Error(w, `{"error":"db"}`, errPost.StatusCode)
-			return
-		}
-		return
+	postId, err := p.Posts.CreateNewPost(post)
+	if err != nil {
+		//think
+		return Result{}, ErrDataBase
 	}
 
 	bodyResponse := map[string]interface{}{
 		"id": postId,
 	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(&Result{Body: bodyResponse})
-	if err != nil {
-		log.Println(err)
-	}
+	return Result{Body: bodyResponse}, nil
 }
 
-func (p *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
-	if !auth.CheckAuthorization(r, p.Sessions) {
-		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-		return
+func (p *PostHandler) DeletePostStrategy(ctx context.Context, form EmptyForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+		return Result{}, ErrUnathorized
 	}
 
-	vars := mux.Vars(r)
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
+
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, `{"error":"bad id"}`, 400)
-		return
+		return Result{}, ErrBadID
 	}
 
 	err = p.Posts.DeletePost(uint(id))
 	if err != nil {
-		http.Error(w, `{"error":"db"}`, 500)
-		return
+		//think
+		return Result{}, ErrDataBase
 	}
-
-	w.WriteHeader(http.StatusOK)
+	return Result{}, nil
 }
 
-func (p *PostHandler) GetFeed(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
-	w.Header().Add("Content-Type", "application/json")
-	if !auth.CheckAuthorization(r, p.Sessions) {
-		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-		return
+func (p *PostHandler) GetFeedStrategy(ctx context.Context, form EmptyForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+		return Result{}, ErrUnathorized
 	}
 
-	cookie, _ := r.Cookie("session_id")
-	session, ok := p.Sessions.CheckSession(cookie.Value)
-	if !ok {
-		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
-	}
-	posts, errPost := p.Posts.GetUsersFeed(uint(session.UserID))
-
-	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
-	if errPost != nil {
-		switch errPost.(type) {
-		case postsrep.ErrorPost:
-			errPost := errPost.(postsrep.ErrorPost)
-			if errors.Is(ErrorNotAuthor, errPost.Err) {
-				res := Result{Err: errPost.Err.Error()}
-				errJSON, err := json.Marshal(res)
-				if err != nil {
-					errJSON = []byte{}
-				}
-				http.Error(w, string(errJSON), errPost.StatusCode)
-				return
-			}
-			http.Error(w, `{"error":"db"}`, errPost.StatusCode)
-			return
-		}
-		return
-	}
-
-	result := Result{Body: BodyPosts{Posts: posts}}
-
-	w.WriteHeader(http.StatusOK)
-	err := json.NewEncoder(w).Encode(&result)
-	if err != nil {
-		log.Println(err)
-	}
-}
-
-func (p *PostHandler) LikePost(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
-	if !auth.CheckAuthorization(r, p.Sessions) {
-		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-		return
-	}
-	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
-
-	decoder := json.NewDecoder(body)
-	bodyLike := &BodyLike{}
-	err := decoder.Decode(bodyLike)
-	if err != nil {
-		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
-		return
-	}
-
-	cookie, err := r.Cookie("session_id")
-	if err != nil {
-		http.Error(w, `{"error": "wrong cookie"}`, http.StatusBadRequest)
+	cookie := auth.GetSession(ctx)
+	if cookie == nil {
+		return Result{}, ErrNoCookie
 	}
 	session, ok := p.Sessions.CheckSession(cookie.Value)
 	if !ok {
-		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
+		return Result{}, ErrNoSession
 	}
-	err = p.Likes.CreateNewLike(int(session.UserID), bodyLike.PostId)
+	
+	posts, err := p.Posts.GetUsersFeed(uint(session.UserID))
 	if err != nil {
-		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
-		return
+		return Result{}, ErrDataBase
 	}
-	w.WriteHeader(http.StatusOK)
+
+	return Result{Body: BodyPosts{Posts: posts}}, nil
 }
 
-func (p *PostHandler) UnlikePost(w http.ResponseWriter, r *http.Request) {
-	AddAllowHeaders(w)
-	if !auth.CheckAuthorization(r, p.Sessions) {
-		http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
-		return
-	}
-	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
-
-	decoder := json.NewDecoder(body)
-	bodyLike := &BodyLike{}
-	err := decoder.Decode(bodyLike)
-	if err != nil {
-		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
-		return
+func (p *PostHandler) LikePostStrategy(ctx context.Context, form EmptyForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+		return Result{}, ErrUnathorized
 	}
 
-	cookie, err := r.Cookie("session_id")
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(w, `{"error": "wrong cookie"}`, http.StatusBadRequest)
+		return Result{}, ErrBadID
+	}
+
+	cookie := auth.GetSession(ctx)
+	if cookie == nil {
+		return Result{}, ErrNoCookie
 	}
 	session, ok := p.Sessions.CheckSession(cookie.Value)
 	if !ok {
-		http.Error(w, `{"error" : "wrong cookie"}`, http.StatusBadRequest)
+		return Result{}, ErrNoSession
 	}
-	err = p.Likes.DeleteLike(int(session.UserID), bodyLike.PostId)
+
+	err = p.Likes.CreateNewLike(int(session.UserID), id)
 	if err != nil {
-		http.Error(w, `{"error":"wrong_json"}`, http.StatusBadRequest)
-		return
+		return Result{}, ErrDataBase
 	}
-	w.WriteHeader(http.StatusOK)
+
+	return Result{}, nil
+}
+
+func (p *PostHandler) UnlikePostStrategy(ctx context.Context, form EmptyForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+		return Result{}, ErrUnathorized
+	}
+
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return Result{}, ErrBadID
+	}
+
+	cookie := auth.GetSession(ctx)
+	if cookie == nil {
+		return Result{}, ErrNoCookie
+	}
+	session, ok := p.Sessions.CheckSession(cookie.Value)
+	if !ok {
+		return Result{}, ErrNoSession
+	}
+
+	err = p.Likes.DeleteLike(int(session.UserID), id)
+	if err != nil {
+		return Result{}, ErrDataBase
+	}
+
+	return Result{}, nil
 }
