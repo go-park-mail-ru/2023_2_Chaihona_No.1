@@ -1,7 +1,7 @@
 package configs
 
 const (
-	FrontendServerIP   = "http://localhost"
+	FrontendServerIP   = "http://127.0.0.1"
 	FrontendServerPort = ":8000"
 	BackendServerPort  = ":8001"
 

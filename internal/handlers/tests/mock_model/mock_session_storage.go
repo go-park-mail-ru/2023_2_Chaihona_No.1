@@ -63,21 +63,6 @@ func (mr *MockSessionRepositoryMockRecorder) DeleteSession(sessionID interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteSession", reflect.TypeOf((*MockSessionRepository)(nil).DeleteSession), sessionID)
 }
 
-// GetSessions mocks base method.
-func (m *MockSessionRepository) GetSessions() ([]sessions.Session, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSessions")
-	ret0, _ := ret[0].([]sessions.Session)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetSessions indicates an expected call of GetSessions.
-func (mr *MockSessionRepositoryMockRecorder) GetSessions() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSessions", reflect.TypeOf((*MockSessionRepository)(nil).GetSessions))
-}
-
 // RegisterNewSession mocks base method.
 func (m *MockSessionRepository) RegisterNewSession(session sessions.Session) error {
 	m.ctrl.T.Helper()

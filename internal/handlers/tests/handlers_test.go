@@ -25,6 +25,7 @@ type MockRepos struct {
 	Posts               *mocks.MockPostRepository
 	Subscriptions       *mocks.MockSubscriptionRepository
 	Subscription_levels *mocks.MockSubscribeLevelRepository
+	Likes *mocks.MockLikeRepository
 }
 
 type AuthorizathionTestCase struct {
@@ -34,6 +35,10 @@ type AuthorizathionTestCase struct {
 	Prepare    func(repos *MockRepos)
 	StatusCode int
 	Cookie     http.Cookie
+}
+
+type Body struct {
+	Body any `json:"body"`
 }
 
 type TestUser struct {
@@ -179,7 +184,7 @@ func TestAuthorization(t *testing.T) {
 			t.Parallel()
 			url := "/api/v1/" + testCase.APIMethod
 			postBody := httptest.NewRecorder().Body
-			body, err := json.Marshal(testCase.User)
+			body, err := json.Marshal(Body{Body: testCase.User})
 			if err != nil {
 				t.Errorf("%s", err)
 			}
@@ -209,8 +214,8 @@ func TestAuthorization(t *testing.T) {
 			)
 			router := mux.NewRouter()
 			router.HandleFunc("/api/v1/registration", handlers.NewWrapper(authHandler.SignupStrategy).ServeHTTP).Methods("POST")
-			// router.HandleFunc("/api/v1/login", authHandler.Login).Methods("POST")
-			// router.HandleFunc("/api/v1/logout", authHandler.Logout).Methods("POST")
+			router.HandleFunc("/api/v1/login",  handlers.NewWrapper(authHandler.LoginStrategy).ServeHTTP).Methods("POST")
+			router.HandleFunc("/api/v1/logout",  handlers.NewWrapper(authHandler.LogoutStrategy).ServeHTTP).Methods("POST")
 			router.ServeHTTP(w, req)
 
 			if w.Code != testCase.StatusCode {

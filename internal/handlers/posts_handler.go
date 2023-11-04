@@ -158,10 +158,10 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 	post := model.Post{
 		ID: form.Body.ID,
 		AuthorID: uint(session.UserID),
+		//MinSubLevel: form.Body.MinSubLevel,
 		MinSubLevelId: form.Body.MinSubLevelId,
 		Header: form.Body.Header,
 		Body: form.Body.Body,
-		Likes: form.Body.Likes,
 	}
 	postId, err := p.Posts.CreateNewPost(post)
 	if err != nil {

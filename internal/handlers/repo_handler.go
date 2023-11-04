@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
+	levelrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscribe_levels"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	reg "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/registration"
@@ -13,6 +14,7 @@ import (
 type RepoHandler struct {
 	sessions sessrep.SessionRepository
 	users    usrep.UserRepository
+	levels levelrep.SubscribeLevelRepository
 }
 
 type EmptyForm struct{}
@@ -28,10 +30,12 @@ func (f EmptyForm) IsEmpty() bool {
 func CreateRepoHandler(
 	sessions sessrep.SessionRepository,
 	users usrep.UserRepository,
+	levels levelrep.SubscribeLevelRepository,
 ) *RepoHandler {
 	return &RepoHandler{
 		sessions,
 		users,
+		levels,
 	}
 }
 
@@ -53,7 +57,8 @@ func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm)
 	user := &model.User{
 		Login:    form.Body.Login,
 		Password: form.Body.Password,
-		UserType: form.Body.UserType,
+		// UserType: form.Body.UserType,
+		Is_author: form.Body.IsAuthor,
 	}
 
 	id, errReg := api.users.RegisterNewUser(user)
@@ -62,7 +67,45 @@ func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm)
 	}
 
 	auth.SetSessionContext(ctx, api.sessions, uint32(user.ID))
-
+	firstLevel := model.SubscribeLevel{
+		Name: "BOMJ",
+		Level: 1,
+		Description: "mda",
+		CostInteger: 100,
+		CostFractional: 0,
+		Currency: "RUB",
+		CreatorID: uint(id),
+	}
+	secondLevel := model.SubscribeLevel{
+		Name: "Normis",
+		Level: 2,
+		Description: "mda",
+		CostInteger: 1000,
+		CostFractional: 0,
+		Currency: "RUB",
+		CreatorID: uint(id),
+	}
+	thirdLevel := model.SubscribeLevel{
+		Name: "King",
+		Level: 3,
+		Description: "mda",
+		CostInteger: 10000,
+		CostFractional: 0,
+		Currency: "RUB",
+		CreatorID: uint(id),
+	}
+	_, err := api.levels.AddNewLevel(firstLevel)
+	if err != nil {
+		return nil, err
+	}
+	_, err = api.levels.AddNewLevel(secondLevel)
+	if err != nil {
+		return nil, err
+	}
+	_, err = api.levels.AddNewLevel(thirdLevel)
+	if err != nil {
+		return nil, err
+	}
 	bodyResponse := map[string]interface{}{
 		"id": id,
 	}

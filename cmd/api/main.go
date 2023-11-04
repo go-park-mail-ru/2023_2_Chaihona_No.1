@@ -54,7 +54,7 @@ func main() {
 	subscriptionsStorage := subscriptions.CreateSubscriptionsStorage(db.GetDB())
 	subscriptionLevelsStorage := subscriptionlevels.CreateSubscribeLevelStorage(db.GetDB())
 
-	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge)
+	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, levelStorage)
 	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, userStoarge, levelStorage, subsStorage)
 	postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, likeStorage)
 	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessionStorage, paymentStorage, subscriptionsStorage, subscriptionLevelsStorage)
@@ -78,7 +78,8 @@ func main() {
 	r.HandleFunc("/api/v1/post/{id:[0-9]+}/unlike", handlers.NewWrapper(postHandler.UnlikePostStrategy).ServeHTTP).Methods("DELETE")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/donates/creator", handlers.NewWrapper(paymentHandler.GetAuthorDonatesStratagy).ServeHTTP).Methods("GET")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/donates/donater", handlers.NewWrapper(paymentHandler.GetUsersDonatesStratagy).ServeHTTP).Methods("GET")
-
+	//ручка для выдачи subLevels
+	// r.HandleFunc("/api/v1/profile/{id:[0-9]+}/levels",).Methods("GET")
 	fmt.Println("Server started")
 	err = http.ListenAndServe(configs.BackendServerPort, r)
 	fmt.Println(err)

@@ -34,12 +34,27 @@ func (m *MockPostRepository) EXPECT() *MockPostRepositoryMockRecorder {
 	return m.recorder
 }
 
-// CreateNewPost mocks base method.
-func (m *MockPostRepository) CreateNewPost(post model.Post) error {
+// ChangePost mocks base method.
+func (m *MockPostRepository) ChangePost(post model.Post) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateNewPost", post)
+	ret := m.ctrl.Call(m, "ChangePost", post)
 	ret0, _ := ret[0].(error)
 	return ret0
+}
+
+// ChangePost indicates an expected call of ChangePost.
+func (mr *MockPostRepositoryMockRecorder) ChangePost(post interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePost", reflect.TypeOf((*MockPostRepository)(nil).ChangePost), post)
+}
+
+// CreateNewPost mocks base method.
+func (m *MockPostRepository) CreateNewPost(post model.Post) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateNewPost", post)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CreateNewPost indicates an expected call of CreateNewPost.
@@ -77,32 +92,32 @@ func (mr *MockPostRepositoryMockRecorder) GetPostById(id interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostById", reflect.TypeOf((*MockPostRepository)(nil).GetPostById), id)
 }
 
-// GetPosts mocks base method.
-func (m *MockPostRepository) GetPosts() ([]model.Post, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPosts")
-	ret0, _ := ret[0].([]model.Post)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPosts indicates an expected call of GetPosts.
-func (mr *MockPostRepositoryMockRecorder) GetPosts() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPosts", reflect.TypeOf((*MockPostRepository)(nil).GetPosts))
-}
-
 // GetPostsByAuthorId mocks base method.
-func (m *MockPostRepository) GetPostsByAuthorId(authorID uint) ([]model.Post, error) {
+func (m *MockPostRepository) GetPostsByAuthorId(authorID, subscriberId uint) ([]model.Post, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPostsByAuthorId", authorID)
+	ret := m.ctrl.Call(m, "GetPostsByAuthorId", authorID, subscriberId)
 	ret0, _ := ret[0].([]model.Post)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetPostsByAuthorId indicates an expected call of GetPostsByAuthorId.
-func (mr *MockPostRepositoryMockRecorder) GetPostsByAuthorId(authorID interface{}) *gomock.Call {
+func (mr *MockPostRepositoryMockRecorder) GetPostsByAuthorId(authorID, subscriberId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostsByAuthorId", reflect.TypeOf((*MockPostRepository)(nil).GetPostsByAuthorId), authorID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPostsByAuthorId", reflect.TypeOf((*MockPostRepository)(nil).GetPostsByAuthorId), authorID, subscriberId)
+}
+
+// GetUsersFeed mocks base method.
+func (m *MockPostRepository) GetUsersFeed(userId uint) ([]model.Post, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsersFeed", userId)
+	ret0, _ := ret[0].([]model.Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsersFeed indicates an expected call of GetUsersFeed.
+func (mr *MockPostRepositoryMockRecorder) GetUsersFeed(userId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersFeed", reflect.TypeOf((*MockPostRepository)(nil).GetUsersFeed), userId)
 }

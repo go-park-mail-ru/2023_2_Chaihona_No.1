@@ -10,14 +10,15 @@ type SignupForm struct {
 	Body struct {
 		Login    string `json:"login"`
 		Password string `json:"password"`
-		UserType string `json:"user_type"`
+		UserType string `json:"-"`
+		IsAuthor bool `json:"isAuthor"`
 	} `json:"body"`
 }
 
 func (form SignupForm) Validate() (*model.User, error) {
 	isLenCorrect := len(form.Body.Login) > 0 && len(form.Body.Password) > 0
-	isUserTypeCorrect := form.Body.UserType == "simple_user" || form.Body.UserType == "creator"
-
+	// isUserTypeCorrect := form.Body.UserType == "simple_user" || form.Body.UserType == "creator"
+	isUserTypeCorrect := true
 	if isLenCorrect && isUserTypeCorrect {
 		return &model.User{
 			Login:    form.Body.Login,
@@ -31,8 +32,8 @@ func (form SignupForm) Validate() (*model.User, error) {
 
 func (form SignupForm) IsValide() bool {
 	isLenCorrect := len(form.Body.Login) > 0 && len(form.Body.Password) > 0
-	isUserTypeCorrect := form.Body.UserType == "simple_user" || form.Body.UserType == "creator"
-
+	// isUserTypeCorrect := form.Body.UserType == "simple_user" || form.Body.UserType == "creator"
+	isUserTypeCorrect := true
 	return isLenCorrect && isUserTypeCorrect
 }
 

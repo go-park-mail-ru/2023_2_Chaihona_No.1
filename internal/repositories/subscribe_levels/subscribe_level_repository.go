@@ -5,7 +5,7 @@ import (
 )
 
 type SubscribeLevelRepository interface {
-	AddNewLevel(user *model.Profile) (model.SubscribeLevel, error)
+	AddNewLevel(level model.SubscribeLevel) (int, error)
 	DeleteLevel(id uint) error
 	GetUserLevels(userId uint) ([]model.SubscribeLevel, error)
 	GetLevel(id uint) (model.SubscribeLevel, error)

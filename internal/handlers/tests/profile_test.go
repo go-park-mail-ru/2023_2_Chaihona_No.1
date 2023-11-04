@@ -326,9 +326,9 @@ func TestGetProfileInfo(t *testing.T) {
 			router := mux.NewRouter()
 			router.HandleFunc("/api/v1/profile/{id:[0-9]+}", handlers.NewWrapper(ProfileHandler.GetInfoStrategy).ServeHTTP).
 				Methods("GET")
-			router.HandleFunc("/api/v1/profile/{id:[0-9]+}", ProfileHandler.ChangeUser).
+			router.HandleFunc("/api/v1/profile/{id:[0-9]+}",  handlers.NewWrapper(ProfileHandler.ChangeUserStratagy).ServeHTTP).
 				Methods("POST")
-			router.HandleFunc("/api/v1/profile/{id:[0-9]+}", ProfileHandler.DeleteUser).
+			router.HandleFunc("/api/v1/profile/{id:[0-9]+}",  handlers.NewWrapper(ProfileHandler.DeleteUserStratagy).ServeHTTP).
 				Methods("DELETE")
 
 			router.ServeHTTP(w, req)

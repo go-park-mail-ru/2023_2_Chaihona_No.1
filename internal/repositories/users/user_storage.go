@@ -49,9 +49,9 @@ func SelectUserByIdSQLWithSubscribers(id int) squirrel.SelectBuilder {
 			configs.UserTable, configs.UserTable, configs.UserTable,
 			configs.UserTable, configs.UserTable, configs.UserTable,
 			configs.UserTable, configs.UserTable)).
-		From(configs.UserTable + ", " + configs.SubscriptionTable).
-		Suffix(fmt.Sprintf("WHERE %s.id = %s.creator_id and %s.id = %d",
-			configs.UserTable, configs.SubscriptionTable, configs.UserTable, id)).
+		From(configs.UserTable).
+		LeftJoin(fmt.Sprintf("%s s ON %s.id = s.creator_id", configs.SubscriptionTable, configs.UserTable)).
+		Suffix(fmt.Sprintf("WHERE %s.id = %d", configs.UserTable, id)).
 		Suffix("GROUP BY " + configs.UserTable + ".id")
 }
 

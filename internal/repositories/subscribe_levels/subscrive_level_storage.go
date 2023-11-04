@@ -16,6 +16,14 @@ func SelectUserLevelsSQL(userId uint) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
+func InsertLevelSQL(level model.SubscribeLevel) squirrel.InsertBuilder {
+	return squirrel.Insert(configs.SubscribeLevelTable).
+		Columns("level", "name", "description", "cost_integer", "cost_fractional", "currency", "creator_id").
+		Values(level.Level, level.Name, level.Description, level.CostInteger, level.CostFractional, level.Currency, level.CreatorID).
+		Suffix("RETURNING \"id\"").
+		PlaceholderFormat(squirrel.Dollar)
+}
+
 type SubscribeLevelStorage struct {
 	db *sql.DB
 }
@@ -26,8 +34,13 @@ func CreateSubscribeLevelStorage(db *sql.DB) *SubscribeLevelStorage {
 	}
 }
 
-func (storage *SubscribeLevelStorage) AddNewLevel(user *model.Profile) (model.SubscribeLevel, error) {
-	return model.SubscribeLevel{}, nil
+func (storage *SubscribeLevelStorage) AddNewLevel(level model.SubscribeLevel) (int, error) {
+	var postId int
+	err := InsertLevelSQL(level).RunWith(storage.db).QueryRow().Scan(postId)
+	if err != nil {
+		return 0, err
+	}
+	return postId, nil
 }
 
 func (storage *SubscribeLevelStorage) DeleteLevel(id uint) error {

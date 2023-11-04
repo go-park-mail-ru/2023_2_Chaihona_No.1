@@ -53,7 +53,7 @@ var PostTestCases = map[string]PostTestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Posts.EXPECT().GetPostsByAuthorId(uint(5)).Return([]model.Post{
+			repos.Posts.EXPECT().GetPostsByAuthorId(uint(5), uint(7)).Return([]model.Post{
 				{
 					ID:           9,
 					AuthorID:     5,
@@ -106,7 +106,7 @@ var PostTestCases = map[string]PostTestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Posts.EXPECT().GetPostsByAuthorId(uint(6)).Return([]model.Post{
+			repos.Posts.EXPECT().GetPostsByAuthorId(uint(6), uint(7)).Return([]model.Post{
 				{
 					ID:           13,
 					AuthorID:     6,
@@ -160,7 +160,7 @@ var PostTestCases = map[string]PostTestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Posts.EXPECT().GetPostsByAuthorId(uint(7)).Return([]model.Post{
+			repos.Posts.EXPECT().GetPostsByAuthorId(uint(7), uint(7)).Return([]model.Post{
 				{
 					ID:           17,
 					AuthorID:     7,
@@ -202,7 +202,7 @@ var PostTestCases = map[string]PostTestCase{
 		},
 		Prepare: func(repos *MockRepos) {
 			repos.Posts.EXPECT().
-				GetPostsByAuthorId(uint(4)).
+				GetPostsByAuthorId(uint(4), uint(7)).
 				Return([]model.Post{}, &posts.ErrorPost{Err: handlers.ErrorNotAuthor, StatusCode: http.StatusBadRequest}).
 				AnyTimes()
 			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
@@ -231,21 +231,22 @@ func TestGetPosts(t *testing.T) {
 			mockRepos := MockRepos{
 				Sessions: mocks.NewMockSessionRepository(ctrl),
 				Posts:    mocks.NewMockPostRepository(ctrl),
+				Likes: mocks.NewMockLikeRepository(ctrl),
 			}
 
 			if testCase.Prepare != nil {
 				testCase.Prepare(&mockRepos)
 			}
 
-			// PostHandler := handlers.CreatePostHandlerViaRepos(
-			// 	mockRepos.Sessions,
-			// 	mockRepos.Posts,
-			// 	mockRepos.Profile,
-			// )
+			PostHandler := handlers.CreatePostHandlerViaRepos(
+				mockRepos.Sessions,
+				mockRepos.Posts,
+				mockRepos.Likes,
+			)
 
 			router := mux.NewRouter()
-			// router.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", PostHandler.GetAllUserPosts).
-			// Methods("GET")
+			router.HandleFunc("/api/v1/profile/{id:[0-9]+}/post",  handlers.NewWrapper(PostHandler.GetAllUserPostsStrategy).ServeHTTP).
+			Methods("GET")
 			router.ServeHTTP(w, req)
 
 			if w.Code != testCase.StatusCode {
