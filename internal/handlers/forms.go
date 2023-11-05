@@ -1,5 +1,7 @@
 package handlers
 
+import "mime/multipart"
+
 type UserForm struct {
 	Body struct {
 		User struct {
@@ -53,5 +55,17 @@ func (f PaymentForm) IsValide() bool {
 }
 
 func (f PaymentForm) IsEmpty() bool {
+	return false
+}
+
+type FileForm struct {
+	Form multipart.Form
+}
+
+func (f FileForm) IsValide() bool {
+	return true
+}
+
+func (f FileForm) IsEmpty() bool {
 	return false
 }

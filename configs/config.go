@@ -33,4 +33,6 @@ const (
 	ShopId          = "273632"
 	ReturnURL       = FrontendServerIP + FrontendServerPort + "/payment"
 	FakeRedirectURL = "https://yoomoney.ru/payments/external/confirmation?orderId=22e12f66-000f-5000-8000-18db351245c7"
+
+	BasePath = "~/go/src/github.com/M0rdovorot/kopilka"
 )

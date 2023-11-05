@@ -60,8 +60,8 @@ func UpdateUserSQL(user model.User) squirrel.UpdateBuilder {
 		SetMap(map[string]interface{}{
 			"email":           user.Login,
 			"nickname":        user.Nickname,
-			// "password":        user.Password,
-			"is_author":       user.Is_author,
+			"password":        user.Password,
+			// "is_author":       user.Is_author,
 			"status":          user.Status,
 			"avatar_path":     user.Avatar,
 			"background_path": user.Background,

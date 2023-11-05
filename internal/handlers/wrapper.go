@@ -3,7 +3,11 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
+	"math"
+	"mime"
+	"mime/multipart"
 	"net/http"
 
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
@@ -30,18 +34,20 @@ func NewWrapper[Req IValidatable, Resp any](fn func(ctx context.Context, req Req
 	}
 }
 
+
 func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 	w.Header().Add("Content-Type", "application/json")
-
+	
 	ctx := auth.AddWriter(r.Context(), w)
 	ctx = auth.AddVars(ctx, mux.Vars(r))
 	cookie, err := r.Cookie("session_id")
 	if err == nil {
 		ctx = auth.AddSession(ctx, cookie)
 	}
-
+	
 	body := http.MaxBytesReader(w, r.Body, maxBytesToRead)
+	
 
 	var request Req
 	if !request.IsEmpty() {
@@ -73,5 +79,70 @@ func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write(rawJSON)
+	_, err = w.Write(rawJSON)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+type FileWrapper[Resp any] struct {
+	fn func(ctx context.Context, req FileForm) (Resp, error)
+}
+
+func NewFileWrapper[Resp any](fn func(ctx context.Context, req FileForm) (Resp, error)) *FileWrapper[Resp] {
+	return &FileWrapper[Resp]{
+		fn: fn,
+	}
+}
+
+func (wrapper *FileWrapper[Res]) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	AddAllowHeaders(w)
+	w.Header().Add("Content-Type", "application/json")
+
+	ctx := auth.AddWriter(r.Context(), w)
+	ctx = auth.AddVars(ctx, mux.Vars(r))
+	cookie, err := r.Cookie("session_id")
+	if err == nil {
+		ctx = auth.AddSession(ctx, cookie)
+	}
+	// //????
+	// err = r.ParseMultipartForm(math.MaxInt64)
+	// if err != nil {
+	// 	WriteHttpError(w, err)
+	// }
+	contentTypeHeader := r.Header.Get("Content-Type")
+	mediaType, params, err := mime.ParseMediaType(contentTypeHeader)
+	if err != nil {
+		WriteHttpError(w, err)
+	}
+	fmt.Println(mediaType, params)
+	boundary, ok := params["boundary"]
+	if !ok {
+		WriteHttpError(w, fmt.Errorf("%s", "no boundary"))
+	}
+	body := http.MaxBytesReader(w, r.Body, r.ContentLength)
+	form, err := multipart.NewReader(body, boundary).ReadForm(math.MaxInt64)
+	if err != nil {
+		WriteHttpError(w, err)
+	}
+	
+	response, err := wrapper.fn(ctx, FileForm{Form: *form})
+	if err != nil {
+		log.Printf("%s: error: %v\n", r.URL, err)
+		WriteHttpError(w, err)
+		return
+	}
+
+	rawJSON, err := json.Marshal(response)
+	if err != nil {
+		log.Println(err)
+		WriteHttpError(w, ErrEncoding)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write(rawJSON)
+	if err != nil {
+		log.Println(err)
+	}
 }

@@ -113,7 +113,7 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 
 }
 
-func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form UserForm) (Result, error) {
+func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form FileForm) (Result, error) {
 	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
 		return Result{}, ErrUnathorized
 	}
@@ -123,36 +123,92 @@ func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form UserForm) 
 	if !ok {
 		return Result{}, ErrNoSession
 	}
-	if session.UserID != uint32(form.Body.User.ID) {
+	formUserId, err := strconv.Atoi(GetFirst[string](form.Form.Value["id"]))
+	if err != nil {
+		return Result{}, ErrBadID
+	}
+	if session.UserID != uint32(formUserId) {
 		return Result{}, fmt.Errorf("%s", "wrong_change")
 	}
 
-	user := model.User{
-		ID: form.Body.User.ID,
-		Nickname: form.Body.User.Nickname,
-		Login: form.Body.User.Login,
-		Status: form.Body.User.Status,
-		Avatar: form.Body.User.Avatar,
-		Background: form.Body.User.Background,
-		Description: form.Body.User.Description,
-		Is_author: form.Body.User.IsAuthor,
-	}
-	if form.Body.User.NewPassword != "" {
-		currentUser, err := p.Users.GetUser(int(user.ID))
+	fileArray, ok := form.Form.File["avatar"]
+	fileBody := FileBody{}
+	if ok&&len(fileArray)>0 {
+		path, err := saveFile(fileArray[0], GetFirst[string](form.Form.Value["id"]))
 		if err != nil {
-			return Result{}, ErrDataBase
+			return Result{}, err
 		}
-		if form.Body.User.OldPassword != currentUser.Password {
+		fileBody.Path = path
+	}
+
+	user := model.User{
+		ID: uint(formUserId),
+		Nickname: GetFirst[string](form.Form.Value["nickname"]),
+		Login: GetFirst[string](form.Form.Value["login"]),
+		Status: GetFirst[string](form.Form.Value["status"]),
+		Avatar: fileBody.Path,
+		Background: GetFirst[string](form.Form.Value["background"]),
+		Description: GetFirst[string](form.Form.Value["description"]),
+		// Is_author: form.Body.User.IsAuthor,
+	}
+	currentUser, err := p.Users.GetUser(int(user.ID))
+	if err != nil {
+		return Result{}, ErrDataBase
+	}
+	user.Password = currentUser.Password
+	if GetFirst[string](form.Form.Value["new_password"]) != "" {
+		if GetFirst[string](form.Form.Value["old_password"]) != currentUser.Password {
 			return Result{}, ErrValidation //change error
 		}
-		user.Password = form.Body.User.NewPassword
+		user.Password = GetFirst[string](form.Form.Value["new_password"])
 	}
-	err := p.Users.ChangeUser(user)
+	err = p.Users.ChangeUser(user)
 	if err != nil {
 		return Result{}, ErrDataBase
 	}
 	return Result{}, nil
 }
+
+// func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form UserForm) (Result, error) {
+// 	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+// 		return Result{}, ErrUnathorized
+// 	}
+
+// 	cookie := auth.GetSession(ctx)
+// 	session, ok := p.Session.CheckSession(cookie.Value)
+// 	if !ok {
+// 		return Result{}, ErrNoSession
+// 	}
+// 	if session.UserID != uint32(form.Body.User.ID) {
+// 		return Result{}, fmt.Errorf("%s", "wrong_change")
+// 	}
+
+// 	user := model.User{
+// 		ID: form.Body.User.ID,
+// 		Nickname: form.Body.User.Nickname,
+// 		Login: form.Body.User.Login,
+// 		Status: form.Body.User.Status,
+// 		Avatar: form.Body.User.Avatar,
+// 		Background: form.Body.User.Background,
+// 		Description: form.Body.User.Description,
+// 		Is_author: form.Body.User.IsAuthor,
+// 	}
+// 	if form.Body.User.NewPassword != "" {
+// 		currentUser, err := p.Users.GetUser(int(user.ID))
+// 		if err != nil {
+// 			return Result{}, ErrDataBase
+// 		}
+// 		if form.Body.User.OldPassword != currentUser.Password {
+// 			return Result{}, ErrValidation //change error
+// 		}
+// 		user.Password = form.Body.User.NewPassword
+// 	}
+// 	err := p.Users.ChangeUser(user)
+// 	if err != nil {
+// 		return Result{}, ErrDataBase
+// 	}
+// 	return Result{}, nil
+// }
 
 func (p *ProfileHandler) DeleteUserStratagy(ctx context.Context, form EmptyForm) (Result, error) {
 	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
