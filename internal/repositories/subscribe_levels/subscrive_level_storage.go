@@ -36,7 +36,7 @@ func CreateSubscribeLevelStorage(db *sql.DB) *SubscribeLevelStorage {
 
 func (storage *SubscribeLevelStorage) AddNewLevel(level model.SubscribeLevel) (int, error) {
 	var postId int
-	err := InsertLevelSQL(level).RunWith(storage.db).QueryRow().Scan(postId)
+	err := InsertLevelSQL(level).RunWith(storage.db).QueryRow().Scan(&postId)
 	if err != nil {
 		return 0, err
 	}

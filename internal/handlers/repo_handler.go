@@ -68,6 +68,15 @@ func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm)
 
 	auth.SetSessionContext(ctx, api.sessions, uint32(user.ID))
 	if user.Is_author {
+		zeroLevel := model.SubscribeLevel{
+			Name: "free",
+			Level: 0,
+			Description: "mda",
+			CostInteger: 0,
+			CostFractional: 0,
+			Currency: "RUB",
+			CreatorID: uint(id),
+		}
 		firstLevel := model.SubscribeLevel{
 			Name: "BOMJ",
 			Level: 1,
@@ -95,7 +104,11 @@ func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm)
 			Currency: "RUB",
 			CreatorID: uint(id),
 		}
-		_, err := api.levels.AddNewLevel(firstLevel)
+		_, err := api.levels.AddNewLevel(zeroLevel)
+		if err != nil {
+			return nil, err
+		}
+		_, err = api.levels.AddNewLevel(firstLevel)
 		if err != nil {
 			return nil, err
 		}
@@ -187,8 +200,16 @@ func (api *RepoHandler) LogoutStrategy(ctx context.Context, form EmptyForm) (Res
 //	400: result
 //	500: result
 func (api *RepoHandler) IsAuthorizedStrategy(ctx context.Context, form EmptyForm) (Result, error) {
+	cookie := auth.GetSession(ctx)
+	if cookie == nil{
+		return Result{Body: map[string]interface{}{"is_authorized": false}}, nil
+	}
+	session, ok := api.sessions.CheckSession(cookie.Value)
+	if !ok {
+		return Result{Body: map[string]interface{}{"is_authorized": false}}, nil
+	}
 	if auth.CheckAuthorizationByContext(ctx, api.sessions) {
-		return Result{Body: map[string]interface{}{"is_authorized": true}}, nil
+		return Result{Body: map[string]interface{}{"is_authorized": true, "id": session.UserID}}, nil
 	}
 
 	return Result{Body: map[string]interface{}{"is_authorized": false}}, nil

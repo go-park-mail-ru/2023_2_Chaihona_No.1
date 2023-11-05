@@ -20,7 +20,7 @@ const (
 func OptionsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add(AccessControlAllowOriginHeader, conf.FrontendServerIP+conf.FrontendServerPort)
 	w.Header().
-		Add(AccessControlAllowMethodsHeader, strings.Join([]string{http.MethodGet, http.MethodPost, http.MethodOptions}, ", "))
+		Add(AccessControlAllowMethodsHeader, strings.Join([]string{http.MethodGet, http.MethodPost, http.MethodOptions, http.MethodDelete}, ", "))
 	w.Header().
 		Add(AccessControlAllowHeadersHeader, strings.Join([]string{ContentTypeHeader, CookieHeader}, ", "))
 	w.Header().Add(AccessControlMaxAgeHeader, "86400")

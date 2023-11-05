@@ -17,6 +17,6 @@ type User struct {
 	Description  string `json:"description" db:"description"`
 	CreationDate string `json:"-" db:"creation_date"`
 	LastUpdate   string `json:"-" db:"last_update"`
-	Is_author    bool   `db:"is_author"`
+	Is_author    bool   `json:"is_author" db:"is_author"`
 	Subscribers  uint   `json:"-" db:"subscribers"`
 }

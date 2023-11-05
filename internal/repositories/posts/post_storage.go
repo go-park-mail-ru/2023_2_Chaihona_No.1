@@ -2,6 +2,7 @@ package posts
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/dbscan"
@@ -39,8 +40,10 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 
 func SelectUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder {
 	return squirrel.Select("p.*, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access, "+
+		"sl1.level as min_sub_level, "+
 		"array_agg(pa.file_path) as attaches, "+
-		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes").
+		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
+		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", subscriberId)).
 		From(configs.PostTable+" p").
 		CrossJoin(configs.SubscriptionTable+" s").
 		LeftJoin(configs.AttachTable+" pa ON p.id = pa.post_id").
@@ -96,7 +99,7 @@ func CreatePostStorage(db *sql.DB) PostRepository {
 
 func (storage *PostStorage) CreateNewPost(post model.Post) (int, error) {
 	var postId int
-	err := InsertPostSQL(post).RunWith(storage.db).QueryRow().Scan(postId)
+	err := InsertPostSQL(post).RunWith(storage.db).QueryRow().Scan(&postId)
 	if err != nil {
 		return 0, err
 	}

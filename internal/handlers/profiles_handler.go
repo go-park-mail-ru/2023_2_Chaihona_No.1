@@ -123,19 +123,29 @@ func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form UserForm) 
 	if !ok {
 		return Result{}, ErrNoSession
 	}
-	if session.UserID != uint32(form.Body.ID) {
+	if session.UserID != uint32(form.Body.User.ID) {
 		return Result{}, fmt.Errorf("%s", "wrong_change")
 	}
 
 	user := model.User{
-		ID: form.Body.ID,
-		Nickname: form.Body.Nickname,
-		Login: form.Body.Login,
-		UserType: form.Body.UserType,
-		Status: form.Body.Status,
-		Avatar: form.Body.Avatar,
-		Background: form.Body.Background,
-		Description: form.Body.Description,
+		ID: form.Body.User.ID,
+		Nickname: form.Body.User.Nickname,
+		Login: form.Body.User.Login,
+		Status: form.Body.User.Status,
+		Avatar: form.Body.User.Avatar,
+		Background: form.Body.User.Background,
+		Description: form.Body.User.Description,
+		Is_author: form.Body.User.IsAuthor,
+	}
+	if form.Body.User.NewPassword != "" {
+		currentUser, err := p.Users.GetUser(int(user.ID))
+		if err != nil {
+			return Result{}, ErrDataBase
+		}
+		if form.Body.User.OldPassword != currentUser.Password {
+			return Result{}, ErrValidation //change error
+		}
+		user.Password = form.Body.User.NewPassword
 	}
 	err := p.Users.ChangeUser(user)
 	if err != nil {

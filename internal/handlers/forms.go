@@ -2,14 +2,18 @@ package handlers
 
 type UserForm struct {
 	Body struct {
-		ID           uint   `json:"id"`
-		Nickname     string `json:"nickname"`
-		Login        string `json:"login"`
-		UserType     string `json:"user_type"`
-		Status       string `json:"status"`
-		Avatar       string `json:"avatar"`
-		Background   string `json:"background"`
-		Description  string `json:"description"`
+		User struct {
+			ID           uint   `json:"id"`
+			Nickname     string `json:"nickname"`
+			Login        string `json:"login"`
+			OldPassword string `json:"old_password"`
+			NewPassword string `json:"new_password"`
+			Status       string `json:"status"`
+			Avatar       string `json:"avatar"`
+			Background   string `json:"background"`
+			Description  string `json:"description"`
+			IsAuthor bool `json:"is_author"`
+		} `json:"user"`
 	} `json:"body"`
 }
 
@@ -23,11 +27,9 @@ func (f UserForm) IsEmpty() bool {
 
 type PostForm struct {
 	Body struct {
-		ID            uint      `json:"id"`
 		MinSubLevelId uint      `json:"min_subscription_level_id"`
 		Header        string    `json:"header"`
 		Body          string    `json:"body,omitempty"`
-		Likes         uint      `json:"likes" db:"likes"`
 	} `json:"body"`
 }
 

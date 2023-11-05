@@ -82,7 +82,9 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 		return Result{}, ErrNoSession
 	}
 	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID), uint(session.UserID))
-
+	for i := range posts {
+		posts[i].CreationDate = posts[i].CreationDateSQL.Time.Format("2006-01-02 15:04")
+	}
 	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
 	if errPost != nil {
 		switch err.(type) {
@@ -115,11 +117,9 @@ func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Re
 	}
 
 	post := model.Post{
-		ID: form.Body.ID,
 		MinSubLevelId: form.Body.MinSubLevelId,
 		Header: form.Body.Header,
 		Body: form.Body.Body,
-		Likes: form.Body.Likes,
 	}
 
 	cookie := auth.GetSession(ctx)
@@ -156,9 +156,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 	}
 	
 	post := model.Post{
-		ID: form.Body.ID,
 		AuthorID: uint(session.UserID),
-		//MinSubLevel: form.Body.MinSubLevel,
 		MinSubLevelId: form.Body.MinSubLevelId,
 		Header: form.Body.Header,
 		Body: form.Body.Body,
