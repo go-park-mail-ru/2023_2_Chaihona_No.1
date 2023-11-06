@@ -2,6 +2,36 @@ package handlers
 
 import "mime/multipart"
 
+type StatusForm struct {
+	Body struct {
+		Status       string `json:"status"`
+	} `json:"body"`
+}
+
+func (f StatusForm) IsValide() bool {
+	return true
+}
+
+func (f StatusForm) IsEmpty() bool {
+	return false
+}
+
+
+type DescriptionForm struct {
+	Body struct {
+		Description  string `json:"description"`
+	} `json:"body"`
+}
+
+func (f DescriptionForm) IsValide() bool {
+	return true
+}
+
+func (f DescriptionForm) IsEmpty() bool {
+	return false
+}
+
+
 type UserForm struct {
 	Body struct {
 		User struct {

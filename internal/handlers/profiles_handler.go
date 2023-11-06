@@ -190,7 +190,7 @@ func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form FileForm) 
 	return Result{}, nil
 }
 
-func (p *ProfileHandler) ChangeUserStatusStratagy(ctx context.Context, form UserForm) (Result, error) {
+func (p *ProfileHandler) ChangeUserStatusStratagy(ctx context.Context, form StatusForm) (Result, error) {
 	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
 		return Result{}, ErrUnathorized
 	}
@@ -201,14 +201,14 @@ func (p *ProfileHandler) ChangeUserStatusStratagy(ctx context.Context, form User
 		return Result{}, ErrNoSession
 	}
 
-	err := p.Users.ChangeUserStatus(form.Body.User.Status, int(session.UserID))
+	err := p.Users.ChangeUserStatus(form.Body.Status, int(session.UserID))
 	if err != nil {
 		return Result{}, ErrDataBase
 	}
 	return Result{}, nil
 }
 
-func (p *ProfileHandler) ChangeUserDescriptionStratagy(ctx context.Context, form UserForm) (Result, error) {
+func (p *ProfileHandler) ChangeUserDescriptionStratagy(ctx context.Context, form DescriptionForm) (Result, error) {
 	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
 		return Result{}, ErrUnathorized
 	}
@@ -219,7 +219,7 @@ func (p *ProfileHandler) ChangeUserDescriptionStratagy(ctx context.Context, form
 		return Result{}, ErrNoSession
 	}
 
-	err := p.Users.ChangeUserDescription(form.Body.User.Description, int(session.UserID))
+	err := p.Users.ChangeUserDescription(form.Body.Description, int(session.UserID))
 	if err != nil {
 		return Result{}, ErrDataBase
 	}
