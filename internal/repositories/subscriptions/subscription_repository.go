@@ -6,7 +6,7 @@ import (
 
 type SubscriptionRepository interface {
 	AddNewSubscription(subscription model.Subscription) (int, error)
-	DeleteSubscription(id int) error
+	DeleteSubscription(levelId int, subId int) error
 	GetSubscription(id int) (model.Subscription, error)
 	GetUserSubscriptions(id int) ([]model.User, error)
 	ChangeSubscription(subscription model.Subscription) error

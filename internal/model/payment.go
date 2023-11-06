@@ -7,6 +7,7 @@ const (
 )
 
 type Payment struct {
+	Id int `json:"-" db:"id"`
 	UUID              string `json:"-" db:"uuid"`
 	PaymentInteger    uint   `json:"-" db:"payment_integer"`
 	PaymentFractional uint   `json:"-" db:"payment_fractional"`

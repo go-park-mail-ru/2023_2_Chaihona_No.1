@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/payments"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	subscribelevels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscribe_levels"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
@@ -22,6 +23,7 @@ type ProfileHandler struct {
 	Users         users.UserRepository
 	Levels        subscribelevels.SubscribeLevelRepository
 	Subscriptions subscriptions.SubscriptionRepository
+	Payments payments.PaymentRepository
 }
 
 func CreateProfileHandlerViaRepos(
@@ -29,12 +31,14 @@ func CreateProfileHandlerViaRepos(
 	users users.UserRepository,
 	levels subscribelevels.SubscribeLevelRepository,
 	subscriptions subscriptions.SubscriptionRepository,
+	payments payments.PaymentRepository,
 ) *ProfileHandler {
 	return &ProfileHandler{
 		session,
 		users,
 		levels,
 		subscriptions,
+		payments,
 	}
 }
 
@@ -90,7 +94,14 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 			User:            user,
 			Subscribers:     user.Subscribers,
 			SubscribeLevels: levels,
+			IsFollowed: true,
 		}
+		donated, err := p.Payments.GetPaymentsByAuthorId(user.ID)
+		if err != nil {
+			return Result{}, err
+		}
+		profile.Donated = strconv.Itoa(int(donated.PaymentInteger)) + "," + strconv.Itoa(int(donated.PaymentFractional))
+		profile.Currency = "RUB"
 	} else {
 		subscriptions, err := p.Subscriptions.GetUserSubscriptions(id)
 		if err != nil {
@@ -123,37 +134,41 @@ func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form FileForm) 
 	if !ok {
 		return Result{}, ErrNoSession
 	}
-	formUserId, err := strconv.Atoi(GetFirst[string](form.Form.Value["id"]))
-	if err != nil {
-		return Result{}, ErrBadID
-	}
-	if session.UserID != uint32(formUserId) {
-		return Result{}, fmt.Errorf("%s", "wrong_change")
-	}
+	// formUserId, err := strconv.Atoi(GetFirst[string](form.Form.Value["id"]))
+	// if err != nil {
+	// 	return Result{}, ErrBadID
+	// }
+	// if session.UserID != uint32(formUserId) {
+	// 	return Result{}, fmt.Errorf("%s", "wrong_change")
+	// }
 
+	fmt.Println(session.UserID)
+	user := model.User{
+		ID: uint(session.UserID),
+		Nickname: GetFirst[string](form.Form.Value["nickname"]),
+		Login: GetFirst[string](form.Form.Value["login"]),
+		Status: GetFirst[string](form.Form.Value["status"]),
+		Background: GetFirst[string](form.Form.Value["background"]),
+		Description: GetFirst[string](form.Form.Value["description"]),
+	}
+	currentUser, err := p.Users.GetUser(int(user.ID))
+	if err != nil {
+		return Result{}, ErrDataBase
+	}
 	fileArray, ok := form.Form.File["avatar"]
-	fileBody := FileBody{}
 	if ok&&len(fileArray)>0 {
 		path, err := saveFile(fileArray[0], GetFirst[string](form.Form.Value["id"]))
 		if err != nil {
 			return Result{}, err
 		}
-		fileBody.Path = path
+		user.Avatar = path
+	} else {
+		user.Avatar = currentUser.Avatar
 	}
-
-	user := model.User{
-		ID: uint(formUserId),
-		Nickname: GetFirst[string](form.Form.Value["nickname"]),
-		Login: GetFirst[string](form.Form.Value["login"]),
-		Status: GetFirst[string](form.Form.Value["status"]),
-		Avatar: fileBody.Path,
-		Background: GetFirst[string](form.Form.Value["background"]),
-		Description: GetFirst[string](form.Form.Value["description"]),
-		// Is_author: form.Body.User.IsAuthor,
-	}
-	currentUser, err := p.Users.GetUser(int(user.ID))
-	if err != nil {
-		return Result{}, ErrDataBase
+	if GetFirst[string](form.Form.Value["login"]) == "" {
+		user.Login = currentUser.Login 
+	} else {
+		user.Login = GetFirst[string](form.Form.Value["login"])
 	}
 	user.Password = currentUser.Password
 	if GetFirst[string](form.Form.Value["new_password"]) != "" {
@@ -235,6 +250,58 @@ func (p *ProfileHandler) DeleteUserStratagy(ctx context.Context, form EmptyForm)
 	}
 
 	err = p.Users.DeleteUser(id)
+	if err != nil {
+		return Result{}, ErrDataBase
+	}
+	return Result{}, nil
+}
+
+func (p *ProfileHandler) FollowStratagy(ctx context.Context, form FollowForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+		return Result{}, ErrUnathorized
+	}
+
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return Result{}, ErrBadID
+	}
+
+	cookie := auth.GetSession(ctx)
+	session, ok := p.Session.CheckSession(cookie.Value)
+	if !ok {
+		return Result{}, ErrNoSession
+	}
+
+	subscription := model.Subscription{
+		Subscriber_id: uint(session.UserID),
+		Creator_id: uint(id),
+		Subscription_level_id: uint(form.Body.SubscriptionLevelId),
+	}
+	_, err = p.Subscriptions.AddNewSubscription(subscription)
+	if err != nil {
+		fmt.Println(err)
+		return Result{}, ErrDataBase
+	}
+	return Result{}, nil
+}
+
+func (p *ProfileHandler) UnfollowStratagy(ctx context.Context, form FollowForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+		return Result{}, ErrUnathorized
+	}
+
+
+	cookie := auth.GetSession(ctx)
+	session, ok := p.Session.CheckSession(cookie.Value)
+	if !ok {
+		return Result{}, ErrNoSession
+	}
+
+	err := p.Subscriptions.DeleteSubscription(form.Body.SubscriptionLevelId, int(session.UserID))
 	if err != nil {
 		return Result{}, ErrDataBase
 	}

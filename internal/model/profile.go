@@ -5,7 +5,8 @@ type Profile struct {
 	Subscribers     uint             `json:"subscribers,omitempty"`
 	SubscribeLevels []SubscribeLevel `json:"subscribe_levels,omitempty"`
 	Subscriptions   []User           `json:"subscriptions,omitempty"`
-	Donated         float64          `json:"donated,omitempty"`
+	Donated         string          `json:"donated,omitempty"`
 	Currency        string           `json:"currency,omitempty"`
 	Goals           []Goal           `json:"goals,omitempty"`
+	IsFollowed bool `json:"is_followed"`
 }

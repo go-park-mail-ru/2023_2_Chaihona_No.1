@@ -12,7 +12,7 @@ import (
 func InsertPaymentSQL(payment model.Payment) squirrel.InsertBuilder {
 	return squirrel.Insert(configs.PaymentTable).
 		Columns("payment_integer", "payment_fractional", "status", "donater_id", "creator_id").
-		Values(payment.PaymentInteger, payment.PaymentFractional, payment.Status, payment.DonaterId, payment.DonaterId).
+		Values(payment.PaymentInteger, payment.PaymentFractional, payment.Status, payment.DonaterId, payment.CreatorId).
 		Suffix("RETURNING \"id\"").
 		PlaceholderFormat(squirrel.Dollar)
 }
@@ -31,7 +31,9 @@ func SelectPaymentByUUIDSQL(paymentId string) squirrel.SelectBuilder {
 }
 
 func SelectPaymentsByAuthorIdSQL(authorId uint) squirrel.SelectBuilder {
-	return squirrel.Select("*").
+	return squirrel.Select(
+		"coalesce(sum(p.payment_integer) FILTER  (WHERE p.status = 2), 0) as payment_integer",
+		"coalesce(sum(p.payment_fractional) FILTER (WHERE p.status = 2), 0) AS payment_fractional",).
 		From(configs.PaymentTable + " p").
 		Where(squirrel.Eq{"p.creator_id": authorId}).
 		PlaceholderFormat(squirrel.Dollar)
@@ -49,7 +51,8 @@ func UpdatePaymentSQL(payment model.Payment) squirrel.UpdateBuilder {
 		SetMap(map[string]interface{}{
 			"status": payment.Status,
 		}).
-		Where(squirrel.Eq{"uuid": payment.UUID}).
+		// Where(squirrel.Eq{"uuid": payment.UUID}).
+		Where(squirrel.Eq{"id": payment.Id}).
 		PlaceholderFormat(squirrel.Dollar)
 }
 
@@ -65,7 +68,7 @@ func CreatePaymentStorage(db *sql.DB) PaymentRepository {
 
 func (storage *PaymentStorage) CreateNewPayment(payment model.Payment) (int, error) {
 	var paymentId int
-	err := InsertPaymentSQL(payment).RunWith(storage.db).QueryRow().Scan(paymentId)
+	err := InsertPaymentSQL(payment).RunWith(storage.db).QueryRow().Scan(&paymentId)
 	if err != nil {
 		return 0, err
 	}
@@ -103,17 +106,20 @@ func (storage *PaymentStorage) ChangePayment(payment model.Payment) error {
 	return nil
 }
 
-func (storage *PaymentStorage) GetPaymentsByAuthorId(authorId uint) ([]model.Payment, error) {
+func (storage *PaymentStorage) GetPaymentsByAuthorId(authorId uint) (model.Payment, error) {
 	rows, err := SelectPaymentsByAuthorIdSQL(authorId).RunWith(storage.db).Query()
 	if err != nil {
-		return []model.Payment{}, err
+		return model.Payment{}, err
 	}
 	var payments []model.Payment
 	err = dbscan.ScanAll(&payments, rows)
 	if err != nil {
-		return []model.Payment{}, err
+		return model.Payment{}, err
 	}
-	return payments, nil
+	if len(payments) > 0 {
+		return payments[0], nil
+	}
+	return model.Payment{}, nil
 }
 
 func (storage *PaymentStorage) GetPaymentsByUserId(userId uint) ([]model.Payment, error) {

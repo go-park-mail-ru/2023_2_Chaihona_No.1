@@ -29,6 +29,20 @@ func SelectUserSubscriptionsSQL(id int) squirrel.SelectBuilder {
 			configs.SubscriptionTable, configs.UserTable, configs.SubscriptionTable, id))
 }
 
+func InsertSubscriptionSQL(subsciption model.Subscription) squirrel.InsertBuilder {
+	return squirrel.Insert(configs.SubscriptionTable).
+		Columns("creator_id", "subscriber_id", "subscription_level_id").
+		Values(subsciption.Creator_id, subsciption.Subscriber_id, subsciption.Subscription_level_id).
+		Suffix("RETURNING \"id\"").
+		PlaceholderFormat(squirrel.Dollar)
+}
+
+func DeleteSubscriptionSQL(levelId, subId int) squirrel.DeleteBuilder {
+	return squirrel.Delete(configs.SubscriptionTable).
+		Where(squirrel.Eq{"subscription_level_id": levelId, "subscriber_id":subId}).
+		PlaceholderFormat(squirrel.Dollar)
+}
+
 func CreateSubscriptionsStorage(db *sql.DB) *SubscriptionsStorage {
 	return &SubscriptionsStorage{
 		db: db,
@@ -36,10 +50,19 @@ func CreateSubscriptionsStorage(db *sql.DB) *SubscriptionsStorage {
 }
 
 func (storage *SubscriptionsStorage) AddNewSubscription(subscription model.Subscription) (int, error) {
-	return 0, nil
+	var subId int
+	err := InsertSubscriptionSQL(subscription).RunWith(storage.db).QueryRow().Scan(&subId)
+	if err != nil {
+		return 0, err
+	}
+	return subId, nil
 }
 
-func (storage *SubscriptionsStorage) DeleteSubscription(id int) error {
+func (storage *SubscriptionsStorage) DeleteSubscription(levelId, subId int) error {
+	_, err := DeleteSubscriptionSQL(levelId, subId).RunWith(storage.db).Query()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

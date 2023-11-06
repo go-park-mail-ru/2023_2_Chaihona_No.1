@@ -62,9 +62,10 @@ func SelectUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder
 func SelectAvailiblePostsSQL(userId uint) squirrel.SelectBuilder {
 	return squirrel.Select("p.*, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access, "+
 		"array_agg(pa.file_path) as attaches, "+
-		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes").
+		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
+		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", userId)).
 		From(configs.PostTable+" p").
-		CrossJoin(configs.SubscriptionTable+" s").
+		InnerJoin(configs.SubscriptionTable+" s ON p.creator_id = s.creator_id").
 		LeftJoin(configs.AttachTable+" pa ON p.id = pa.post_id").
 		LeftJoin(configs.LikeTable+" pl ON p.id = pl.post_id").
 		InnerJoin(configs.SubscribeLevelTable+" sl1 ON p.min_subscription_level_id = sl1.id").

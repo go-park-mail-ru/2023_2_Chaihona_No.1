@@ -53,7 +53,7 @@ func main() {
 	subscriptionLevelsStorage := subscriptionlevels.CreateSubscribeLevelStorage(db.GetDB())
 
 	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, levelStorage)
-	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, userStoarge, levelStorage, subsStorage)
+	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, userStoarge, levelStorage, subsStorage, paymentStorage)
 	postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, likeStorage)
 	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessionStorage, paymentStorage, subsStorage, subscriptionLevelsStorage)
 	fileHandler := handlers.CreateFileHandler(sessionStorage, userStoarge)
@@ -80,6 +80,9 @@ func main() {
 	r.HandleFunc("/api/v1/upload", handlers.NewFileWrapper(fileHandler.UploadFileStratagy).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/avatar", fileHandler.LoadFileStratagy).Methods("GET")
 	//probably different wrapper
+	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/follow", handlers.NewWrapper(profileHandler.FollowStratagy).ServeHTTP).Methods("POST")
+	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/unfollow", handlers.NewWrapper(profileHandler.UnfollowStratagy).ServeHTTP).Methods("POST")
+	r.HandleFunc("/api/v1/donate", handlers.NewWrapper(paymentHandler.DonateStratagy).ServeHTTP).Methods("POST")
 	fmt.Println("Server started")
 	err = http.ListenAndServe(configs.BackendServerPort, r)
 	fmt.Println(err)

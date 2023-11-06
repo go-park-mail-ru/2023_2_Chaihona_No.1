@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strconv"
 
@@ -45,30 +46,37 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
 		return Result{}, ErrUnathorized
 	}
-
+	fmt.Println(form.Body.DonaterId, form.Body.CreatorId)
 	payment := model.Payment{
-		DonaterId: form.DonaterId,
-		CreatorId: form.CreatorId,
-		Currency: form.Currency,
-		Value: form.Value,
+		DonaterId: form.Body.DonaterId,
+		CreatorId: form.Body.CreatorId,
+		Currency: form.Body.Currency,
+		Value: form.Body.Value,
 	}
 	paymentId, redirectURL, err := pay.Donate(payment)
 	if err != nil {
 		//think
 		return Result{}, ErrDataBase
 	}
-
+	
 	payment.Status = model.PaymentWaitingStatus
 	payment.UUID = paymentId
-
-	_, err = p.Payments.CreateNewPayment(payment)
+	val, err := strconv.Atoi(payment.Value)
 	if err != nil {
 		//think
 		return Result{}, ErrDataBase
 	}
-
+	payment.PaymentInteger = uint(val)
+	id, err := p.Payments.CreateNewPayment(payment)
+	if err != nil {
+		//think
+		return Result{}, ErrDataBase
+	}
+	payment.Id = id
+	
 	c := cron.New()
 	_, err = c.AddFunc("* * * * *", func() {
+		fmt.Println("joba")
 		pay.CheckPaymentStatusAPI(p.Payments, payment)
 		if payment.Status != model.PaymentWaitingStatus {
 			levels, err := p.SubscriptionLevels.GetUserLevels(payment.CreatorId)
@@ -98,12 +106,13 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 			c.Stop()
 		}
 	})
+	c.Start()
 
 	if err != nil {
 		//think
 		return Result{}, ErrDataBase 
 	}
-
+	
 	return Result{Body: BodyPayments{RedirectURL: redirectURL}}, nil
 }
 
@@ -138,16 +147,16 @@ func (p *PaymentHandler) GetAuthorDonatesStratagy(ctx context.Context, form Paym
 	if vars == nil {
 		return Result{}, ErrNoVars
 	}
-	id, err := strconv.Atoi(vars["id"])
+	_, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		return Result{}, ErrBadID
 	}
 
-	payments, err := p.Payments.GetPaymentsByAuthorId(uint(id))
+	// payments, err := p.Payments.GetPaymentsByAuthorId(uint(id))
 	if err != nil {
 		//think
 		return Result{}, ErrDataBase 
 	}
 
-	 return Result{Body: BodyPayments{Payments: payments}}, nil
+	 return Result{Body: BodyPayments{Payments: []model.Payment{}}}, nil
 }

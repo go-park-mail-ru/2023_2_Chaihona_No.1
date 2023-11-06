@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"bytes"
 	"context"
 	"io"
 	"log"
@@ -58,7 +57,7 @@ func saveFile(fileHeader *multipart.FileHeader, filename string) (string, error)
 	}
 	extensions, err := mime.ExtensionsByType(fileHeader.Header.Get("Content-Type"))
 	var extension string 
-	if err == nil {
+	if err == nil && len(extensions) > 0 {
 		extension = extensions[0]
 	}
 	path = filepath.Join(path, filename + extension)
@@ -102,10 +101,10 @@ func (f *FileHandler) LoadFileStratagy(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	// if !auth.CheckAuthorizationByContext(ctx, f.Sessions) {
-	// 	http.Error(w, ErrUnathorized.Error(), http.StatusUnauthorized)
-	// 	return
-	// }
+	if !auth.CheckAuthorizationByContext(ctx, f.Sessions) {
+		http.Error(w, ErrUnathorized.Error(), http.StatusUnauthorized)
+		return
+	}
 
 	user, err := f.Users.GetUser(id)
 	if err != nil {
@@ -115,27 +114,35 @@ func (f *FileHandler) LoadFileStratagy(w http.ResponseWriter, r *http.Request){
 	fileDir, _ := os.Getwd()
 	filePath := filepath.Join(fileDir, user.Avatar)
 	
-	file, err := os.Open(filePath)
-	if err != nil {
-		http.Error(w, ErrDataBase.Error(), http.StatusBadRequest)
-		return
-	}
-	defer file.Close()
+	// file, err := os.Open(filePath)
+	// if err != nil {
+	// 	http.Error(w, ErrDataBase.Error(), http.StatusBadRequest)
+	// 	return
+	// }
+	// defer file.Close()
 	
-	body := &bytes.Buffer{}
-	writer := multipart.NewWriter(body)
-	part, _ := writer.CreateFormFile("avatar", filepath.Base(file.Name()))
-	_, err = io.Copy(part, file)
+	// body := &bytes.Buffer{}
+	// writer := multipart.NewWriter(body)
+	// part, _ := writer.CreateFormFile("avatar", filepath.Base(file.Name()))
+	// _, err = io.Copy(part, file)
+	// if err != nil {
+	// 	http.Error(w, ErrDataBase.Error(), http.StatusBadRequest)
+	// 	return
+	// }
+	// writer.Close()
+
+	body, err := os.ReadFile(filePath)
 	if err != nil {
 		http.Error(w, ErrDataBase.Error(), http.StatusBadRequest)
 		return
 	}
-	writer.Close()
 
-	w.Header().Add("Content-Type", writer.FormDataContentType())
+
+
+	// w.Header().Add("Content-Type", writer.FormDataContentType())
+	w.Header().Add("Content-Type", "application/octet-stream")
 	w.WriteHeader(http.StatusOK)
-	//???
-	_, err = w.Write(body.Bytes())
+	_, err = w.Write(body)
 	if err != nil {
 		log.Println(err)
 	}

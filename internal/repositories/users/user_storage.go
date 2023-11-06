@@ -12,13 +12,9 @@ import (
 )
 
 func InsertUserSQL(user model.User) squirrel.InsertBuilder {
-	is_author := true
-	if user.UserType == model.SimpleUserStatus {
-		is_author = false
-	}
 	return squirrel.Insert(configs.UserTable).
-		Columns("nickname", "email", "password", "is_author", "status", "avatar_path", "background_path", "description").
-		Values(user.Nickname, user.Login, user.Password, is_author, user.Status, user.Avatar, user.Background, user.Description).
+		Columns("nickname", "email", "password", "is_author", "status", "description").
+		Values(user.Nickname, user.Login, user.Password, user.Is_author, user.Status, user.Description).
 		Suffix("RETURNING \"id\"").
 		PlaceholderFormat(squirrel.Dollar)
 }

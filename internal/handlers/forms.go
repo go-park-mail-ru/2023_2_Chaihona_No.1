@@ -44,10 +44,12 @@ func (f PostForm) IsEmpty() bool {
 }
 
 type PaymentForm struct {
-	DonaterId         uint   `json:"donater_id"`
-	CreatorId         uint   `json:"creator_id"`
-	Currency          string `json:"currency,omitempty"`
-	Value             string `json:"value,omitempty"`
+	Body struct{
+		DonaterId         uint   `json:"donater_id"`
+		CreatorId         uint   `json:"creator_id"`
+		Currency          string `json:"currency,omitempty"`
+		Value             string `json:"value,omitempty"`
+	} `json:"body"`
 }
 
 func (f PaymentForm) IsValide() bool {
@@ -67,5 +69,19 @@ func (f FileForm) IsValide() bool {
 }
 
 func (f FileForm) IsEmpty() bool {
+	return false
+}
+
+type FollowForm struct {
+	Body struct {
+		SubscriptionLevelId int `json:"id"`
+	} `json:"body"`
+}
+
+func (f FollowForm) IsValide() bool {
+	return true
+}
+
+func (f FollowForm) IsEmpty() bool {
 	return false
 }

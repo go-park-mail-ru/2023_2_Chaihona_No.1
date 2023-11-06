@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
@@ -212,9 +213,12 @@ func (p *PostHandler) GetFeedStrategy(ctx context.Context, form EmptyForm) (Resu
 	
 	posts, err := p.Posts.GetUsersFeed(uint(session.UserID))
 	if err != nil {
+		fmt.Println(err)
 		return Result{}, ErrDataBase
 	}
-
+	for i := range posts {
+		posts[i].CreationDate = posts[i].CreationDateSQL.Time.Format("2006-01-02 15:04")
+	}
 	return Result{Body: BodyPosts{Posts: posts}}, nil
 }
 
