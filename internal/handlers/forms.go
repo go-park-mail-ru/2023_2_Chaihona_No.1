@@ -29,6 +29,7 @@ func (f UserForm) IsEmpty() bool {
 
 type PostForm struct {
 	Body struct {
+		Id string `json:"id"`
 		MinSubLevelId uint      `json:"min_subscription_level_id"`
 		Header        string    `json:"header"`
 		Body          string    `json:"body,omitempty"`

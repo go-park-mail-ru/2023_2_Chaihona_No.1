@@ -19,4 +19,5 @@ type User struct {
 	LastUpdate   string `json:"-" db:"last_update"`
 	Is_author    bool   `json:"is_author" db:"is_author"`
 	Subscribers  uint   `json:"-" db:"subscribers"`
+	IsFollowed bool `json:"-" db:"is_followed"`
 }

@@ -117,7 +117,12 @@ func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Re
 		return Result{}, ErrBadID
 	}
 
+	postId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return Result{}, ErrBadID
+	}
 	post := model.Post{
+		ID: uint(postId),
 		MinSubLevelId: form.Body.MinSubLevelId,
 		Header: form.Body.Header,
 		Body: form.Body.Body,

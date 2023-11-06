@@ -79,7 +79,13 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 		return Result{}, ErrBadID
 	}
 
-	user, err := p.Users.GetUserWithSubscribers(id)
+	cookie := auth.GetSession(ctx)
+	session, ok := p.Session.CheckSession(cookie.Value)
+	if !ok {
+		return Result{}, ErrNoSession
+	}
+
+	user, err := p.Users.GetUserWithSubscribers(id, int(session.UserID))
 	if err != nil {
 		return Result{}, err
 	}
@@ -94,7 +100,7 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 			User:            user,
 			Subscribers:     user.Subscribers,
 			SubscribeLevels: levels,
-			IsFollowed: true,
+			IsFollowed: user.IsFollowed,
 		}
 		donated, err := p.Payments.GetPaymentsByAuthorId(user.ID)
 		if err != nil {

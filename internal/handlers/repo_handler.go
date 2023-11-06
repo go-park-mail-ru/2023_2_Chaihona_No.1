@@ -66,7 +66,7 @@ func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm)
 		return nil, errReg
 	}
 
-	auth.SetSessionContext(ctx, api.sessions, uint32(user.ID))
+	auth.SetSessionContext(ctx, api.sessions, uint32(id))
 	if user.Is_author {
 		zeroLevel := model.SubscribeLevel{
 			Name: "free",

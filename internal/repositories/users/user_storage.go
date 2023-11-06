@@ -39,12 +39,13 @@ func SelectUserByIdSQL(id int) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
-func SelectUserByIdSQLWithSubscribers(id int) squirrel.SelectBuilder {
+func SelectUserByIdSQLWithSubscribers(id int, visiterId int) squirrel.SelectBuilder {
 	return squirrel.Select(
-		fmt.Sprintf("%s.id, %s.nickname, %s.email, %s.is_author, %s.status, %s.avatar_path, %s.background_path, %s.description, COUNT(*) as subscribers",
+		fmt.Sprintf("%s.id, %s.nickname, %s.email, %s.is_author, %s.status, %s.avatar_path, %s.background_path, %s.description, COUNT(*) as subscribers, ",
 			configs.UserTable, configs.UserTable, configs.UserTable,
 			configs.UserTable, configs.UserTable, configs.UserTable,
-			configs.UserTable, configs.UserTable)).
+			configs.UserTable, configs.UserTable) +
+		fmt.Sprintf("CASE WHEN array_position(array_agg(s.subscriber_id), %d) IS NOT NULL THEN TRUE ELSE FALSE END AS is_followed", visiterId)).
 		From(configs.UserTable).
 		LeftJoin(fmt.Sprintf("%s s ON %s.id = s.creator_id", configs.SubscriptionTable, configs.UserTable)).
 		Suffix(fmt.Sprintf("WHERE %s.id = %d", configs.UserTable, id)).
@@ -127,8 +128,8 @@ func (storage *UserStorage) GetUser(id int) (model.User, error) {
 	return *users[0], nil
 }
 
-func (storage *UserStorage) GetUserWithSubscribers(id int) (model.User, error) {
-	rows, err := SelectUserByIdSQLWithSubscribers(id).RunWith(storage.db).Query()
+func (storage *UserStorage) GetUserWithSubscribers(id int, visiterId int) (model.User, error) {
+	rows, err := SelectUserByIdSQLWithSubscribers(id, visiterId).RunWith(storage.db).Query()
 	if err != nil {
 		return model.User{}, err
 	}
