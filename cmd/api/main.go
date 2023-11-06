@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
@@ -18,19 +17,19 @@ import (
 	subs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	_ "github.com/go-swagger/go-swagger"
-	"github.com/gomodule/redigo/redis"
 	"github.com/gorilla/mux"
 )
 
 func main() {
-	conn, err := redis.DialURL(fmt.Sprintf("redis://@%s:%s", configs.RedisServerIP, configs.RedisServerPort))
-	if err != nil {
-		log.Println(err)
-		return
-	}
+	// conn, err := redis.DialURL(fmt.Sprintf("redis://@%s:%s", configs.RedisServerIP, configs.RedisServerPort))
+	pool := sessrep.NewPool(fmt.Sprintf("redis://@%s:%s", configs.RedisServerIP, configs.RedisServerPort))
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return
+	// }
 
 	var db postgresql.Database
-	err = db.Connect()
+	err := db.Connect()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -43,7 +42,7 @@ func main() {
 	// }
 	//
 
-	sessionStorage := sessrep.CreateRedisSessionStorage(conn)
+	sessionStorage := sessrep.CreateRedisSessionStorage(pool)
 	userStoarge := usrep.CreateUserStorage(db.GetDB())
 	levelStorage := levels.CreateSubscribeLevelStorage(db.GetDB())
 	subsStorage := subs.CreateSubscriptionsStorage(db.GetDB())

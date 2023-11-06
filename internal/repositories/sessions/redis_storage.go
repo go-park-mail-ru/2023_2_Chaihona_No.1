@@ -9,20 +9,36 @@ import (
 )
 
 type SessionRedisStorage struct {
-	redisConn redis.Conn
+	// redisConn redis.Conn
+	redisPool *redis.Pool
 }
 
-func CreateRedisSessionStorage(conn redis.Conn) *SessionRedisStorage {
+const (
+	maxIdles   = 10
+	timeOutSec = 240
+)
+
+func NewPool(addr string) *redis.Pool {
+	return &redis.Pool{
+		MaxIdle:     maxIdles,
+		IdleTimeout: timeOutSec * time.Second,
+		Dial:        func() (redis.Conn, error) { return redis.Dial("tcp", addr) },
+	}
+}
+
+func CreateRedisSessionStorage(pool *redis.Pool) *SessionRedisStorage {
 	return &SessionRedisStorage{
-		redisConn: conn,
+		redisPool: pool,
 	}
 }
 
 func (storage *SessionRedisStorage) RegisterNewSession(session Session) error {
 	sessionSerialized, _ := json.Marshal(session)
+	conn := storage.redisPool.Get()
+	defer conn.Close()
 
 	TTL := session.TTL.Hour()*int(time.Hour) + session.TTL.Minute()*int(time.Minute) + session.TTL.Second()*int(time.Second)
-	result, err := redis.String(storage.redisConn.Do("SET", session.SessionID, sessionSerialized, "EX", TTL))
+	result, err := redis.String(conn.Do("SET", session.SessionID, sessionSerialized, "EX", TTL))
 	if err != nil {
 		log.Println(err)
 		return err
@@ -37,7 +53,10 @@ func (storage *SessionRedisStorage) RegisterNewSession(session Session) error {
 }
 
 func (storage *SessionRedisStorage) CheckSession(sessionId string) (*Session, bool) {
-	data, err := redis.Bytes(storage.redisConn.Do("GET", sessionId))
+	conn := storage.redisPool.Get()
+	defer conn.Close()
+
+	data, err := redis.Bytes(conn.Do("GET", sessionId))
 
 	if err != nil {
 		// err = errors.Join(ErrRedisCantGetData, err)
@@ -60,7 +79,10 @@ func (storage *SessionRedisStorage) CheckSession(sessionId string) (*Session, bo
 }
 
 func (storage *SessionRedisStorage) DeleteSession(sessionID string) error {
-	_, err := redis.Int(storage.redisConn.Do("DEL", sessionID))
+	conn := storage.redisPool.Get()
+	defer conn.Close()
+
+	_, err := redis.Int(conn.Do("DEL", sessionID))
 
 	if err != nil {
 		// err = errors.Join(ErrRedis, err)

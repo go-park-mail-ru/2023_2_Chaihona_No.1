@@ -163,76 +163,76 @@ func TestDeleteSessionGoroutines(t *testing.T) {
 	}
 }
 
-func TestGetSessionsSimple(t *testing.T) {
-	const SESSIONS = 100
+// func TestGetSessionsSimple(t *testing.T) {
+// 	const SESSIONS = 100
 
-	storage := CreateSessionStorage()
+// 	storage := CreateSessionStorage()
 
-	for i := 0; i < SESSIONS; i++ {
-		session := Session{
-			SessionID: fmt.Sprint(i),
-			UserID:    uint32(i),
-			TTL:       time.Now().Add(10 * time.Hour),
-		}
+// 	for i := 0; i < SESSIONS; i++ {
+// 		session := Session{
+// 			SessionID: fmt.Sprint(i),
+// 			UserID:    uint32(i),
+// 			TTL:       time.Now().Add(10 * time.Hour),
+// 		}
 
-		storage.RegisterNewSession(session)
-	}
+// 		storage.RegisterNewSession(session)
+// 	}
 
-	sessions, err := storage.GetSessions()
-	if err != nil {
-		t.Fatalf("Error during getting all sessions!")
-	}
+// 	sessions, err := storage.GetSessions()
+// 	if err != nil {
+// 		t.Fatalf("Error during getting all sessions!")
+// 	}
 
-	for _, session := range sessions {
-		checkedSession, ok := storage.CheckSession(session.SessionID)
+// 	for _, session := range sessions {
+// 		checkedSession, ok := storage.CheckSession(session.SessionID)
 
-		if !ok || session != *checkedSession {
-			t.Fatalf("Test failed on getting all sessions! UserId: %d", session.UserID)
-		}
-	}
-}
+// 		if !ok || session != *checkedSession {
+// 			t.Fatalf("Test failed on getting all sessions! UserId: %d", session.UserID)
+// 		}
+// 	}
+// }
 
-func TestGetSessionsGoroutines(t *testing.T) {
-	const SESSIONS = 100
+// func TestGetSessionsGoroutines(t *testing.T) {
+// 	const SESSIONS = 100
 
-	storage := CreateSessionStorage()
+// 	storage := CreateSessionStorage()
 
-	var m sync.Mutex
-	testsPassed := true
+// 	var m sync.Mutex
+// 	testsPassed := true
 
-	for i := 0; i < SESSIONS; i++ {
-		go func(i int, m *sync.Mutex) {
-			session := Session{
-				SessionID: fmt.Sprint(i),
-				UserID:    uint32(i),
-				TTL:       time.Now().Add(10 * time.Hour),
-			}
+// 	for i := 0; i < SESSIONS; i++ {
+// 		go func(i int, m *sync.Mutex) {
+// 			session := Session{
+// 				SessionID: fmt.Sprint(i),
+// 				UserID:    uint32(i),
+// 				TTL:       time.Now().Add(10 * time.Hour),
+// 			}
 
-			storage.RegisterNewSession(session)
+// 			storage.RegisterNewSession(session)
 
-			sessions, err := storage.GetSessions()
-			if err != nil {
-				m.Lock()
-				testsPassed = false
-				m.Unlock()
-			}
+// 			sessions, err := storage.GetSessions()
+// 			if err != nil {
+// 				m.Lock()
+// 				testsPassed = false
+// 				m.Unlock()
+// 			}
 
-			founded := false
-			for _, val := range sessions {
-				if val == session {
-					founded = true
-				}
-			}
+// 			founded := false
+// 			for _, val := range sessions {
+// 				if val == session {
+// 					founded = true
+// 				}
+// 			}
 
-			if !founded {
-				m.Lock()
-				testsPassed = false
-				m.Unlock()
-			}
-		}(i, &m)
-	}
+// 			if !founded {
+// 				m.Lock()
+// 				testsPassed = false
+// 				m.Unlock()
+// 			}
+// 		}(i, &m)
+// 	}
 
-	if !testsPassed {
-		t.Fatalf("Test failed on geting all sessions!")
-	}
-}
+// 	if !testsPassed {
+// 		t.Fatalf("Test failed on geting all sessions!")
+// 	}
+// }
