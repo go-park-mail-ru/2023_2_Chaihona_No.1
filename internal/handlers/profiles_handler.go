@@ -190,6 +190,42 @@ func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form FileForm) 
 	return Result{}, nil
 }
 
+func (p *ProfileHandler) ChangeUserStatusStratagy(ctx context.Context, form UserForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+		return Result{}, ErrUnathorized
+	}
+
+	cookie := auth.GetSession(ctx)
+	session, ok := p.Session.CheckSession(cookie.Value)
+	if !ok {
+		return Result{}, ErrNoSession
+	}
+
+	err := p.Users.ChangeUserStatus(form.Body.User.Status, int(session.UserID))
+	if err != nil {
+		return Result{}, ErrDataBase
+	}
+	return Result{}, nil
+}
+
+func (p *ProfileHandler) ChangeUserDescriptionStratagy(ctx context.Context, form UserForm) (Result, error) {
+	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+		return Result{}, ErrUnathorized
+	}
+
+	cookie := auth.GetSession(ctx)
+	session, ok := p.Session.CheckSession(cookie.Value)
+	if !ok {
+		return Result{}, ErrNoSession
+	}
+
+	err := p.Users.ChangeUserDescription(form.Body.User.Description, int(session.UserID))
+	if err != nil {
+		return Result{}, ErrDataBase
+	}
+	return Result{}, nil
+}
+
 // func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form UserForm) (Result, error) {
 // 	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
 // 		return Result{}, ErrUnathorized

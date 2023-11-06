@@ -11,5 +11,7 @@ type UserRepository interface {
 	GetUser(id int) (model.User, error)
 	GetUserWithSubscribers(id, visiterId int) (model.User, error)
 	ChangeUser(user model.User) error
+	ChangeUserDescription(description string, id int) error
+	ChangeUserStatus(status string, id int) error
 	GetUsers() ([]model.User, error)
 }

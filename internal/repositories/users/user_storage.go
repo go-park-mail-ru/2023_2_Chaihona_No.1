@@ -69,6 +69,26 @@ func UpdateUserSQL(user model.User) squirrel.UpdateBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
+func UpdateUserStatusSQL(status string, id int) squirrel.UpdateBuilder {
+	return squirrel.Update(configs.UserTable).
+		SetMap(map[string]interface{}{
+			"status": status,
+		}).
+		Where(squirrel.Eq{"id": id}).
+		PlaceholderFormat(squirrel.Dollar)
+}
+
+
+func UpdateUserDescriptionSQL(description string, id int) squirrel.UpdateBuilder {
+	return squirrel.Update(configs.UserTable).
+		SetMap(map[string]interface{}{
+			"description": description,
+		}).
+		Where(squirrel.Eq{"id": id}).
+		PlaceholderFormat(squirrel.Dollar)
+}
+
+
 type UserStorage struct {
 	db *sql.DB
 }
@@ -146,6 +166,22 @@ func (storage *UserStorage) GetUserWithSubscribers(id int, visiterId int) (model
 
 func (storage *UserStorage) ChangeUser(user model.User) error {
 	_, err := UpdateUserSQL(user).RunWith(storage.db).Query()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (storage *UserStorage) ChangeUserStatus(status string, id int) error {
+	_, err := UpdateUserStatusSQL(status, id).RunWith(storage.db).Query()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (storage *UserStorage) ChangeUserDescription(description string, id int) error {
+	_, err := UpdateUserDescriptionSQL(description, id).RunWith(storage.db).Query()
 	if err != nil {
 		return err
 	}
