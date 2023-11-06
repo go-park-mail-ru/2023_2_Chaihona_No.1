@@ -2,7 +2,7 @@ package model
 
 type Profile struct {
 	User            User             `json:"user"`
-	Subscribers     uint             `json:"subscribers,omitempty"`
+	Subscribers     uint             `json:"subscribers"`
 	SubscribeLevels []SubscribeLevel `json:"subscribe_levels,omitempty"`
 	Subscriptions   []User           `json:"subscriptions,omitempty"`
 	Donated         string          `json:"donated,omitempty"`

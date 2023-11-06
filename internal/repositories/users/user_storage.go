@@ -41,7 +41,7 @@ func SelectUserByIdSQL(id int) squirrel.SelectBuilder {
 
 func SelectUserByIdSQLWithSubscribers(id int, visiterId int) squirrel.SelectBuilder {
 	return squirrel.Select(
-		fmt.Sprintf("%s.id, %s.nickname, %s.email, %s.is_author, %s.status, %s.avatar_path, %s.background_path, %s.description, COUNT(*) as subscribers, ",
+		fmt.Sprintf("%s.id, %s.nickname, %s.email, %s.is_author, %s.status, %s.avatar_path, %s.background_path, %s.description, COUNT(s.id) as subscribers, ",
 			configs.UserTable, configs.UserTable, configs.UserTable,
 			configs.UserTable, configs.UserTable, configs.UserTable,
 			configs.UserTable, configs.UserTable) +

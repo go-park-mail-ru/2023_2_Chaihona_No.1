@@ -179,7 +179,7 @@ func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form FileForm) 
 	user.Password = currentUser.Password
 	if GetFirst[string](form.Form.Value["new_password"]) != "" {
 		if GetFirst[string](form.Form.Value["old_password"]) != currentUser.Password {
-			return Result{}, ErrValidation //change error
+			return Result{}, ErrMissmatchPassword //change error
 		}
 		user.Password = GetFirst[string](form.Form.Value["new_password"])
 	}

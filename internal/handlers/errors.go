@@ -22,6 +22,10 @@ func (e ErrorHttp) Error() string {
 }
 
 var (
+	ErrMissmatchPassword = ErrorHttp{
+		StatusCode: http.StatusBadRequest,
+		Msg: `{"error":"password_missmatch"}`,
+	}
 	ErrValidation = ErrorHttp{
 		StatusCode: http.StatusBadRequest,
 		Msg:        `{"error":"user_validation"}`,
