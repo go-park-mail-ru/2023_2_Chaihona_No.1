@@ -10,7 +10,7 @@ services:
     ports:
       - "5432:5432"
     volumes: 
-      - ./db/dumps/:/docker-entrypoint-initdb.d
+      - ./db/migrations/:/docker-entrypoint-initdb.d
       - ../.:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U kopilka -d ../."]

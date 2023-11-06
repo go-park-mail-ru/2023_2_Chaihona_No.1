@@ -5,6 +5,6 @@ build:
 dc:
 	docker compose up -d
 run: dc build
-	./main
+	./main &
 stop:
 	docke compose down

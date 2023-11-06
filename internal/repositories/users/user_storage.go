@@ -129,7 +129,7 @@ func (storage *UserStorage) CheckUser(login string) (*model.User, error) {
 	}
 	var users []*model.User
 	err = dbscan.ScanAll(&users, rows)
-	if err != nil {
+	if err != nil || len(users) == 0 {
 		return nil, ErrNoSuchUser
 	}
 	return users[0], nil
@@ -142,7 +142,7 @@ func (storage *UserStorage) GetUser(id int) (model.User, error) {
 	}
 	var users []*model.User
 	err = dbscan.ScanAll(&users, rows)
-	if err != nil {
+	if err != nil || len(users) == 0 {
 		return model.User{}, err
 	}
 	return *users[0], nil
