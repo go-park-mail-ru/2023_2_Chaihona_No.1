@@ -22,7 +22,7 @@ import (
 
 func main() {
 	// conn, err := redis.DialURL(fmt.Sprintf("redis://@%s:%s", configs.RedisServerIP, configs.RedisServerPort))
-	pool := sessrep.NewPool(fmt.Sprintf("redis://@%s:%s", configs.RedisServerIP, configs.RedisServerPort))
+	pool := sessrep.NewPool(fmt.Sprintf("%s:%s", configs.RedisServerIP, configs.RedisServerPort))
 	// if err != nil {
 	// 	log.Println(err)
 	// 	return
