@@ -3,8 +3,8 @@ test:
 build:
 	go build cmd/api/main.go
 dc:
-	docker-compose up -d
+	docker compose up -d
 run: dc build
 	./main
 stop:
-	docke-compose down
+	docke compose down
