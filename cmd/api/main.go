@@ -107,16 +107,17 @@ func main() {
 		h.AllowCredentials(),
 		h.AllowedOriginValidator(
 			func(origin string) bool {
-				return strings.HasPrefix(origin, "http://localhost")
+				return strings.HasPrefix(origin, "http://212.233.89.163:8001")
 			},
 		),
+		h.AllowedMethods([]string{ "GET", "POST", "OPTIONS", "DELETE"}),
 		h.AllowedHeaders([]string{"X-CSRF-Token"}),
 		h.ExposedHeaders([]string{"X-CSRF-Token"}),
 	)
 
 	server := &http.Server{
 		Handler:      CORSMiddleware(r),
-		Addr:         "localhost:8000",
+		Addr:         "localhost:8001",
 		ReadTimeout:  60 * time.Second,
 		WriteTimeout: 60 * time.Second,
 	}
