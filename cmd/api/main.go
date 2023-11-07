@@ -100,8 +100,9 @@ func main() {
 		csrf.RequestHeader("X-CSRF-Token"), // Must be in CORS Allowed and Exposed Headers
 	)
 
+	fmt.Println(&CSRFMiddleware)
 	// APIRouter := r.PathPrefix("/api").Subrouter()
-	r.Use(CSRFMiddleware)
+	// r.Use(CSRFMiddleware)
 
 	CORSMiddleware := h.CORS(
 		h.AllowCredentials(),
