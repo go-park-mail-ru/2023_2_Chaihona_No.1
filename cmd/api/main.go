@@ -111,7 +111,7 @@ func main() {
 			},
 		),
 		h.AllowedMethods([]string{ "GET", "POST", "OPTIONS", "DELETE"}),
-		h.AllowedHeaders([]string{"X-CSRF-Token"}),
+		h.AllowedHeaders([]string{"X-CSRF-Token", "Content-Type"}),
 		h.ExposedHeaders([]string{"X-CSRF-Token"}),
 	)
 
