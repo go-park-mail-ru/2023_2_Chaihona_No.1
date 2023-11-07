@@ -117,7 +117,7 @@ func main() {
 
 	server := &http.Server{
 		Handler:      CORSMiddleware(r),
-		Addr:         "localhost:8001",
+		Addr:         "localhost:8000",
 		ReadTimeout:  60 * time.Second,
 		WriteTimeout: 60 * time.Second,
 	}
