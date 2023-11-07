@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/db/postgresql"
@@ -17,6 +19,8 @@ import (
 	subs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	_ "github.com/go-swagger/go-swagger"
+	"github.com/gorilla/csrf"
+	h "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -90,7 +94,35 @@ func main() {
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/follow", handlers.NewWrapper(profileHandler.FollowStratagy).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/unfollow", handlers.NewWrapper(profileHandler.UnfollowStratagy).ServeHTTP).Methods("POST")
 
+	CSRFMiddleware := csrf.Protect(
+		[]byte("place-your-32-byte-long-key-here"),
+		csrf.Secure(false),                 // false in development only!
+		csrf.RequestHeader("X-CSRF-Token"), // Must be in CORS Allowed and Exposed Headers
+	)
+
+	// APIRouter := r.PathPrefix("/api").Subrouter()
+	r.Use(CSRFMiddleware)
+
+	CORSMiddleware := h.CORS(
+		h.AllowCredentials(),
+		h.AllowedOriginValidator(
+			func(origin string) bool {
+				return strings.HasPrefix(origin, "http://localhost")
+			},
+		),
+		h.AllowedHeaders([]string{"X-CSRF-Token"}),
+		h.ExposedHeaders([]string{"X-CSRF-Token"}),
+	)
+
+	server := &http.Server{
+		Handler:      CORSMiddleware(r),
+		Addr:         "localhost:8000",
+		ReadTimeout:  60 * time.Second,
+		WriteTimeout: 60 * time.Second,
+	}
+
 	fmt.Println("Server started")
-	err = http.ListenAndServe(configs.BackendServerPort, r)
+	err = server.ListenAndServe()
+	// err = http.ListenAndServe(configs.BackendServerPort, r)
 	fmt.Println(err)
 }
