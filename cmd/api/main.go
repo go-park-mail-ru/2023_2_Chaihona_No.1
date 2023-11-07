@@ -112,7 +112,7 @@ func main() {
 		),
 		h.AllowedMethods([]string{ "GET", "POST", "OPTIONS", "DELETE"}),
 		h.AllowedHeaders([]string{"X-CSRF-Token", "Content-Type", "Cookie"}),
-		h.ExposedHeaders([]string{"X-CSRF-Token"}),
+		// h.ExposedHeaders([]string{"X-CSRF-Token"}),
 	)
 
 	server := &http.Server{
