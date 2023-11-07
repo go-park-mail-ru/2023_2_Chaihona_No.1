@@ -107,7 +107,7 @@ func main() {
 		h.AllowCredentials(),
 		h.AllowedOriginValidator(
 			func(origin string) bool {
-				return strings.HasPrefix(origin, "http://212.233.89.163:8001")
+				return strings.HasPrefix(origin, "http://212.233.89.163:8000")
 			},
 		),
 		h.AllowedMethods([]string{ "GET", "POST", "OPTIONS", "DELETE"}),
