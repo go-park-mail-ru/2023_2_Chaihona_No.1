@@ -18,7 +18,7 @@ type Post struct {
 	// Access        string    `json:"access" db:""`
 	Payment       float64   `json:"payment,omitempty" db:""`
 	Currency      string    `json:"currency,omitempty" db:""`
-	MinSubLevel   uint      `json:"min_sub_level,omitempty" db:"min_sub_level"`
+	MinSubLevel   uint      `json:"min_sub_level" db:"min_sub_level"`
 	MinSubLevelId uint      `json:"-" db:"min_subscription_level_id"`
 	CreationDate  string    `json:"creation_date" db:""`
 	CreationDateSQL sql.NullTime `json:"-" db:"creation_date"`

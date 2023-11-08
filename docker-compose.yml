@@ -13,12 +13,12 @@ services:
       - ./db/migrations/:/docker-entrypoint-initdb.d
       - ../.:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U kopilka -d ../."]
+      test: ["CMD-SHELL", "pg_isready -U kopilka -d kopilka"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
-    restart: unless-stopped
+    restart: always
     deploy:
       resources:
         limits:
