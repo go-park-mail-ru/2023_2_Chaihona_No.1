@@ -25,8 +25,8 @@ type Database struct {
 func (database *Database) Connect() error {
 	var err error
 	database.db, err = sql.Open(configs.DriverSQL, configs.DatabaseURL)
-	database.db.SetConnMaxLifetime(0)
-	database.db.SetConnMaxIdleTime(0)
+	database.db.SetConnMaxLifetime(1)
+	database.db.SetConnMaxIdleTime(1)
 	if err != nil {
 		return err
 	}
