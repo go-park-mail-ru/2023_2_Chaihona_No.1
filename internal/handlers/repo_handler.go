@@ -69,36 +69,36 @@ func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm)
 	auth.SetSessionContext(ctx, api.sessions, uint32(id))
 	if user.Is_author {
 		zeroLevel := model.SubscribeLevel{
-			Name: "free",
+			Name: "Бесплатная",
 			Level: 0,
-			Description: "mda",
+			Description: "Подписка по умолчанию:)",
 			CostInteger: 0,
 			CostFractional: 0,
 			Currency: "RUB",
 			CreatorID: uint(id),
 		}
 		firstLevel := model.SubscribeLevel{
-			Name: "BOMJ",
+			Name: "Любимый поклонник",
 			Level: 1,
-			Description: "mda",
+			Description: "Подписка низкого уровня",
 			CostInteger: 100,
 			CostFractional: 0,
 			Currency: "RUB",
 			CreatorID: uint(id),
 		}
 		secondLevel := model.SubscribeLevel{
-			Name: "Normis",
+			Name: "Давний фанат",
 			Level: 2,
-			Description: "mda",
+			Description: "Подписка среднего уровня",
 			CostInteger: 1000,
 			CostFractional: 0,
 			Currency: "RUB",
 			CreatorID: uint(id),
 		}
 		thirdLevel := model.SubscribeLevel{
-			Name: "King",
+			Name: "Король",
 			Level: 3,
-			Description: "mda",
+			Description: "Подписка высокого уровня",
 			CostInteger: 10000,
 			CostFractional: 0,
 			Currency: "RUB",
