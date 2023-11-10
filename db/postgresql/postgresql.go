@@ -28,6 +28,7 @@ func (database *Database) Connect() error {
 	database.db.SetConnMaxLifetime(1)
 	database.db.SetConnMaxIdleTime(1)
 	database.db.SetMaxIdleConns(1)
+	database.db.SetMaxOpenConns(1)
 	if err != nil {
 		return err
 	}
