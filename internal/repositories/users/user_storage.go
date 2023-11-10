@@ -112,7 +112,8 @@ func (storage *UserStorage) RegisterNewUser(user *model.User) (int, error) {
 }
 
 func (storage *UserStorage) DeleteUser(id int) error {
-	_, err := DeleteUserSQL(id).RunWith(storage.db).Query()
+	rows, err := DeleteUserSQL(id).RunWith(storage.db).Query()
+	defer rows.Close()
 	if err != nil {
 		return ErrorUserRegistration{
 			ErrNoSuchUser,
@@ -165,7 +166,8 @@ func (storage *UserStorage) GetUserWithSubscribers(id int, visiterId int) (model
 }
 
 func (storage *UserStorage) ChangeUser(user model.User) error {
-	_, err := UpdateUserSQL(user).RunWith(storage.db).Query()
+	rows, err := UpdateUserSQL(user).RunWith(storage.db).Query()
+	defer rows.Close()
 	if err != nil {
 		return err
 	}
@@ -174,11 +176,7 @@ func (storage *UserStorage) ChangeUser(user model.User) error {
 
 func (storage *UserStorage) ChangeUserStatus(status string, id int) error {
 	rows, err := UpdateUserStatusSQL(status, id).RunWith(storage.db).Query()
-	if err != nil {
-		return err
-	}
-	var buf interface{}
-	err = dbscan.ScanAll(&buf, rows)
+	defer rows.Close()
 	if err != nil {
 		return err
 	}
@@ -186,7 +184,8 @@ func (storage *UserStorage) ChangeUserStatus(status string, id int) error {
 }
 
 func (storage *UserStorage) ChangeUserDescription(description string, id int) error {
-	_, err := UpdateUserDescriptionSQL(description, id).RunWith(storage.db).Query()
+	rows, err := UpdateUserDescriptionSQL(description, id).RunWith(storage.db).Query()
+	defer rows.Close()
 	if err != nil {
 		return err
 	}

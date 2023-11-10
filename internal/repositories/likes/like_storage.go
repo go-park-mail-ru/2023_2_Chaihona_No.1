@@ -31,7 +31,8 @@ func CreateLikeStorage(db *sql.DB) *LikeStorage {
 }
 
 func (storage *LikeStorage) CreateNewLike(userId int, postId int) error {
-	_, err := InsertLikeSQL(userId, postId).RunWith(storage.db).Query()
+	rows, err := InsertLikeSQL(userId, postId).RunWith(storage.db).Query()
+	defer rows.Close()
 	if err != nil {
 		return err
 	}
@@ -39,7 +40,8 @@ func (storage *LikeStorage) CreateNewLike(userId int, postId int) error {
 }
 
 func (storage *LikeStorage) DeleteLike(userId int, postId int) error {
-	_, err := DeleteLikeSQL(userId, postId).RunWith(storage.db).Query()
+	rows, err := DeleteLikeSQL(userId, postId).RunWith(storage.db).Query()
+	defer rows.Close()
 	if err != nil {
 		return err
 	}

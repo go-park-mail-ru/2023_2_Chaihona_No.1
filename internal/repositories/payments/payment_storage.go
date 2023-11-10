@@ -76,7 +76,8 @@ func (storage *PaymentStorage) CreateNewPayment(payment model.Payment) (int, err
 }
 
 func (storage *PaymentStorage) DeletePayment(id uint) error {
-	_, err := DeletePaymentSQL(id).RunWith(storage.db).Query()
+	rows, err := DeletePaymentSQL(id).RunWith(storage.db).Query()
+	defer rows.Close()
 	if err != nil {
 		return err
 	}
@@ -99,7 +100,8 @@ func (storage *PaymentStorage) GetPayment(uuid string) (model.Payment, error) {
 }
 
 func (storage *PaymentStorage) ChangePayment(payment model.Payment) error {
-	_, err := UpdatePaymentSQL(payment).RunWith(storage.db).Query()
+	rows, err := UpdatePaymentSQL(payment).RunWith(storage.db).Query()
+	defer rows.Close()
 	if err != nil {
 		return err
 	}

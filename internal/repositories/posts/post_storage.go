@@ -162,7 +162,8 @@ func (storage *PostStorage) CreateNewPost(post model.Post) (int, error) {
 }
 
 func (storage *PostStorage) DeletePost(id uint) error {
-	_, err := DeletePostSQL(id).RunWith(storage.db).Query()
+	rows, err := DeletePostSQL(id).RunWith(storage.db).Query()
+	defer rows.Close()
 	if err != nil {
 		return err
 	}
@@ -185,7 +186,8 @@ func (storage *PostStorage) GetPostById(postId uint) (model.Post, error) {
 }
 
 func (storage *PostStorage) ChangePost(post model.Post) error {
-	_, err := UpdatePostSQL(post).RunWith(storage.db).Query()
+	rows, err := UpdatePostSQL(post).RunWith(storage.db).Query()
+	defer rows.Close()
 	if err != nil {
 		return err
 	}

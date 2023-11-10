@@ -59,7 +59,8 @@ func (storage *SubscriptionsStorage) AddNewSubscription(subscription model.Subsc
 }
 
 func (storage *SubscriptionsStorage) DeleteSubscription(levelId, subId int) error {
-	_, err := DeleteSubscriptionSQL(levelId, subId).RunWith(storage.db).Query()
+	rows, err := DeleteSubscriptionSQL(levelId, subId).RunWith(storage.db).Query()
+	defer rows.Close()
 	if err != nil {
 		return err
 	}
