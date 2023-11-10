@@ -174,7 +174,11 @@ func (storage *UserStorage) ChangeUser(user model.User) error {
 
 func (storage *UserStorage) ChangeUserStatus(status string, id int) error {
 	rows, err := UpdateUserStatusSQL(status, id).RunWith(storage.db).Query()
-	defer rows.Close()
+	if err != nil {
+		return err
+	}
+	var buf interface{}
+	err = dbscan.ScanAll(&buf, rows)
 	if err != nil {
 		return err
 	}
