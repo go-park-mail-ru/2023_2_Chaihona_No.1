@@ -169,6 +169,7 @@ func (storage *UserStorage) ChangeUser(user model.User) error {
 	if err != nil {
 		return err
 	}
+	storage.db.Close()
 	return nil
 }
 
