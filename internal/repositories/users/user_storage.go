@@ -165,7 +165,8 @@ func (storage *UserStorage) GetUserWithSubscribers(id int, visiterId int) (model
 }
 
 func (storage *UserStorage) ChangeUser(user model.User) error {
-	_, err := UpdateUserSQL(user).RunWith(storage.db).Query()
+	rows, err := UpdateUserSQL(user).RunWith(storage.db).Query()
+	defer rows.Close()
 	if err != nil {
 		return err
 	}
