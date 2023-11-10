@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"database/sql"
+	"time"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/golang-migrate/migrate/v4"
@@ -25,13 +26,12 @@ type Database struct {
 func (database *Database) Connect() error {
 	var err error
 	database.db, err = sql.Open(configs.DriverSQL, configs.DatabaseURL)
-	database.db.SetConnMaxLifetime(1)
-	database.db.SetConnMaxIdleTime(1)
-	database.db.SetMaxIdleConns(1)
-	database.db.SetMaxOpenConns(1)
 	if err != nil {
 		return err
 	}
+	database.db.SetConnMaxLifetime(1 * time.Second)
+	database.db.SetConnMaxIdleTime(1 * time.Second)
+	database.db.SetMaxIdleConns(1)
 	return nil
 }
 
