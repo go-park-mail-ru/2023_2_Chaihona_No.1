@@ -1,9 +1,11 @@
 package users
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/dbscan"
@@ -165,7 +167,11 @@ func (storage *UserStorage) GetUserWithSubscribers(id int, visiterId int) (model
 }
 
 func (storage *UserStorage) ChangeUser(user model.User) error {
-	_, err := UpdateUserSQL(user).RunWith(storage.db).Query()
+	// _, err := UpdateUserSQL(user).RunWith(storage.db).Query()
+	ctx := context.Background()
+	ctx, f := context.WithTimeout(ctx, 1 * time.Second)
+	_, err := UpdateUserSQL(user).RunWith(storage.db).QueryContext(ctx)
+	defer f()
 	if err != nil {
 		return err
 	}
