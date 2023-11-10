@@ -27,6 +27,7 @@ func (database *Database) Connect() error {
 	database.db, err = sql.Open(configs.DriverSQL, configs.DatabaseURL)
 	database.db.SetConnMaxLifetime(1)
 	database.db.SetConnMaxIdleTime(1)
+	database.db.SetMaxIdleConns(0)
 	if err != nil {
 		return err
 	}
