@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"log"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/dbscan"
@@ -40,11 +41,16 @@ func SelectUserByIdSQL(id int) squirrel.SelectBuilder {
 }
 
 func SelectTopUsers(limit int) squirrel.SelectBuilder {
-	return squirrel.Select("*").
+	return squirrel.Select(
+		fmt.Sprintf("%s.id, %s.nickname, %s.email, %s.is_author, %s.status, %s.avatar_path, %s.background_path, %s.description, COUNT(s.id) as subscribers",
+			configs.UserTable, configs.UserTable, configs.UserTable,
+			configs.UserTable, configs.UserTable, configs.UserTable,
+			configs.UserTable, configs.UserTable)).
 		From(configs.UserTable).
-		OrderBy("subscribers DESC").
-		Limit(uint64(limit)).
-		PlaceholderFormat(squirrel.Dollar)
+		LeftJoin(fmt.Sprintf("%s s ON %s.id = s.creator_id", configs.SubscriptionTable, configs.UserTable)).
+		Suffix("GROUP BY " + configs.UserTable + ".id").
+		Suffix("ORDER BY subscribers DESC").
+		Suffix(fmt.Sprintf("LIMIT %d", limit))
 }
 
 func SelectUserByIdSQLWithSubscribers(id int, visiterId int) squirrel.SelectBuilder {
@@ -53,7 +59,7 @@ func SelectUserByIdSQLWithSubscribers(id int, visiterId int) squirrel.SelectBuil
 			configs.UserTable, configs.UserTable, configs.UserTable,
 			configs.UserTable, configs.UserTable, configs.UserTable,
 			configs.UserTable, configs.UserTable) +
-		fmt.Sprintf("CASE WHEN array_position(array_agg(s.subscriber_id), %d) IS NOT NULL THEN TRUE ELSE FALSE END AS is_followed", visiterId)).
+			fmt.Sprintf("CASE WHEN array_position(array_agg(s.subscriber_id), %d) IS NOT NULL THEN TRUE ELSE FALSE END AS is_followed", visiterId)).
 		From(configs.UserTable).
 		LeftJoin(fmt.Sprintf("%s s ON %s.id = s.creator_id", configs.SubscriptionTable, configs.UserTable)).
 		Suffix(fmt.Sprintf("WHERE %s.id = %d", configs.UserTable, id)).
@@ -63,9 +69,9 @@ func SelectUserByIdSQLWithSubscribers(id int, visiterId int) squirrel.SelectBuil
 func UpdateUserSQL(user model.User) squirrel.UpdateBuilder {
 	return squirrel.Update(configs.UserTable).
 		SetMap(map[string]interface{}{
-			"email":           user.Login,
-			"nickname":        user.Nickname,
-			"password":        user.Password,
+			"email":    user.Login,
+			"nickname": user.Nickname,
+			"password": user.Password,
 			// "is_author":       user.Is_author,
 			"status":          user.Status,
 			"avatar_path":     user.Avatar,
@@ -86,7 +92,6 @@ func UpdateUserStatusSQL(status string, id int) squirrel.UpdateBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
-
 func UpdateUserDescriptionSQL(description string, id int) squirrel.UpdateBuilder {
 	return squirrel.Update(configs.UserTable).
 		SetMap(map[string]interface{}{
@@ -95,7 +100,6 @@ func UpdateUserDescriptionSQL(description string, id int) squirrel.UpdateBuilder
 		Where(squirrel.Eq{"id": id}).
 		PlaceholderFormat(squirrel.Dollar)
 }
-
 
 type UserStorage struct {
 	db *sql.DB
@@ -160,11 +164,13 @@ func (storage *UserStorage) GetUser(id int) (model.User, error) {
 func (storage *UserStorage) GetTopUsers(limit int) ([]model.User, error) {
 	rows, err := SelectTopUsers(limit).RunWith(storage.db).Query()
 	if err != nil {
+		log.Println(err)
 		return nil, err
 	}
 	var users []model.User
 	err = dbscan.ScanAll(&users, rows)
 	if err != nil || len(users) == 0 {
+		log.Println(err)
 		return nil, err
 	}
 	return users, nil
