@@ -70,9 +70,9 @@ func CreateProfileHandlerViaRepos(
 //	401: result
 //	500: result
 func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
-		return Result{}, ErrUnathorized
-	}
+	//if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+	//	return Result{}, ErrUnathorized
+	//}
 
 	vars := auth.GetVars(ctx)
 	if vars == nil {
@@ -85,11 +85,13 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 
 	cookie := auth.GetSession(ctx)
 	session, ok := p.Session.CheckSession(cookie.Value)
-	if !ok {
-		return Result{}, ErrNoSession
+	userID := 0
+	if ok {
+		//return Result{}, ErrNoSession
+		userID = int(session.UserID)
 	}
 
-	user, err := p.Users.GetUserWithSubscribers(id, int(session.UserID))
+	user, err := p.Users.GetUserWithSubscribers(id, userID)
 	if err != nil {
 		return Result{}, err
 	}
