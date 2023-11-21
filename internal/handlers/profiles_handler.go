@@ -18,6 +18,10 @@ type BodyProfile struct {
 	Profile model.Profile `json:"profile"`
 }
 
+type Users struct {
+	Users []model.User `json:"users"`
+}
+
 type ProfileHandler struct {
 	Session       sessions.SessionRepository
 	Users         users.UserRepository
@@ -348,4 +352,21 @@ func (p *ProfileHandler) UnfollowStratagy(ctx context.Context, form FollowForm) 
 		return Result{}, ErrDataBase
 	}
 	return Result{}, nil
+}
+
+func (p *ProfileHandler) GetTopUsersStratagy(ctx context.Context, form EmptyForm) (Result, error) {
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
+	limit, err := strconv.Atoi(vars["limit"])
+	if err != nil {
+		return Result{}, ErrBadID
+	}
+	users, err := p.Users.GetTopUsers(limit)
+
+	if err != nil {
+		return Result{}, ErrDataBase
+	}
+	return Result{Body: Users{Users: users}}, nil
 }

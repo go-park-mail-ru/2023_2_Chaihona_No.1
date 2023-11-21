@@ -66,6 +66,11 @@ var (
 		Msg:        `{"error":"bad id"}`,
 	}
 
+	ErrBadLimit = ErrorHttp{
+		StatusCode: http.StatusBadRequest,
+		Msg:        `{"error":"bad limit"}`,
+	}
+
 	ErrNoVars = ErrorHttp{
 		StatusCode: http.StatusBadRequest,
 		Msg:        `{"error":"no vars"}`,

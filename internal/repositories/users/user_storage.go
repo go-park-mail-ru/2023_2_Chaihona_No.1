@@ -39,6 +39,14 @@ func SelectUserByIdSQL(id int) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
+func SelectTopUsers(limit int) squirrel.SelectBuilder {
+	return squirrel.Select("*").
+		From(configs.UserTable).
+		OrderBy("subscribers DESC").
+		Limit(uint64(limit)).
+		PlaceholderFormat(squirrel.Dollar)
+}
+
 func SelectUserByIdSQLWithSubscribers(id int, visiterId int) squirrel.SelectBuilder {
 	return squirrel.Select(
 		fmt.Sprintf("%s.id, %s.nickname, %s.email, %s.is_author, %s.status, %s.avatar_path, %s.background_path, %s.description, COUNT(s.id) as subscribers, ",
@@ -147,6 +155,19 @@ func (storage *UserStorage) GetUser(id int) (model.User, error) {
 		return model.User{}, err
 	}
 	return *users[0], nil
+}
+
+func (storage *UserStorage) GetTopUsers(limit int) ([]model.User, error) {
+	rows, err := SelectTopUsers(limit).RunWith(storage.db).Query()
+	if err != nil {
+		return nil, err
+	}
+	var users []model.User
+	err = dbscan.ScanAll(&users, rows)
+	if err != nil || len(users) == 0 {
+		return nil, err
+	}
+	return users, nil
 }
 
 func (storage *UserStorage) GetUserWithSubscribers(id int, visiterId int) (model.User, error) {
