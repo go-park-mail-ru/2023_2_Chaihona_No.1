@@ -62,7 +62,7 @@ func (storage *SessionRedisStorage) CheckSession(sessionId string) (*Session, bo
 		// err = errors.Join(ErrRedisCantGetData, err)
 		log.Println(err.Error())
 
-		return nil, false
+		return &Session{}, false
 	}
 
 	sess := &Session{}
@@ -72,7 +72,7 @@ func (storage *SessionRedisStorage) CheckSession(sessionId string) (*Session, bo
 		// err = errors.Join(ErrRedisCantUnpackSessionData, err)
 		log.Println(err.Error())
 
-		return nil, false
+		return &Session{}, false
 	}
 
 	return sess, true

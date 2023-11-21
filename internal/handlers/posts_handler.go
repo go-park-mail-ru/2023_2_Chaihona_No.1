@@ -60,9 +60,9 @@ func CreatePostHandlerViaRepos(session sessrep.SessionRepository, posts postsrep
 //	401: result
 //	500: result
 func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
-		return Result{}, ErrUnathorized
-	}
+	// if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+	// 	return Result{}, ErrUnathorized
+	// }
 
 	vars := auth.GetVars(ctx)
 	if vars == nil {
@@ -78,10 +78,10 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 	if cookie == nil {
 		return Result{}, ErrNoCookie
 	}
-	session, ok := p.Sessions.CheckSession(cookie.Value)
-	if !ok {
-		return Result{}, ErrNoSession
-	}
+	session, _ := p.Sessions.CheckSession(cookie.Value)
+	// if !ok {
+	// 	return Result{}, ErrNoSession
+	// }
 	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID), uint(session.UserID))
 	for i := range posts {
 		posts[i].CreationDate = posts[i].CreationDateSQL.Time.Format("2006-01-02 15:04")
@@ -202,10 +202,11 @@ func (p *PostHandler) DeletePostStrategy(ctx context.Context, form EmptyForm) (R
 	return Result{}, nil
 }
 
+//Добавить обработку для ананоимного ползователя
 func (p *PostHandler) GetFeedStrategy(ctx context.Context, form EmptyForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
-		return Result{}, ErrUnathorized
-	}
+	// if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+	// 	return Result{}, ErrUnathorized
+	// }
 
 	cookie := auth.GetSession(ctx)
 	if cookie == nil {

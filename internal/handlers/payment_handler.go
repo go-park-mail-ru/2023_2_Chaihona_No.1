@@ -117,9 +117,9 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 }
 
 func (p *PaymentHandler) GetUsersDonatesStratagy(ctx context.Context, form PaymentForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
-		return Result{}, ErrUnathorized
-	}
+	// if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+	// 	return Result{}, ErrUnathorized
+	// }
 
 	vars := auth.GetVars(ctx)
 	if vars == nil {
@@ -139,9 +139,9 @@ func (p *PaymentHandler) GetUsersDonatesStratagy(ctx context.Context, form Payme
 }
 
 func (p *PaymentHandler) GetAuthorDonatesStratagy(ctx context.Context, form PaymentForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
-		return Result{}, ErrUnathorized
-	}
+	// if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+	// 	return Result{}, ErrUnathorized
+	// }
 
 	vars := auth.GetVars(ctx)
 	if vars == nil {
