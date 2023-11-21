@@ -18,8 +18,8 @@ type BodyProfile struct {
 	Profile model.Profile `json:"profile"`
 }
 
-type Users struct {
-	Users []model.User `json:"users"`
+type Profiles struct {
+	Profiles []model.Profile `json:"profiles"`
 }
 
 type ProfileHandler struct {
@@ -27,7 +27,7 @@ type ProfileHandler struct {
 	Users         users.UserRepository
 	Levels        subscribelevels.SubscribeLevelRepository
 	Subscriptions subscriptions.SubscriptionRepository
-	Payments payments.PaymentRepository
+	Payments      payments.PaymentRepository
 }
 
 func CreateProfileHandlerViaRepos(
@@ -104,7 +104,7 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 			User:            user,
 			Subscribers:     user.Subscribers,
 			SubscribeLevels: levels,
-			IsFollowed: user.IsFollowed,
+			IsFollowed:      user.IsFollowed,
 		}
 		donated, err := p.Payments.GetPaymentsByAuthorId(user.ID)
 		if err != nil {
@@ -154,11 +154,11 @@ func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form FileForm) 
 
 	fmt.Println(session.UserID)
 	user := model.User{
-		ID: uint(session.UserID),
-		Nickname: GetFirst[string](form.Form.Value["nickname"]),
-		Login: GetFirst[string](form.Form.Value["login"]),
-		Status: GetFirst[string](form.Form.Value["status"]),
-		Background: GetFirst[string](form.Form.Value["background"]),
+		ID:          uint(session.UserID),
+		Nickname:    GetFirst[string](form.Form.Value["nickname"]),
+		Login:       GetFirst[string](form.Form.Value["login"]),
+		Status:      GetFirst[string](form.Form.Value["status"]),
+		Background:  GetFirst[string](form.Form.Value["background"]),
 		Description: GetFirst[string](form.Form.Value["description"]),
 	}
 	currentUser, err := p.Users.GetUser(int(user.ID))
@@ -166,7 +166,7 @@ func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form FileForm) 
 		return Result{}, ErrDataBase
 	}
 	fileArray, ok := form.Form.File["avatar"]
-	if ok&&len(fileArray)>0 {
+	if ok && len(fileArray) > 0 {
 		path, err := saveFile(fileArray[0], GetFirst[string](form.Form.Value["id"]))
 		if err != nil {
 			return Result{}, err
@@ -176,7 +176,7 @@ func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form FileForm) 
 		user.Avatar = currentUser.Avatar
 	}
 	if GetFirst[string](form.Form.Value["login"]) == "" {
-		user.Login = currentUser.Login 
+		user.Login = currentUser.Login
 	} else {
 		user.Login = GetFirst[string](form.Form.Value["login"])
 	}
@@ -323,8 +323,8 @@ func (p *ProfileHandler) FollowStratagy(ctx context.Context, form FollowForm) (R
 	}
 
 	subscription := model.Subscription{
-		Subscriber_id: uint(session.UserID),
-		Creator_id: uint(id),
+		Subscriber_id:         uint(session.UserID),
+		Creator_id:            uint(id),
 		Subscription_level_id: uint(form.Body.SubscriptionLevelId),
 	}
 	_, err = p.Subscriptions.AddNewSubscription(subscription)
@@ -339,7 +339,6 @@ func (p *ProfileHandler) UnfollowStratagy(ctx context.Context, form FollowForm) 
 	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
 		return Result{}, ErrUnathorized
 	}
-
 
 	cookie := auth.GetSession(ctx)
 	session, ok := p.Session.CheckSession(cookie.Value)
@@ -368,5 +367,14 @@ func (p *ProfileHandler) GetTopUsersStratagy(ctx context.Context, form EmptyForm
 	if err != nil {
 		return Result{}, ErrDataBase
 	}
-	return Result{Body: Users{Users: users}}, nil
+	
+	var profiles []model.Profile
+	for _, user := range users {
+		profiles = append(profiles, model.Profile{
+			User: user,
+			Subscribers: user.Subscribers,
+		})
+	}
+	
+	return Result{Body: Profiles{Profiles: profiles}}, nil
 }
