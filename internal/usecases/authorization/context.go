@@ -14,7 +14,7 @@ func GetSession(ctx context.Context) *http.Cookie {
 		return ctx.Value(sessionIDKey{}).(*http.Cookie)
 	}
 
-	return nil
+	return &http.Cookie{}
 }
 
 func AddSession(ctx context.Context, cookie *http.Cookie) context.Context {

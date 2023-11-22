@@ -101,10 +101,10 @@ func (f *FileHandler) LoadFileStratagy(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	if !auth.CheckAuthorizationByContext(ctx, f.Sessions) {
-		http.Error(w, ErrUnathorized.Error(), http.StatusUnauthorized)
-		return
-	}
+	//if !auth.CheckAuthorizationByContext(ctx, f.Sessions) {
+	//	http.Error(w, ErrUnathorized.Error(), http.StatusUnauthorized)
+	//	return
+	//}
 
 	user, err := f.Users.GetUser(id)
 	if err != nil {
