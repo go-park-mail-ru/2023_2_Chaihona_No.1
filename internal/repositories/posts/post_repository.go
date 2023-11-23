@@ -9,6 +9,8 @@ type PostRepository interface {
 	DeletePost(id uint) error
 	ChangePost(post model.Post) error
 	GetPostById(id uint) (model.Post, error)
-	GetPostsByAuthorId(authorID uint, subscriberId uint) ([]model.Post, error)
+	GetPostsByAuthorIdForStranger(authorID uint, subscriberId uint) ([]model.Post, error)
+	GetOwnPostsByAuthorId(authorID uint, subscriberId uint) ([]model.Post, error)
+	GetPostsByAuthorIdForFollower(authorID uint, subscriberId uint) ([]model.Post, error)
 	GetUsersFeed(userId uint) ([]model.Post, error)
 }

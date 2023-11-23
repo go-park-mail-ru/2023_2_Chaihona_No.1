@@ -74,15 +74,30 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 		return Result{}, ErrBadID
 	}
 
+	queryVars := auth.GetQueryVars(ctx)
+	if queryVars == nil {
+		return Result{}, ErrNoVars
+	}
+
 	cookie := auth.GetSession(ctx)
 	if cookie == nil {
 		return Result{}, ErrNoCookie
 	}
 	session, _ := p.Sessions.CheckSession(cookie.Value)
-	// if !ok {
-	// 	return Result{}, ErrNoSession
-	// }
-	posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID), uint(session.UserID))
+	var posts []model.Post
+	var errPost error
+	if queryVars["is_owner"] == "true" {
+		//check authorization
+		posts, errPost = p.Posts.GetOwnPostsByAuthorId(uint(authorID), uint(authorID))
+	} else {
+		if queryVars["is_followed"] == "true" {
+			//check authorization
+			posts, errPost = p.Posts.GetPostsByAuthorIdForFollower(uint(authorID), uint(session.UserID))
+		} else {
+			posts, errPost = p.Posts.GetPostsByAuthorIdForStranger(uint(authorID), uint(session.UserID))
+		}
+	}
+	// posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID), uint(session.UserID))
 	for i := range posts {
 		posts[i].CreationDate = posts[i].CreationDateSQL.Time.Format("2006-01-02 15:04")
 	}
