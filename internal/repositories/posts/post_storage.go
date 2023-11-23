@@ -42,7 +42,7 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 func SelectUserPostsForFollowerSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder {
 	return squirrel.Select("p.*, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access, "+
 		"sl1.level as min_sub_level, "+
-		"array_agg(pa.file_path) as attaches, "+
+		"array_agg(DISTINCT pa.file_path) as attaches, "+
 		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
 		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", subscriberId)).
 		From(configs.PostTable+" p").
@@ -84,7 +84,7 @@ func SelectUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder
 func SelectOwnUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder {
 	return squirrel.Select("p.*, TRUE AS has_access, "+
 		"sl1.level as min_sub_level, "+
-		"array_agg(pa.file_path) as attaches, "+
+		"array_agg(DISTINCT pa.file_path) as attaches, "+
 		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
 		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", subscriberId)).
 		From(configs.PostTable+" p").
@@ -120,7 +120,7 @@ func SelectOwnUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuil
 
 func SelectAvailiblePostsSQL(userId uint) squirrel.SelectBuilder {
 	return squirrel.Select("p.*, TRUE AS has_access, "+
-		"array_agg(pa.file_path) as attaches, "+
+		"array_agg(DISTINCT pa.file_path) as attaches, "+
 		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
 		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", userId)).
 		From(configs.PostTable+" p").

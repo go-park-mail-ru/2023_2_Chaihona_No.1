@@ -90,6 +90,16 @@ var (
 		StatusCode: http.StatusBadRequest,
 		Msg:        `{"error":"no profile"}`,
 	}
+
+	ErrReadFile = ErrorHttp{
+		StatusCode: http.StatusBadRequest,
+		Msg: `{"error":"cannot read file"}`,
+	}
+
+	ErrSaveFile = ErrorHttp{
+		StatusCode: http.StatusInternalServerError,
+		Msg: `{"error":"cannot save file"}`,
+	}
 )
 
 func WriteHttpError(w http.ResponseWriter, err error) {

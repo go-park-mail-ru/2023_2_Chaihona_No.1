@@ -8,6 +8,7 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/db/postgresql"
 	_ "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/docs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/attaches"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/likes"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/payments"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
@@ -50,12 +51,13 @@ func main() {
 	likeStorage := likes.CreateLikeStorage(db.GetDB())
 	paymentStorage := payments.CreatePaymentStorage(db.GetDB())
 	subscriptionLevelsStorage := subscriptionlevels.CreateSubscribeLevelStorage(db.GetDB())
+	attachStorage := attaches.CreateAttachStorage(db.GetDB())
 
 	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, levelStorage)
 	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, userStoarge, levelStorage, subsStorage, paymentStorage)
-	postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, likeStorage)
+	postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, likeStorage, attachStorage)
 	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessionStorage, paymentStorage, subsStorage, subscriptionLevelsStorage)
-	fileHandler := handlers.CreateFileHandler(sessionStorage, userStoarge)
+	fileHandler := handlers.CreateFileHandler(sessionStorage, userStoarge, attachStorage)
 	r := mux.NewRouter()
 
 	r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
@@ -90,6 +92,8 @@ func main() {
 	//probably different wrapper
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/follow", handlers.NewWrapper(profileHandler.FollowStratagy).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/unfollow", handlers.NewWrapper(profileHandler.UnfollowStratagy).ServeHTTP).Methods("POST")
+
+	r.HandleFunc("/api/v1/post/{id:[0-9]+}/attaches", handlers.NewWrapper(fileHandler.LoadAttachesStratagy).ServeHTTP).Methods("GET")
 
 	fmt.Println("Server started")
 	err = http.ListenAndServe(configs.BackendServerPort, r)

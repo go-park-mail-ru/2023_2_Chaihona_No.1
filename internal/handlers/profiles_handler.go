@@ -12,6 +12,7 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/files"
 )
 
 type BodyProfile struct {
@@ -169,7 +170,7 @@ func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form FileForm) 
 	}
 	fileArray, ok := form.Form.File["avatar"]
 	if ok && len(fileArray) > 0 {
-		path, err := saveFile(fileArray[0], GetFirst[string](form.Form.Value["id"]))
+		path, err := files.SaveFile(fileArray[0], GetFirst[string](form.Form.Value["id"]))
 		if err != nil {
 			return Result{}, err
 		}

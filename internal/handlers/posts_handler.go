@@ -5,12 +5,15 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/attaches"
 	likesrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/likes"
 	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/files"
 )
 
 type BodyPosts struct {
@@ -25,14 +28,16 @@ type PostHandler struct {
 	Sessions sessrep.SessionRepository
 	Posts    postsrep.PostRepository
 	Likes    likesrep.LikeRepository
+	Attaches attaches.AttachRepository
 }
 
 func CreatePostHandlerViaRepos(session sessrep.SessionRepository, posts postsrep.PostRepository,
-	likes likesrep.LikeRepository) *PostHandler {
+	likes likesrep.LikeRepository, attaches attaches.AttachRepository) *PostHandler {
 	return &PostHandler{
 		session,
 		posts,
 		likes,
+		attaches,
 	}
 }
 
@@ -185,6 +190,22 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 	if err != nil {
 		//think
 		return Result{}, ErrDataBase
+	}
+	
+	for i, attach := range form.Body.Attaches {
+		//check extension
+		path, err := files.SaveFileBase64(attach.Data, fmt.Sprintf("attach%d_post%d%s", i, postId, attach.Name[strings.LastIndexByte(attach.Name, '.'):]))
+		if err != nil {
+			return Result{}, ErrSaveFile
+		}
+		_, err = p.Attaches.PinAttach(model.Attach{
+			PostId: postId,
+			FilePath: path,
+			Name: attach.Name,
+		})
+		if err != nil {
+			return Result{}, ErrDataBase
+		}
 	}
 
 	bodyResponse := map[string]interface{}{
