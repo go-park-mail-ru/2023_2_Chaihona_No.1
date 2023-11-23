@@ -97,7 +97,6 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 			posts, errPost = p.Posts.GetPostsByAuthorIdForStranger(uint(authorID), uint(session.UserID))
 		}
 	}
-	// posts, errPost := p.Posts.GetPostsByAuthorId(uint(authorID), uint(session.UserID))
 	for i := range posts {
 		posts[i].CreationDate = posts[i].CreationDateSQL.Time.Format("2006-01-02 15:04")
 	}

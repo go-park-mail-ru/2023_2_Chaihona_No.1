@@ -57,6 +57,7 @@ func SelectUserPostsForFollowerSQL(authorId uint, subscriberId uint) squirrel.Se
 			"s.creator_id":    authorId,
 		}).
 		GroupBy("p.id", "sl1.level", "sl2.level").
+		OrderBy("creation_date DESC").
 		PlaceholderFormat(squirrel.Dollar)
 }
 
@@ -75,6 +76,7 @@ func SelectUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder
 			"p.creator_id":    authorId,
 		}).
 		GroupBy("p.id", "sl1.level").
+		OrderBy("creation_date DESC").
 		PlaceholderFormat(squirrel.Dollar)
 }
 
@@ -93,6 +95,7 @@ func SelectOwnUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuil
 			"p.creator_id":    authorId,
 		}).
 		GroupBy("p.id", "sl1.level").
+		OrderBy("creation_date DESC").
 		PlaceholderFormat(squirrel.Dollar)
 }
 
@@ -128,6 +131,7 @@ func SelectAvailiblePostsSQL(userId uint) squirrel.SelectBuilder {
 			"s.subscriber_id": userId,
 		}).
 		GroupBy("p.id").
+		OrderBy("creation_date DESC").
 		PlaceholderFormat(squirrel.Dollar)
 }
 
