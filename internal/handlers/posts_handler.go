@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -196,6 +197,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 		//check extension
 		path, err := files.SaveFileBase64(attach.Data, fmt.Sprintf("attach%d_post%d%s", i, postId, attach.Name[strings.LastIndexByte(attach.Name, '.'):]))
 		if err != nil {
+			log.Println(err)
 			return Result{}, ErrSaveFile
 		}
 		_, err = p.Attaches.PinAttach(model.Attach{
