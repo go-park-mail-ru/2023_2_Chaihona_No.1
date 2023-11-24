@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	maxBytesToRead = 1024 * 2
+	maxBytesToRead = 1024 * 1024 * 1024
 )
 
 type IValidatable interface {
