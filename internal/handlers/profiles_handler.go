@@ -74,7 +74,6 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 	if !auth.CheckAuthorizationManager(ctx, p.SessionManager) {
 		return Result{}, ErrUnathorized
 	}
-
 	vars := auth.GetVars(ctx)
 	if vars == nil {
 		return Result{}, ErrNoVars
@@ -85,12 +84,14 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 	}
 
 	cookie := auth.GetSession(ctx)
+	userID := 0
 	session, ok := p.SessionManager.CheckSessionCtxWrapper(ctx, cookie.Value)
-	if !ok {
-		return Result{}, ErrNoSession
+	if ok {
+		//return Result{}, ErrNoSession
+		userID = int(session.UserID)
 	}
 
-	user, err := p.Users.GetUserWithSubscribers(id, int(session.UserID))
+	user, err := p.Users.GetUserWithSubscribers(id, userID)
 	if err != nil {
 		return Result{}, err
 	}
