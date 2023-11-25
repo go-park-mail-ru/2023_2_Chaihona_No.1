@@ -2,17 +2,21 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"log"
+	"net/http"
+
 	"google.golang.org/grpc"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/db/postgresql"
 	_ "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/docs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
+
+	// "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/answers"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/likes"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/payments"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/questions"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	levels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscribe_levels"
 	subscriptionlevels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscription_levels"
@@ -63,6 +67,8 @@ func main() {
 	postStorage := posts.CreatePostStorage(db.GetDB())
 	likeStorage := likes.CreateLikeStorage(db.GetDB())
 	paymentStorage := payments.CreatePaymentStorage(db.GetDB())
+	questionsStorage := questions.CreateQuestionStorage(db.GetDB())
+	// answersStorage := answers.CreateAnswerStorage(db.GetDB())
 	subscriptionLevelsStorage := subscriptionlevels.CreateSubscribeLevelStorage(db.GetDB())
 
 	rep := handlers.CreateRepoHandler(sessManager, userStoarge, levelStorage)
@@ -70,6 +76,7 @@ func main() {
 	postHandler := handlers.CreatePostHandlerViaRepos(sessManager, postStorage, likeStorage)
 	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessManager, paymentStorage, subsStorage, subscriptionLevelsStorage)
 	fileHandler := handlers.CreateFileHandler(sessManager, userStoarge)
+	csatHandler := handlers.CreateCSATHandler(sessManager,questionsStorage)
 	r := mux.NewRouter()
 
 	r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
@@ -105,6 +112,9 @@ func main() {
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/follow", handlers.NewWrapper(profileHandler.FollowStratagy).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}/unfollow", handlers.NewWrapper(profileHandler.UnfollowStratagy).ServeHTTP).Methods("POST")
 
+	r.HandleFunc("/api/v1/questions", handlers.NewWrapper(csatHandler.GetQuestions).ServeHTTP).Methods("GET")
+	r.HandleFunc("/api/v1/rate/{id:[0-9]+}", handlers.NewWrapper(csatHandler.Rate).ServeHTTP).Methods("POST")
+	r.HandleFunc("/api/v1/statistic", handlers.NewWrapper(csatHandler.GetStatistic).ServeHTTP).Methods("GET")
 	fmt.Println("Server started")
 	err = http.ListenAndServe(configs.BackendServerPort, r)
 	fmt.Println(err)

@@ -116,3 +116,17 @@ func (f FollowForm) IsValide() bool {
 func (f FollowForm) IsEmpty() bool {
 	return false
 }
+
+type RatingForm struct {
+	Body struct {
+		Rating int `json:"rating"`
+	} `json:"body"`
+}
+
+func (f RatingForm) IsValide() bool {
+	return true
+}
+
+func (f RatingForm) IsEmpty() bool {
+	return false
+}
