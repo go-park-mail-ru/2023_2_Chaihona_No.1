@@ -23,13 +23,16 @@ type FileBody struct {
 }
 
 type FileHandler struct {
-	Sessions sessions.SessionRepository
+	// Sessions sessions.SessionRepository
+	// Sessions 
+	Manager *sessions.RedisManager
 	Users users.UserRepository
 }
 
-func CreateFileHandler(sessions sessions.SessionRepository, users users.UserRepository) *FileHandler {
+func CreateFileHandler(sessionsManager *sessions.RedisManager, users users.UserRepository) *FileHandler {
 	return &FileHandler{
-		Sessions: sessions,
+		// Sessions: sessions,
+		Manager: sessionsManager,
 		Users: users,
 	}
 }
@@ -81,7 +84,7 @@ func (f *FileHandler) UploadFileStratagy(ctx context.Context, form FileForm) (Re
 	return Result{Body: fileBody}, nil
 }
 
-func (f *FileHandler) LoadFileStratagy(w http.ResponseWriter, r *http.Request){
+func (f *FileHandler) LoadFileStratagy(w http.ResponseWriter, r *http.Request) {
 	AddAllowHeaders(w)
 
 	ctx := auth.AddWriter(r.Context(), w)
@@ -101,7 +104,7 @@ func (f *FileHandler) LoadFileStratagy(w http.ResponseWriter, r *http.Request){
 		return
 	}
 
-	if !auth.CheckAuthorizationByContext(ctx, f.Sessions) {
+	if !auth.CheckAuthorizationManager(ctx, f.Manager) {
 		http.Error(w, ErrUnathorized.Error(), http.StatusUnauthorized)
 		return
 	}

@@ -140,7 +140,7 @@ var ProfileTestCases = map[string]ProfileTestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.SessionOld{
 				SessionID: "chertila",
 				UserID:    9,
 				TTL:       time.Now().Add(10 * time.Hour),
@@ -165,7 +165,7 @@ var ProfileTestCases = map[string]ProfileTestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.SessionOld{
 				SessionID: "chertila",
 				UserID:    9,
 				TTL:       time.Now().Add(10 * time.Hour),
@@ -186,7 +186,7 @@ var ProfileTestCases = map[string]ProfileTestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.SessionOld{
 				SessionID: "chertila",
 				UserID:    5,
 				TTL:       time.Now().Add(10 * time.Hour),
@@ -200,7 +200,7 @@ var ProfileTestCases = map[string]ProfileTestCase{
 		MethodAPI:  "ChangeUser",
 		ID:         "5",
 		StatusCode: 400,
-		Response: handlers.Result{Err: "wrong_change"},
+		Response:   handlers.Result{Err: "wrong_change"},
 		Cookie: http.Cookie{
 			Name:     "session_id",
 			Value:    "chertila",
@@ -208,7 +208,7 @@ var ProfileTestCases = map[string]ProfileTestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.SessionOld{
 				SessionID: "chertila",
 				UserID:    9,
 				TTL:       time.Now().Add(10 * time.Hour),
@@ -229,7 +229,7 @@ var ProfileTestCases = map[string]ProfileTestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.SessionOld{
 				SessionID: "chertila",
 				UserID:    5,
 				TTL:       time.Now().Add(10 * time.Hour),
@@ -250,7 +250,7 @@ var ProfileTestCases = map[string]ProfileTestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.SessionOld{
 				SessionID: "chertila",
 				UserID:    5,
 				TTL:       time.Now().Add(10 * time.Hour),
@@ -263,7 +263,7 @@ var ProfileTestCases = map[string]ProfileTestCase{
 		MethodHTTP: "DELETE",
 		MethodAPI:  "ChangeUser",
 		ID:         "5",
-		Response: handlers.Result{Err: "wrong_change"},
+		Response:   handlers.Result{Err: "wrong_change"},
 		StatusCode: 400,
 		Cookie: http.Cookie{
 			Name:     "session_id",
@@ -272,7 +272,7 @@ var ProfileTestCases = map[string]ProfileTestCase{
 			HttpOnly: true,
 		},
 		Prepare: func(repos *MockRepos) {
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.SessionOld{
 				SessionID: "chertila",
 				UserID:    9,
 				TTL:       time.Now().Add(10 * time.Hour),
@@ -326,9 +326,9 @@ func TestGetProfileInfo(t *testing.T) {
 			router := mux.NewRouter()
 			router.HandleFunc("/api/v1/profile/{id:[0-9]+}", handlers.NewWrapper(ProfileHandler.GetInfoStrategy).ServeHTTP).
 				Methods("GET")
-			router.HandleFunc("/api/v1/profile/{id:[0-9]+}",  handlers.NewWrapper(ProfileHandler.ChangeUserStratagy).ServeHTTP).
+			router.HandleFunc("/api/v1/profile/{id:[0-9]+}", handlers.NewWrapper(ProfileHandler.ChangeUserStratagy).ServeHTTP).
 				Methods("POST")
-			router.HandleFunc("/api/v1/profile/{id:[0-9]+}",  handlers.NewWrapper(ProfileHandler.DeleteUserStratagy).ServeHTTP).
+			router.HandleFunc("/api/v1/profile/{id:[0-9]+}", handlers.NewWrapper(ProfileHandler.DeleteUserStratagy).ServeHTTP).
 				Methods("DELETE")
 
 			router.ServeHTTP(w, req)

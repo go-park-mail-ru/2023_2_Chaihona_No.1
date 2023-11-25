@@ -12,7 +12,8 @@ import (
 )
 
 type RepoHandler struct {
-	sessions sessrep.SessionRepository
+	// sessions sessrep.SessionRepository
+	sessionsManager *sessrep.RedisManager
 	users    usrep.UserRepository
 	levels levelrep.SubscribeLevelRepository
 }
@@ -28,12 +29,12 @@ func (f EmptyForm) IsEmpty() bool {
 }
 
 func CreateRepoHandler(
-	sessions sessrep.SessionRepository,
+	sessionsManager *sessrep.RedisManager,
 	users usrep.UserRepository,
 	levels levelrep.SubscribeLevelRepository,
 ) *RepoHandler {
 	return &RepoHandler{
-		sessions,
+		sessionsManager,
 		users,
 		levels,
 	}
@@ -66,7 +67,7 @@ func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm)
 		return nil, errReg
 	}
 
-	auth.SetSessionContext(ctx, api.sessions, uint32(id))
+	auth.SetSessionContext(ctx, api.sessionsManager, uint32(id))
 	if user.Is_author {
 		zeroLevel := model.SubscribeLevel{
 			Name: "Бесплатная",
@@ -148,7 +149,7 @@ func (api *RepoHandler) LoginStrategy(ctx context.Context, form auth.LoginForm) 
 		return nil, err
 	}
 
-	auth.SetSessionContext(ctx, api.sessions, uint32(user.ID))
+	auth.SetSessionContext(ctx, api.sessionsManager, uint32(user.ID))
 
 	bodyResponse := map[string]interface{}{
 		"id": user.ID,
@@ -177,7 +178,7 @@ func (api *RepoHandler) LogoutStrategy(ctx context.Context, form EmptyForm) (Res
 		return Result{}, ErrLogoutCookie
 	}
 
-	err := auth.RemoveSessionContext(ctx, api.sessions, session.Value)
+	err := auth.RemoveSessionContext(ctx, api.sessionsManager, session.Value)
 	if err == nil {
 		return Result{}, nil
 	} else {
@@ -204,11 +205,11 @@ func (api *RepoHandler) IsAuthorizedStrategy(ctx context.Context, form EmptyForm
 	if cookie == nil{
 		return Result{Body: map[string]interface{}{"is_authorized": false}}, nil
 	}
-	session, ok := api.sessions.CheckSession(cookie.Value)
+	session, ok := api.sessionsManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 	if !ok {
 		return Result{Body: map[string]interface{}{"is_authorized": false}}, nil
 	}
-	if auth.CheckAuthorizationByContext(ctx, api.sessions) {
+	if auth.CheckAuthorizationManager(ctx, api.sessionsManager) {
 		return Result{Body: map[string]interface{}{"is_authorized": true, "id": session.UserID}}, nil
 	}
 

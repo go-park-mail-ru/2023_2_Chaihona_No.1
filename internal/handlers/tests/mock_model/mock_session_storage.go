@@ -35,10 +35,10 @@ func (m *MockSessionRepository) EXPECT() *MockSessionRepositoryMockRecorder {
 }
 
 // CheckSession mocks base method.
-func (m *MockSessionRepository) CheckSession(sessionID string) (*sessions.Session, bool) {
+func (m *MockSessionRepository) CheckSession(sessionID string) (*sessions.SessionOld, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CheckSession", sessionID)
-	ret0, _ := ret[0].(*sessions.Session)
+	ret0, _ := ret[0].(*sessions.SessionOld)
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
@@ -64,7 +64,7 @@ func (mr *MockSessionRepositoryMockRecorder) DeleteSession(sessionID interface{}
 }
 
 // RegisterNewSession mocks base method.
-func (m *MockSessionRepository) RegisterNewSession(session sessions.Session) error {
+func (m *MockSessionRepository) RegisterNewSession(session sessions.SessionOld) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegisterNewSession", session)
 	ret0, _ := ret[0].(error)

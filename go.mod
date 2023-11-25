@@ -2,7 +2,11 @@ module github.com/go-park-mail-ru/2023_2_Chaihona_No.1
 
 go 1.21.0
 
-require github.com/google/uuid v1.4.0
+require (
+	github.com/google/uuid v1.4.0
+	google.golang.org/grpc v1.51.0
+	google.golang.org/protobuf v1.31.0
+)
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
@@ -34,6 +38,9 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	golang.org/x/net v0.16.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f // indirect
 )

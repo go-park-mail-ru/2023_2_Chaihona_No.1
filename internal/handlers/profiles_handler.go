@@ -23,7 +23,8 @@ type Profiles struct {
 }
 
 type ProfileHandler struct {
-	Session       sessions.SessionRepository
+	SessionManager *sessions.RedisManager
+	// Session       sessions.SessionRepository
 	Users         users.UserRepository
 	Levels        subscribelevels.SubscribeLevelRepository
 	Subscriptions subscriptions.SubscriptionRepository
@@ -31,14 +32,14 @@ type ProfileHandler struct {
 }
 
 func CreateProfileHandlerViaRepos(
-	session sessions.SessionRepository,
+	sessionManager *sessions.RedisManager,
 	users users.UserRepository,
 	levels subscribelevels.SubscribeLevelRepository,
 	subscriptions subscriptions.SubscriptionRepository,
 	payments payments.PaymentRepository,
 ) *ProfileHandler {
 	return &ProfileHandler{
-		session,
+		sessionManager,
 		users,
 		levels,
 		subscriptions,
@@ -70,7 +71,7 @@ func CreateProfileHandlerViaRepos(
 //	401: result
 //	500: result
 func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionManager) {
 		return Result{}, ErrUnathorized
 	}
 
@@ -84,7 +85,7 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 	}
 
 	cookie := auth.GetSession(ctx)
-	session, ok := p.Session.CheckSession(cookie.Value)
+	session, ok := p.SessionManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 	if !ok {
 		return Result{}, ErrNoSession
 	}
@@ -135,12 +136,12 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 }
 
 func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form FileForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionManager) {
 		return Result{}, ErrUnathorized
 	}
 
 	cookie := auth.GetSession(ctx)
-	session, ok := p.Session.CheckSession(cookie.Value)
+	session, ok := p.SessionManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 	if !ok {
 		return Result{}, ErrNoSession
 	}
@@ -195,12 +196,12 @@ func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form FileForm) 
 }
 
 func (p *ProfileHandler) ChangeUserStatusStratagy(ctx context.Context, form StatusForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionManager) {
 		return Result{}, ErrUnathorized
 	}
 
 	cookie := auth.GetSession(ctx)
-	session, ok := p.Session.CheckSession(cookie.Value)
+	session, ok := p.SessionManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 	if !ok {
 		return Result{}, ErrNoSession
 	}
@@ -213,12 +214,12 @@ func (p *ProfileHandler) ChangeUserStatusStratagy(ctx context.Context, form Stat
 }
 
 func (p *ProfileHandler) ChangeUserDescriptionStratagy(ctx context.Context, form DescriptionForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionManager) {
 		return Result{}, ErrUnathorized
 	}
 
 	cookie := auth.GetSession(ctx)
-	session, ok := p.Session.CheckSession(cookie.Value)
+	session, ok := p.SessionManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 	if !ok {
 		return Result{}, ErrNoSession
 	}
@@ -272,7 +273,7 @@ func (p *ProfileHandler) ChangeUserDescriptionStratagy(ctx context.Context, form
 // }
 
 func (p *ProfileHandler) DeleteUserStratagy(ctx context.Context, form EmptyForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionManager) {
 		return Result{}, ErrUnathorized
 	}
 
@@ -286,7 +287,7 @@ func (p *ProfileHandler) DeleteUserStratagy(ctx context.Context, form EmptyForm)
 	}
 
 	cookie := auth.GetSession(ctx)
-	session, ok := p.Session.CheckSession(cookie.Value)
+	session, ok := p.SessionManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 	if !ok {
 		return Result{}, ErrNoSession
 	}
@@ -303,7 +304,7 @@ func (p *ProfileHandler) DeleteUserStratagy(ctx context.Context, form EmptyForm)
 }
 
 func (p *ProfileHandler) FollowStratagy(ctx context.Context, form FollowForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionManager) {
 		return Result{}, ErrUnathorized
 	}
 
@@ -317,7 +318,7 @@ func (p *ProfileHandler) FollowStratagy(ctx context.Context, form FollowForm) (R
 	}
 
 	cookie := auth.GetSession(ctx)
-	session, ok := p.Session.CheckSession(cookie.Value)
+	session, ok := p.SessionManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 	if !ok {
 		return Result{}, ErrNoSession
 	}
@@ -336,12 +337,12 @@ func (p *ProfileHandler) FollowStratagy(ctx context.Context, form FollowForm) (R
 }
 
 func (p *ProfileHandler) UnfollowStratagy(ctx context.Context, form FollowForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Session) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionManager) {
 		return Result{}, ErrUnathorized
 	}
 
 	cookie := auth.GetSession(ctx)
-	session, ok := p.Session.CheckSession(cookie.Value)
+	session, ok := p.SessionManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 	if !ok {
 		return Result{}, ErrNoSession
 	}
@@ -367,14 +368,14 @@ func (p *ProfileHandler) GetTopUsersStratagy(ctx context.Context, form EmptyForm
 	if err != nil {
 		return Result{}, ErrDataBase
 	}
-	
+
 	var profiles []model.Profile
 	for _, user := range users {
 		profiles = append(profiles, model.Profile{
-			User: user,
+			User:        user,
 			Subscribers: user.Subscribers,
 		})
 	}
-	
+
 	return Result{Body: Profiles{Profiles: profiles}}, nil
 }

@@ -65,7 +65,7 @@ var PostTestCases = map[string]PostTestCase{
 				},
 			}, nil).AnyTimes()
 
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.SessionOld{
 				SessionID: "chertila",
 				UserID:    9,
 				TTL:       time.Now().Add(10 * time.Hour),
@@ -119,7 +119,7 @@ var PostTestCases = map[string]PostTestCase{
 				},
 			}, nil).AnyTimes()
 
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.SessionOld{
 				SessionID: "chertila",
 				UserID:    9,
 				TTL:       time.Now().Add(10 * time.Hour),
@@ -173,7 +173,7 @@ var PostTestCases = map[string]PostTestCase{
 				},
 			}, nil).AnyTimes()
 
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.SessionOld{
 				SessionID: "chertila",
 				UserID:    9,
 				TTL:       time.Now().Add(10 * time.Hour),
@@ -190,9 +190,9 @@ var PostTestCases = map[string]PostTestCase{
 		},
 	},
 	"get simple user's post": {
-		ID:         "4",
+		ID: "4",
 		// Response:   `{"error":"user isn't author"}`,
-		Response: handlers.Result{Err: "user isn't author"},
+		Response:   handlers.Result{Err: "user isn't author"},
 		StatusCode: 400,
 		Cookie: http.Cookie{
 			Name:     "session_id",
@@ -205,7 +205,7 @@ var PostTestCases = map[string]PostTestCase{
 				GetPostsByAuthorId(uint(4), uint(7)).
 				Return([]model.Post{}, &posts.ErrorPost{Err: handlers.ErrorNotAuthor, StatusCode: http.StatusBadRequest}).
 				AnyTimes()
-			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.Session{
+			repos.Sessions.EXPECT().CheckSession("chertila").Return(&sessions.SessionOld{
 				SessionID: "chertila",
 				UserID:    9,
 				TTL:       time.Now().Add(10 * time.Hour),
@@ -231,7 +231,7 @@ func TestGetPosts(t *testing.T) {
 			mockRepos := MockRepos{
 				Sessions: mocks.NewMockSessionRepository(ctrl),
 				Posts:    mocks.NewMockPostRepository(ctrl),
-				Likes: mocks.NewMockLikeRepository(ctrl),
+				Likes:    mocks.NewMockLikeRepository(ctrl),
 			}
 
 			if testCase.Prepare != nil {
@@ -245,8 +245,8 @@ func TestGetPosts(t *testing.T) {
 			)
 
 			router := mux.NewRouter()
-			router.HandleFunc("/api/v1/profile/{id:[0-9]+}/post",  handlers.NewWrapper(PostHandler.GetAllUserPostsStrategy).ServeHTTP).
-			Methods("GET")
+			router.HandleFunc("/api/v1/profile/{id:[0-9]+}/post", handlers.NewWrapper(PostHandler.GetAllUserPostsStrategy).ServeHTTP).
+				Methods("GET")
 			router.ServeHTTP(w, req)
 
 			if w.Code != testCase.StatusCode {

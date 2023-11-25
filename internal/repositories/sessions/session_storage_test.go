@@ -8,7 +8,7 @@ import (
 )
 
 func TestRegisterNewSession(t *testing.T) {
-	session := Session{
+	session := SessionOld{
 		SessionID: "1",
 		UserID:    1,
 		TTL:       time.Now().Add(10 * time.Hour),
@@ -31,13 +31,13 @@ func TestRegisterNewSession(t *testing.T) {
 }
 
 func TestRegisterNewSessionNotEmptyStorage(t *testing.T) {
-	session1 := Session{
+	session1 := SessionOld{
 		SessionID: "1",
 		UserID:    1,
 		TTL:       time.Now().Add(10 * time.Hour),
 	}
 
-	session2 := Session{
+	session2 := SessionOld{
 		SessionID: "1",
 		UserID:    1,
 		TTL:       time.Now().Add(10 * time.Hour),
@@ -70,7 +70,7 @@ func TestCheckSession(t *testing.T) {
 	storage := CreateSessionStorage()
 
 	for i := 0; i < SESSIONS; i++ {
-		session := Session{
+		session := SessionOld{
 			SessionID: fmt.Sprint(i),
 			UserID:    uint32(i),
 			TTL:       time.Now().Add(10 * time.Hour),
@@ -98,7 +98,7 @@ func TestRegisterNewSessionGoroutines(t *testing.T) {
 
 	for i := 0; i < SESSIONS; i++ {
 		go func(i int, m *sync.Mutex) {
-			session := Session{
+			session := SessionOld{
 				SessionID: fmt.Sprint(i),
 				UserID:    uint32(i),
 				TTL:       time.Now().Add(10 * time.Hour),
@@ -135,7 +135,7 @@ func TestDeleteSessionGoroutines(t *testing.T) {
 
 	for i := 0; i < SESSIONS; i++ {
 		go func(i int, m *sync.Mutex) {
-			session := Session{
+			session := SessionOld{
 				SessionID: fmt.Sprint(i),
 				UserID:    uint32(i),
 				TTL:       time.Now().Add(10 * time.Hour),

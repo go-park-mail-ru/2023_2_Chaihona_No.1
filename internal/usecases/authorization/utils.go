@@ -55,13 +55,24 @@ func CheckAuthorizationByContext(ctx context.Context, sessions sessrep.SessionRe
 	return false
 }
 
-func SetSessionContext(ctx context.Context, sessions sessrep.SessionRepository, userID uint32) {
+func CheckAuthorizationManager(ctx context.Context, manager *sessrep.RedisManager) bool {
+	session := GetSession(ctx)
+
+	if session != nil {
+		_, authorized := manager.CheckSessionCtxWrapper(ctx, session.Value)
+		return authorized
+	}
+
+	return false
+}
+
+func SetSessionContext(ctx context.Context, manager *sessrep.RedisManager, userID uint32) {
 	w := GetWriter(ctx)
 
 	SID := uuid.New().String()
 	TTL := time.Now().Add(TTLDuration)
 
-	sessions.RegisterNewSession(sessrep.Session{
+	manager.RegisterNewSessionCtxWrapper(ctx, sessrep.SessionOld{
 		SessionID: SID,
 		UserID:    userID,
 		TTL:       TTL,
@@ -77,11 +88,11 @@ func SetSessionContext(ctx context.Context, sessions sessrep.SessionRepository, 
 	})
 }
 
-func SetSession(w http.ResponseWriter, sessions sessrep.SessionRepository, userID uint32) {
+func SetSession(w http.ResponseWriter, manager *sessrep.RedisManager, userID uint32) {
 	SID := uuid.New().String()
 	TTL := time.Now().Add(TTLDuration)
 
-	sessions.RegisterNewSession(sessrep.Session{
+	manager.RegisterNewSessionCtxWrapper(context.Background(), sessrep.SessionOld{
 		SessionID: SID,
 		UserID:    userID,
 		TTL:       TTL,
@@ -97,12 +108,12 @@ func SetSession(w http.ResponseWriter, sessions sessrep.SessionRepository, userI
 	})
 }
 
-func RemoveSessionContext(ctx context.Context, sessions sessrep.SessionRepository, sessionID string) error {
+func RemoveSessionContext(ctx context.Context, manager *sessrep.RedisManager, sessionID string) error {
 	w := GetWriter(ctx)
 
 	EXPIRED := time.Now().Add(-1)
 
-	err := sessions.DeleteSession(sessionID)
+	err := manager.DeleteSessionCtxWrapper(ctx, sessionID)
 	if err != nil {
 		return err
 	}

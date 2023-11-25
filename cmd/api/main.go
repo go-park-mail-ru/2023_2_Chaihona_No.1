@@ -23,6 +23,7 @@ import (
 func main() {
 	// conn, err := redis.DialURL(fmt.Sprintf("redis://@%s:%s", configs.RedisServerIP, configs.RedisServerPort))
 	pool := sessrep.NewPool(fmt.Sprintf("%s:%s", configs.RedisServerIP, configs.RedisServerPort))
+	sessManager := sessrep.CreateRedisManager(pool)
 	// if err != nil {
 	// 	log.Println(err)
 	// 	return
@@ -42,7 +43,7 @@ func main() {
 	// }
 	//
 
-	sessionStorage := sessrep.CreateRedisSessionStorage(pool)
+	// sessionStorage := sessrep.CreateRedisSessionStorage(pool)
 	userStoarge := usrep.CreateUserStorage(db.GetDB())
 	levelStorage := levels.CreateSubscribeLevelStorage(db.GetDB())
 	subsStorage := subs.CreateSubscriptionsStorage(db.GetDB())
@@ -51,11 +52,11 @@ func main() {
 	paymentStorage := payments.CreatePaymentStorage(db.GetDB())
 	subscriptionLevelsStorage := subscriptionlevels.CreateSubscribeLevelStorage(db.GetDB())
 
-	rep := handlers.CreateRepoHandler(sessionStorage, userStoarge, levelStorage)
-	profileHandler := handlers.CreateProfileHandlerViaRepos(sessionStorage, userStoarge, levelStorage, subsStorage, paymentStorage)
-	postHandler := handlers.CreatePostHandlerViaRepos(sessionStorage, postStorage, likeStorage)
-	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessionStorage, paymentStorage, subsStorage, subscriptionLevelsStorage)
-	fileHandler := handlers.CreateFileHandler(sessionStorage, userStoarge)
+	rep := handlers.CreateRepoHandler(sessManager, userStoarge, levelStorage)
+	profileHandler := handlers.CreateProfileHandlerViaRepos(sessManager, userStoarge, levelStorage, subsStorage, paymentStorage)
+	postHandler := handlers.CreatePostHandlerViaRepos(sessManager, postStorage, likeStorage)
+	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessManager, paymentStorage, subsStorage, subscriptionLevelsStorage)
+	fileHandler := handlers.CreateFileHandler(sessManager, userStoarge)
 	r := mux.NewRouter()
 
 	r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)

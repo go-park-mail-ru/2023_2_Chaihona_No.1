@@ -5,14 +5,14 @@ import (
 )
 
 type SessionStorage struct {
-	Sessions map[string]Session
+	Sessions map[string]SessionOld
 	Mu       sync.RWMutex
 	Size     uint32
 }
 
 func CreateSessionStorage() *SessionStorage {
 	storage := &SessionStorage{
-		Sessions: make(map[string]Session),
+		Sessions: make(map[string]SessionOld),
 		Mu:       sync.RWMutex{},
 		Size:     0,
 	}
@@ -20,7 +20,7 @@ func CreateSessionStorage() *SessionStorage {
 	return storage
 }
 
-func (storage *SessionStorage) RegisterNewSession(session Session) error {
+func (storage *SessionStorage) RegisterNewSession(session SessionOld) error {
 	storage.Mu.Lock()
 	defer storage.Mu.Unlock()
 
@@ -44,7 +44,7 @@ func (storage *SessionStorage) DeleteSession(sessionID string) error {
 	return nil
 }
 
-func (storage *SessionStorage) CheckSession(sessionId string) (*Session, bool) {
+func (storage *SessionStorage) CheckSession(sessionId string) (*SessionOld, bool) {
 	storage.Mu.RLock()
 	defer storage.Mu.RUnlock()
 

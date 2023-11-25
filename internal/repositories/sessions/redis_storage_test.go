@@ -15,7 +15,7 @@ func TestRegisterNewSessionRedis(t *testing.T) {
 
 	sessionStorage := CreateRedisSessionStorage(pool)
 
-	err := sessionStorage.RegisterNewSession(Session{
+	err := sessionStorage.RegisterNewSession(SessionOld{
 		SessionID: "2",
 		UserID:    2,
 		TTL:       time.Now().Add(10 * time.Hour),

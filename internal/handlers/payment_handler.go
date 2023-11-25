@@ -23,19 +23,20 @@ type BodyPayments struct {
 }
 
 type PaymentHandler struct {
-	Sessions           sessrep.SessionRepository
+	// Sessions           sessrep.SessionRepository
+	Manager            *sessrep.RedisManager
 	Payments           paymentsrep.PaymentRepository
 	Subscriptions      subscriptions.SubscriptionRepository
 	SubscriptionLevels subscriptionlevels.SubscribeLevelRepository
 }
 
-func CreatePaymentHandlerViaRepos(session sessrep.SessionRepository,
+func CreatePaymentHandlerViaRepos(manager *sessrep.RedisManager,
 	payments paymentsrep.PaymentRepository,
 	subsciptions subscriptions.SubscriptionRepository,
 	subscriptionLevels subscriptionlevels.SubscribeLevelRepository,
 ) *PaymentHandler {
 	return &PaymentHandler{
-		Sessions:           session,
+		Manager:            manager,
 		Payments:           payments,
 		Subscriptions:      subsciptions,
 		SubscriptionLevels: subscriptionLevels,
@@ -43,22 +44,22 @@ func CreatePaymentHandlerViaRepos(session sessrep.SessionRepository,
 }
 
 func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+	if !auth.CheckAuthorizationManager(ctx, p.Manager) {
 		return Result{}, ErrUnathorized
 	}
 	fmt.Println(form.Body.DonaterId, form.Body.CreatorId)
 	payment := model.Payment{
 		DonaterId: form.Body.DonaterId,
 		CreatorId: form.Body.CreatorId,
-		Currency: form.Body.Currency,
-		Value: form.Body.Value,
+		Currency:  form.Body.Currency,
+		Value:     form.Body.Value,
 	}
 	paymentId, redirectURL, err := pay.Donate(payment)
 	if err != nil {
 		//think
 		return Result{}, ErrDataBase
 	}
-	
+
 	payment.Status = model.PaymentWaitingStatus
 	payment.UUID = paymentId
 	val, err := strconv.Atoi(payment.Value)
@@ -73,7 +74,7 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 		return Result{}, ErrDataBase
 	}
 	payment.Id = id
-	
+
 	c := cron.New()
 	_, err = c.AddFunc("* * * * *", func() {
 		fmt.Println("joba")
@@ -110,14 +111,14 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 
 	if err != nil {
 		//think
-		return Result{}, ErrDataBase 
+		return Result{}, ErrDataBase
 	}
-	
+
 	return Result{Body: BodyPayments{RedirectURL: redirectURL}}, nil
 }
 
 func (p *PaymentHandler) GetUsersDonatesStratagy(ctx context.Context, form PaymentForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+	if !auth.CheckAuthorizationManager(ctx, p.Manager) {
 		return Result{}, ErrUnathorized
 	}
 
@@ -133,13 +134,13 @@ func (p *PaymentHandler) GetUsersDonatesStratagy(ctx context.Context, form Payme
 	payments, err := p.Payments.GetPaymentsByUserId(uint(id))
 	if err != nil {
 		//think
-		return Result{}, ErrDataBase 
+		return Result{}, ErrDataBase
 	}
 	return Result{Body: BodyPayments{Payments: payments}}, nil
 }
 
 func (p *PaymentHandler) GetAuthorDonatesStratagy(ctx context.Context, form PaymentForm) (Result, error) {
-	if !auth.CheckAuthorizationByContext(ctx, p.Sessions) {
+	if !auth.CheckAuthorizationManager(ctx, p.Manager) {
 		return Result{}, ErrUnathorized
 	}
 
@@ -155,8 +156,8 @@ func (p *PaymentHandler) GetAuthorDonatesStratagy(ctx context.Context, form Paym
 	// payments, err := p.Payments.GetPaymentsByAuthorId(uint(id))
 	if err != nil {
 		//think
-		return Result{}, ErrDataBase 
+		return Result{}, ErrDataBase
 	}
 
-	 return Result{Body: BodyPayments{Payments: []model.Payment{}}}, nil
+	return Result{Body: BodyPayments{Payments: []model.Payment{}}}, nil
 }
