@@ -18,7 +18,7 @@ type SessionRedisStorage struct {
 }
 
 type RedisManager struct {
-	storage *SessionRedisStorage
+	SessManager AuthCheckerClient
 }
 
 const (
@@ -37,12 +37,6 @@ func NewPool(addr string) *redis.Pool {
 func CreateRedisSessionStorage(pool *redis.Pool) *SessionRedisStorage {
 	return &SessionRedisStorage{
 		redisPool: pool,
-	}
-}
-
-func CreateRedisManager(pool *redis.Pool) *RedisManager {
-	return &RedisManager{
-		storage: CreateRedisSessionStorage(pool),
 	}
 }
 
@@ -72,7 +66,9 @@ func (storage *SessionRedisStorage) RegisterNewSessionCtx(ctx context.Context, s
 	defer conn.Close()
 
 	// TTL := session.TTL.Hour()*int(time.Hour) + session.TTL.Minute()*int(time.Minute) + session.TTL.Second()*int(time.Second)
-	result, err := redis.String(conn.Do("SET", session.SessionId, sessionSerialized, "EX", session.Ttl))
+	log.Println("input session_id:", session.SessionId)
+	
+	result, err := redis.String(conn.Do("SET", session.SessionId, sessionSerialized))
 	if err != nil {
 		log.Println(err)
 		return &Nothing{}, err
@@ -87,10 +83,9 @@ func (storage *SessionRedisStorage) RegisterNewSessionCtx(ctx context.Context, s
 }
 
 func (manager *RedisManager) RegisterNewSessionCtxWrapper(ctx context.Context, session SessionOld) error {
-	_, err := manager.storage.RegisterNewSessionCtx(ctx, &Session{
+	_, err := manager.SessManager.RegisterNewSessionCtx(ctx, &Session{
 		SessionId: session.SessionID,
 		UserId: session.UserID,
-		Ttl: session.TTL.String(),
 	})
 
 	return err
@@ -128,7 +123,7 @@ func (storage *SessionRedisStorage) CheckSessionCtx(ctx context.Context, session
 	defer conn.Close()
 
 	data, err := redis.Bytes(conn.Do("GET", sessionId.Id))
-
+	log.Println(sessionId.Id, string(data))
 	if err != nil {
 		// err = errors.Join(ErrRedisCantGetData, err)
 		log.Println(err.Error())
@@ -158,7 +153,7 @@ func (storage *SessionRedisStorage) CheckSessionCtx(ctx context.Context, session
 }
 
 func (manager *RedisManager) CheckSessionCtxWrapper(ctx context.Context, sessionID string) (*SessionOld, bool) {
-	session, err := manager.storage.CheckSessionCtx(ctx, &SessionID{
+	session, err := manager.SessManager.CheckSessionCtx(ctx, &SessionID{
 		Id: sessionID,
 	})
 
@@ -207,7 +202,7 @@ func (storage *SessionRedisStorage) DeleteSessionCtx(ctx context.Context, sessio
 }
 
 func (manager *RedisManager) DeleteSessionCtxWrapper(ctx context.Context, sessionId string) error {
-	_, err := manager.storage.DeleteSessionCtx(ctx, &SessionID{
+	_, err := manager.SessManager.DeleteSessionCtx(ctx, &SessionID{
 		Id: sessionId,
 	})
 

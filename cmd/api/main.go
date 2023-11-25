@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"log"
+	"google.golang.org/grpc"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/db/postgresql"
@@ -22,8 +24,8 @@ import (
 
 func main() {
 	// conn, err := redis.DialURL(fmt.Sprintf("redis://@%s:%s", configs.RedisServerIP, configs.RedisServerPort))
-	pool := sessrep.NewPool(fmt.Sprintf("%s:%s", configs.RedisServerIP, configs.RedisServerPort))
-	sessManager := sessrep.CreateRedisManager(pool)
+	//pool := sessrep.NewPool(fmt.Sprintf("%s:%s", configs.RedisServerIP, configs.RedisServerPort))
+	//sessManager := sessrep.CreateRedisManager(pool)
 	// if err != nil {
 	// 	log.Println(err)
 	// 	return
@@ -36,6 +38,17 @@ func main() {
 		return
 	}
 	defer db.Close()
+
+	grcpConn, err := grpc.Dial(
+		"212.233.89.163:8081",
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+	defer grcpConn.Close()
+
+	sessManager := &sessrep.RedisManager{sessrep.NewAuthCheckerClient(grcpConn)}
 	// err = db.MigrateUp()
 	// if err != nil {
 	// 	fmt.Println(err)
