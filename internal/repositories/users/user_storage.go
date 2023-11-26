@@ -62,7 +62,7 @@ func SelectUserByNicknameSQLWithSubscribers(nickname string) squirrel.SelectBuil
 			configs.UserTable, configs.UserTable)).
 		From(configs.UserTable).
 		LeftJoin(fmt.Sprintf("%s s ON %s.id = s.creator_id", configs.SubscriptionTable, configs.UserTable)).
-		Where(squirrel.Like{"login":nickname+"%"}).
+		Where(squirrel.Like{"email":nickname+"%"}).
 		Suffix("GROUP BY " + configs.UserTable + ".id").
 		Suffix("ORDER BY subscribers DESC").
 		PlaceholderFormat(squirrel.Dollar)
