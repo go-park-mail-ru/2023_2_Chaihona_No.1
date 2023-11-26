@@ -118,6 +118,7 @@ func main() {
 	
 	r.HandleFunc("/api/v1/post/{id:[0-9]+}/attaches", handlers.NewWrapper(fileHandler.LoadAttachesStratagy).ServeHTTP).Methods("GET")
 
+	r.HandleFunc("/api/v1/search/{nickname:.*}", handlers.NewWrapper(profileHandler.Search).ServeHTTP).Methods("GET")
 	fmt.Println("Server started")
 	err = http.ListenAndServe(configs.BackendServerPort, r)
 	fmt.Println(err)
