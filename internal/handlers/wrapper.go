@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	maxBytesToRead = 1024 * 2
+	maxBytesToRead = 1024 * 1024 * 1024
 )
 
 type IValidatable interface {
@@ -41,6 +41,14 @@ func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	
 	ctx := auth.AddWriter(r.Context(), w)
 	ctx = auth.AddVars(ctx, mux.Vars(r))
+
+	isOwner := r.URL.Query().Get("is_owner")
+	isFollowed := r.URL.Query().Get("is_followed")
+	ctx = auth.AddQueryVars(ctx, map[string]string{
+		"is_owner": isOwner,
+		"is_followed": isFollowed,
+	})
+
 	cookie, err := r.Cookie("session_id")
 	if err == nil {
 		ctx = auth.AddSession(ctx, cookie)

@@ -11,8 +11,7 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/db/postgresql"
 	_ "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/docs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
-
-	// "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/answers"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/attaches"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/likes"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/payments"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
@@ -70,12 +69,13 @@ func main() {
 	questionsStorage := questions.CreateQuestionStorage(db.GetDB())
 	// answersStorage := answers.CreateAnswerStorage(db.GetDB())
 	subscriptionLevelsStorage := subscriptionlevels.CreateSubscribeLevelStorage(db.GetDB())
+	attachStorage := attaches.CreateAttachStorage(db.GetDB())
 
 	rep := handlers.CreateRepoHandler(sessManager, userStoarge, levelStorage)
 	profileHandler := handlers.CreateProfileHandlerViaRepos(sessManager, userStoarge, levelStorage, subsStorage, paymentStorage)
-	postHandler := handlers.CreatePostHandlerViaRepos(sessManager, postStorage, likeStorage)
+	postHandler := handlers.CreatePostHandlerViaRepos(sessManager, postStorage, likeStorage, attachStorage)
 	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessManager, paymentStorage, subsStorage, subscriptionLevelsStorage)
-	fileHandler := handlers.CreateFileHandler(sessManager, userStoarge)
+	fileHandler := handlers.CreateFileHandler(sessManager, userStoarge, attachStorage)
 	csatHandler := handlers.CreateCSATHandler(sessManager,questionsStorage)
 	r := mux.NewRouter()
 
@@ -115,6 +115,9 @@ func main() {
 	r.HandleFunc("/api/v1/questions", handlers.NewWrapper(csatHandler.GetQuestions).ServeHTTP).Methods("GET")
 	r.HandleFunc("/api/v1/rate/{id:[0-9]+}", handlers.NewWrapper(csatHandler.Rate).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/statistic", handlers.NewWrapper(csatHandler.GetStatistic).ServeHTTP).Methods("GET")
+	
+	r.HandleFunc("/api/v1/post/{id:[0-9]+}/attaches", handlers.NewWrapper(fileHandler.LoadAttachesStratagy).ServeHTTP).Methods("GET")
+
 	fmt.Println("Server started")
 	err = http.ListenAndServe(configs.BackendServerPort, r)
 	fmt.Println(err)

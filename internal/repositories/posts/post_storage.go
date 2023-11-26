@@ -39,32 +39,33 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 }
 
 // For followed users
-// func SelectUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder {
-// 	return squirrel.Select("p.*, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access, "+
-// 		"sl1.level as min_sub_level, "+
-// 		"array_agg(pa.file_path) as attaches, "+
-// 		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
-// 		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", subscriberId)).
-// 		From(configs.PostTable+" p").
-// 		CrossJoin(configs.SubscriptionTable+" s").
-// 		LeftJoin(configs.AttachTable+" pa ON p.id = pa.post_id").
-// 		LeftJoin(configs.LikeTable+" pl ON p.id = pl.post_id").
-// 		InnerJoin(configs.SubscribeLevelTable+" sl1 ON p.min_subscription_level_id = sl1.id").
-// 		InnerJoin(configs.SubscribeLevelTable+" sl2 ON s.subscription_level_id = sl2.id").
-// 		Where(squirrel.Eq{
-// 			"p.creator_id":    authorId,
-// 			"s.subscriber_id": subscriberId,
-// 			"s.creator_id":    authorId,
-// 		}).
-// 		GroupBy("p.id", "sl1.level", "sl2.level").
-// 		PlaceholderFormat(squirrel.Dollar)
-// }
+func SelectUserPostsForFollowerSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder {
+	return squirrel.Select("p.*, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access, "+
+		"sl1.level as min_sub_level, "+
+		"array_agg(DISTINCT pa.file_path) as attaches, "+
+		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
+		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", subscriberId)).
+		From(configs.PostTable+" p").
+		CrossJoin(configs.SubscriptionTable+" s").
+		LeftJoin(configs.AttachTable+" pa ON p.id = pa.post_id").
+		LeftJoin(configs.LikeTable+" pl ON p.id = pl.post_id").
+		InnerJoin(configs.SubscribeLevelTable+" sl1 ON p.min_subscription_level_id = sl1.id").
+		InnerJoin(configs.SubscribeLevelTable+" sl2 ON s.subscription_level_id = sl2.id").
+		Where(squirrel.Eq{
+			"p.creator_id":    authorId,
+			"s.subscriber_id": subscriberId,
+			"s.creator_id":    authorId,
+		}).
+		GroupBy("p.id", "sl1.level", "sl2.level").
+		OrderBy("creation_date DESC").
+		PlaceholderFormat(squirrel.Dollar)
+}
 
 //For no followed users
 func SelectUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder {
-	return squirrel.Select("p.*, TRUE AS has_access, "+ //change on CASE WHEN sl1.level = 0 THEN TRUE ELSE FALSE END AS has_access, "+
+	return squirrel.Select("p.*, CASE WHEN sl1.level = 0 THEN TRUE ELSE FALSE END AS has_access, "+
 		"sl1.level as min_sub_level, "+
-		"array_agg(pa.file_path) as attaches, "+
+		"array_agg(DISTINCT pa.file_path) as attaches, "+
 		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
 		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", subscriberId)).
 		From(configs.PostTable+" p").
@@ -75,26 +76,28 @@ func SelectUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder
 			"p.creator_id":    authorId,
 		}).
 		GroupBy("p.id", "sl1.level").
+		OrderBy("creation_date DESC").
 		PlaceholderFormat(squirrel.Dollar)
 }
 
-//For owner 
-// func SelectUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder {
-// 	return squirrel.Select("p.*, TRUE AS has_access, "+
-// 		"sl1.level as min_sub_level, "+
-// 		"array_agg(pa.file_path) as attaches, "+
-// 		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
-// 		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", subscriberId)).
-// 		From(configs.PostTable+" p").
-// 		LeftJoin(configs.AttachTable+" pa ON p.id = pa.post_id").
-// 		LeftJoin(configs.LikeTable+" pl ON p.id = pl.post_id").
-// 		InnerJoin(configs.SubscribeLevelTable+" sl1 ON p.min_subscription_level_id = sl1.id").
-// 		Where(squirrel.Eq{
-// 			"p.creator_id":    authorId,
-// 		}).
-// 		GroupBy("p.id", "sl1.level").
-// 		PlaceholderFormat(squirrel.Dollar)
-// }
+// For owner 
+func SelectOwnUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder {
+	return squirrel.Select("p.*, TRUE AS has_access, "+
+		"sl1.level as min_sub_level, "+
+		"array_agg(DISTINCT pa.file_path) as attaches, "+
+		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
+		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", subscriberId)).
+		From(configs.PostTable+" p").
+		LeftJoin(configs.AttachTable+" pa ON p.id = pa.post_id").
+		LeftJoin(configs.LikeTable+" pl ON p.id = pl.post_id").
+		InnerJoin(configs.SubscribeLevelTable+" sl1 ON p.min_subscription_level_id = sl1.id").
+		Where(squirrel.Eq{
+			"p.creator_id":    authorId,
+		}).
+		GroupBy("p.id", "sl1.level").
+		OrderBy("creation_date DESC").
+		PlaceholderFormat(squirrel.Dollar)
+}
 
 // func SelectAvailiblePostsSQL(userId uint) squirrel.SelectBuilder {
 // 	return squirrel.Select("p.*, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access, "+
@@ -117,7 +120,7 @@ func SelectUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder
 
 func SelectAvailiblePostsSQL(userId uint) squirrel.SelectBuilder {
 	return squirrel.Select("p.*, TRUE AS has_access, "+
-		"array_agg(pa.file_path) as attaches, "+
+		"array_agg(DISTINCT pa.file_path) as attaches, "+
 		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
 		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", userId)).
 		From(configs.PostTable+" p").
@@ -128,6 +131,7 @@ func SelectAvailiblePostsSQL(userId uint) squirrel.SelectBuilder {
 			"s.subscriber_id": userId,
 		}).
 		GroupBy("p.id").
+		OrderBy("creation_date DESC").
 		PlaceholderFormat(squirrel.Dollar)
 }
 
@@ -163,10 +167,10 @@ func (storage *PostStorage) CreateNewPost(post model.Post) (int, error) {
 
 func (storage *PostStorage) DeletePost(id uint) error {
 	rows, err := DeletePostSQL(id).RunWith(storage.db).Query()
-	defer rows.Close()
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 	return nil
 }
 
@@ -187,15 +191,41 @@ func (storage *PostStorage) GetPostById(postId uint) (model.Post, error) {
 
 func (storage *PostStorage) ChangePost(post model.Post) error {
 	rows, err := UpdatePostSQL(post).RunWith(storage.db).Query()
-	defer rows.Close()
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 	return nil
 }
 
-func (storage *PostStorage) GetPostsByAuthorId(authorId uint, subscriberId uint) ([]model.Post, error) {
+func (storage *PostStorage) GetPostsByAuthorIdForStranger(authorId uint, subscriberId uint) ([]model.Post, error) {
 	rows, err := SelectUserPostsSQL(authorId, subscriberId).RunWith(storage.db).Query()
+	if err != nil {
+		return []model.Post{}, err
+	}
+	var posts []model.Post
+	err = dbscan.ScanAll(&posts, rows)
+	if err != nil {
+		return []model.Post{}, err
+	}
+	return posts, nil
+}
+
+func (storage *PostStorage) GetOwnPostsByAuthorId(authorId uint, subscriberId uint) ([]model.Post, error) {
+	rows, err := SelectOwnUserPostsSQL(authorId, subscriberId).RunWith(storage.db).Query()
+	if err != nil {
+		return []model.Post{}, err
+	}
+	var posts []model.Post
+	err = dbscan.ScanAll(&posts, rows)
+	if err != nil {
+		return []model.Post{}, err
+	}
+	return posts, nil
+}
+
+func (storage *PostStorage) GetPostsByAuthorIdForFollower(authorId uint, subscriberId uint) ([]model.Post, error) {
+	rows, err := SelectUserPostsForFollowerSQL(authorId, subscriberId).RunWith(storage.db).Query()
 	if err != nil {
 		return []model.Post{}, err
 	}

@@ -8,13 +8,14 @@ import (
 type writerKey struct{}
 type sessionIDKey struct{}
 type routesVarsKey struct{}
+type queryVars struct{}
 
 func GetSession(ctx context.Context) *http.Cookie {
 	if ctx.Value(sessionIDKey{}) != nil {
 		return ctx.Value(sessionIDKey{}).(*http.Cookie)
 	}
 
-	return nil
+	return &http.Cookie{}
 }
 
 func AddSession(ctx context.Context, cookie *http.Cookie) context.Context {
@@ -29,8 +30,20 @@ func GetVars(ctx context.Context) map[string]string {
 	return nil
 }
 
+func GetQueryVars(ctx context.Context) map[string]string {
+	if ctx.Value(routesVarsKey{}) != nil {
+		return ctx.Value(queryVars{}).(map[string]string)
+	}
+
+	return nil
+}
+
 func AddVars(ctx context.Context, vars map[string]string) context.Context {
 	return context.WithValue(ctx, routesVarsKey{}, vars)
+}
+
+func AddQueryVars(ctx context.Context, vars map[string]string) context.Context {
+	return context.WithValue(ctx, queryVars{}, vars)
 }
 
 func AddWriter(ctx context.Context, w http.ResponseWriter) context.Context {

@@ -2,21 +2,25 @@ package handlers
 
 import (
 	"context"
-	"io"
+	"encoding/base64"
 	"log"
-	"mime"
-	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
-	"time"
 
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/attaches"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/files"
 	"github.com/gorilla/mux"
 )
+
+type BodyAttaches struct {
+	Attaches []model.Attach `json:"attaches"`
+}
 
 type FileBody struct {
 	Path string `json:"path"`
@@ -25,57 +29,25 @@ type FileBody struct {
 type FileHandler struct {
 	// Sessions sessions.SessionRepository
 	// Sessions 
+	Attaches attaches.AttachRepository
 	Manager *sessions.RedisManager
 	Users users.UserRepository
 }
 
-func CreateFileHandler(sessionsManager *sessions.RedisManager, users users.UserRepository) *FileHandler {
+func CreateFileHandler(sessionsManager *sessions.RedisManager, users users.UserRepository, attaches attaches.AttachRepository) *FileHandler {
 	return &FileHandler{
 		// Sessions: sessions,
+		Attaches: attaches,
 		Manager: sessionsManager,
 		Users: users,
 	}
-}
-
-func saveFile(fileHeader *multipart.FileHeader, filename string) (string, error) {
-	time := time.Now()
-	path := filepath.Join(
-		// configs.BasePath, 
-		"static",
-		strconv.Itoa(time.Year()), 
-		strconv.Itoa(int(time.Month())),
-		strconv.Itoa(time.Day()),
-	)
-	if err := os.MkdirAll(path, os.ModePerm); err != nil {
-		return "", err
-	}
-	file, err := fileHeader.Open()
-	if err != nil {
-		return "", err
-	}
-	defer file.Close()
-	buf, err := io.ReadAll(file)
-	if err != nil {
-		return "", err
-	}
-	extensions, err := mime.ExtensionsByType(fileHeader.Header.Get("Content-Type"))
-	var extension string 
-	if err == nil && len(extensions) > 0 {
-		extension = extensions[0]
-	}
-	path = filepath.Join(path, filename + extension)
-	err =  os.WriteFile(path, buf, os.ModePerm)
-	if err != nil {
-		return "", err
-	}
-	return path, nil
 }
 
 func (f *FileHandler) UploadFileStratagy(ctx context.Context, form FileForm) (Result, error){
 	fileArray, ok := form.Form.File["avatar"]
 	fileBody := FileBody{}
 	if ok&&len(fileArray)>0 {
-		path, err := saveFile(fileArray[0], "user")
+		path, err := files.SaveFile(fileArray[0], "user")
 		if err != nil {
 			return Result{}, err
 		}
@@ -104,10 +76,10 @@ func (f *FileHandler) LoadFileStratagy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !auth.CheckAuthorizationManager(ctx, f.Manager) {
-		http.Error(w, ErrUnathorized.Error(), http.StatusUnauthorized)
-		return
-	}
+	// if !auth.CheckAuthorizationManager(ctx, f.Manager) {
+	// 	http.Error(w, ErrUnathorized.Error(), http.StatusUnauthorized)
+	// 	return
+	// }
 
 	user, err := f.Users.GetUser(id)
 	if err != nil {
@@ -116,31 +88,12 @@ func (f *FileHandler) LoadFileStratagy(w http.ResponseWriter, r *http.Request) {
 	}
 	fileDir, _ := os.Getwd()
 	filePath := filepath.Join(fileDir, user.Avatar)
-	
-	// file, err := os.Open(filePath)
-	// if err != nil {
-	// 	http.Error(w, ErrDataBase.Error(), http.StatusBadRequest)
-	// 	return
-	// }
-	// defer file.Close()
-	
-	// body := &bytes.Buffer{}
-	// writer := multipart.NewWriter(body)
-	// part, _ := writer.CreateFormFile("avatar", filepath.Base(file.Name()))
-	// _, err = io.Copy(part, file)
-	// if err != nil {
-	// 	http.Error(w, ErrDataBase.Error(), http.StatusBadRequest)
-	// 	return
-	// }
-	// writer.Close()
 
 	body, err := os.ReadFile(filePath)
 	if err != nil {
 		http.Error(w, ErrDataBase.Error(), http.StatusBadRequest)
 		return
 	}
-
-
 
 	// w.Header().Add("Content-Type", writer.FormDataContentType())
 	w.Header().Add("Content-Type", "application/octet-stream")
@@ -149,4 +102,33 @@ func (f *FileHandler) LoadFileStratagy(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func (f *FileHandler) LoadAttachesStratagy(ctx context.Context, form EmptyForm) (Result, error) {
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
+
+	postID, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return Result{}, ErrBadID
+	}
+
+	attaches, err := f.Attaches.GetPostAttaches(postID)
+	if err != nil {
+		return Result{}, ErrDataBase
+	}
+
+	for i := range attaches {
+		fileDir, _ := os.Getwd()
+		filePath := filepath.Join(fileDir, attaches[i].FilePath)
+	
+		body, err := os.ReadFile(filePath)
+		if err != nil {
+			return Result{}, ErrReadFile
+		}
+		attaches[i].Data = base64.StdEncoding.EncodeToString(body)
+	}
+	return Result{Body: BodyAttaches{Attaches: attaches}}, nil
 }

@@ -102,7 +102,7 @@ func (storage *SessionRedisStorage) CheckSession(sessionId string) (*SessionOld,
 		// err = errors.Join(ErrRedisCantGetData, err)
 		log.Println(err.Error())
 
-		return nil, false
+		return &SessionOld{}, false
 	}
 
 	sess := &SessionOld{}
@@ -112,7 +112,7 @@ func (storage *SessionRedisStorage) CheckSession(sessionId string) (*SessionOld,
 		// err = errors.Join(ErrRedisCantUnpackSessionData, err)
 		log.Println(err.Error())
 
-		return nil, false
+		return &SessionOld{}, false
 	}
 
 	return sess, true
@@ -158,7 +158,7 @@ func (manager *RedisManager) CheckSessionCtxWrapper(ctx context.Context, session
 	})
 
 	if err != nil {
-		return nil, false
+		return &SessionOld{}, false
 	}
 
 	ttl, err := time.Parse(longForm, session.Ttl) 

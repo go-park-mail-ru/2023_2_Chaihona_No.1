@@ -1,6 +1,10 @@
 package handlers
 
-import "mime/multipart"
+import (
+	"mime/multipart"
+
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
+)
 
 type StatusForm struct {
 	Body struct {
@@ -63,6 +67,7 @@ type PostForm struct {
 		MinSubLevelId uint      `json:"min_subscription_level_id"`
 		Header        string    `json:"header"`
 		Body          string    `json:"body,omitempty"`
+		Attaches []model.Attach `json:"attaches,omitempty"`
 	} `json:"body"`
 }
 
