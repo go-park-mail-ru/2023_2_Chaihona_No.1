@@ -124,10 +124,10 @@ func (f *FileHandler) LoadAttachesStratagy(ctx context.Context, form EmptyForm) 
 		fileDir, _ := os.Getwd()
 		filePath := filepath.Join(fileDir, attaches[i].FilePath)
 	
-		body, err := os.ReadFile(filePath)
-		if err != nil {
-			return Result{}, ErrReadFile
-		}
+		body, _ := os.ReadFile(filePath)
+		// if err != nil {
+		// 	return Result{}, ErrReadFile
+		// }
 		attaches[i].Data = base64.StdEncoding.EncodeToString(body)
 	}
 	return Result{Body: BodyAttaches{Attaches: attaches}}, nil
