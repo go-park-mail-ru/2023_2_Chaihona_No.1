@@ -15,4 +15,5 @@ type UserRepository interface {
 	ChangeUserStatus(status string, id int) error
 	GetUsers() ([]model.User, error)
 	GetTopUsers(limit int) ([]model.User, error)
+	Search(nickname string) ([]model.User, error)
 }

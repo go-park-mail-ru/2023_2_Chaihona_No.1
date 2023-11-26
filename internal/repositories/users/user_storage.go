@@ -3,8 +3,8 @@ package users
 import (
 	"database/sql"
 	"fmt"
-	"net/http"
 	"log"
+	"net/http"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/dbscan"
@@ -50,7 +50,22 @@ func SelectTopUsers(limit int) squirrel.SelectBuilder {
 		LeftJoin(fmt.Sprintf("%s s ON %s.id = s.creator_id", configs.SubscriptionTable, configs.UserTable)).
 		Suffix("GROUP BY " + configs.UserTable + ".id").
 		Suffix("ORDER BY subscribers DESC").
-		Suffix(fmt.Sprintf("LIMIT %d", limit))
+		Suffix(fmt.Sprintf("LIMIT %d", limit)).
+		PlaceholderFormat(squirrel.Dollar)
+}
+
+func SelectUserByNicknameSQLWithSubscribers(nickname string) squirrel.SelectBuilder {
+	return squirrel.Select(
+		fmt.Sprintf("%s.id, %s.nickname, %s.email, %s.is_author, %s.status, %s.avatar_path, %s.background_path, %s.description, COUNT(s.id) as subscribers",
+			configs.UserTable, configs.UserTable, configs.UserTable,
+			configs.UserTable, configs.UserTable, configs.UserTable,
+			configs.UserTable, configs.UserTable)).
+		From(configs.UserTable).
+		LeftJoin(fmt.Sprintf("%s s ON %s.id = s.creator_id", configs.SubscriptionTable, configs.UserTable)).
+		Where(squirrel.Like{"login":nickname+"%"}).
+		Suffix("GROUP BY " + configs.UserTable + ".id").
+		Suffix("ORDER BY subscribers DESC").
+		PlaceholderFormat(squirrel.Dollar)
 }
 
 func SelectUserByIdSQLWithSubscribers(id int, visiterId int) squirrel.SelectBuilder {
@@ -178,6 +193,22 @@ func (storage *UserStorage) GetTopUsers(limit int) ([]model.User, error) {
 
 func (storage *UserStorage) GetUserWithSubscribers(id int, visiterId int) (model.User, error) {
 	rows, err := SelectUserByIdSQLWithSubscribers(id, visiterId).RunWith(storage.db).Query()
+	if err != nil {
+		return model.User{}, err
+	}
+	var users []model.User
+	err = dbscan.ScanAll(&users, rows)
+	if err != nil {
+		return model.User{}, err
+	}
+	if len(users) > 0 {
+		return users[0], nil
+	}
+	return model.User{}, nil
+}
+
+func (storage *UserStorage) Search(nickname string) (model.User, error) {
+	rows, err := SelectUserByNicknameSQLWithSubscribers(nickname).RunWith(storage.db).Query()
 	if err != nil {
 		return model.User{}, err
 	}

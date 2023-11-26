@@ -381,3 +381,26 @@ func (p *ProfileHandler) GetTopUsersStratagy(ctx context.Context, form EmptyForm
 
 	return Result{Body: Profiles{Profiles: profiles}}, nil
 }
+
+func (p *ProfileHandler) Search(ctx context.Context, form EmptyForm) (Result, error) {
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
+	nickname := vars["nickname"]
+	users, err := p.Users.Search(nickname)
+
+	if err != nil {
+		return Result{}, ErrDataBase
+	}
+
+	var profiles []model.Profile
+	for _, user := range users {
+		profiles = append(profiles, model.Profile{
+			User:        user,
+			Subscribers: user.Subscribers,
+		})
+	}
+
+	return Result{Body: Profiles{Profiles: profiles}}, nil
+}
