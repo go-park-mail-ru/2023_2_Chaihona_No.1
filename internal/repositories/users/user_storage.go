@@ -207,20 +207,19 @@ func (storage *UserStorage) GetUserWithSubscribers(id int, visiterId int) (model
 	return model.User{}, nil
 }
 
-func (storage *UserStorage) Search(nickname string) (model.User, error) {
+func (storage *UserStorage) Search(nickname string) ([]model.User, error) {
 	rows, err := SelectUserByNicknameSQLWithSubscribers(nickname).RunWith(storage.db).Query()
 	if err != nil {
-		return model.User{}, err
+		log.Println(err)
+		return nil, err
 	}
 	var users []model.User
 	err = dbscan.ScanAll(&users, rows)
-	if err != nil {
-		return model.User{}, err
+	if err != nil || len(users) == 0 {
+		log.Println(err)
+		return nil, err
 	}
-	if len(users) > 0 {
-		return users[0], nil
-	}
-	return model.User{}, nil
+	return users, nil
 }
 
 func (storage *UserStorage) ChangeUser(user model.User) error {
