@@ -135,7 +135,7 @@ CREATE TABLE question
   id              serial    NOT NULL,
   question_type   smallint  NOT NULL,
   question        text      NOT NULL
-)
+);
 
 CREATE TABLE answer
 (
@@ -146,6 +146,6 @@ CREATE TABLE answer
   user_id     serial    NOT NULL,
               CONSTRAINT FK_user_id FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE SET NULL
   rating      smallint  NOT NULL
-)
+);
 
 COMMIT;
