@@ -15,8 +15,8 @@ type User struct {
 	Avatar       string `json:"avatar" db:"avatar_path"`
 	Background   string `json:"background" db:"background_path"`
 	Description  string `json:"description" db:"description"`
-	CreationDate string `json:"-" db:"creation_date"`
-	LastUpdate   string `json:"-" db:"last_update"`
+	CreationDate string `json:"-" db:"created_at"`
+	LastUpdate   string `json:"-" db:"updated_at"`
 	Is_author    bool   `json:"is_author" db:"is_author"`
 	Subscribers  uint   `json:"-" db:"subscribers"`
 	IsFollowed bool `json:"-" db:"is_followed"`

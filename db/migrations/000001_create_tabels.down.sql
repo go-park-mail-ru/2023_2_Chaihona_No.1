@@ -16,6 +16,11 @@ DROP TABLE IF EXISTS subscription_level;
 
 DROP TABLE IF EXISTS payment;
 
+DROP TABLE IF EXISTS question;
+
+DROP TABLE IF EXISTS answer;
+
 DROP TABLE IF EXISTS public.user;
+
 
 COMMIT;

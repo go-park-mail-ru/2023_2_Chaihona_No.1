@@ -20,9 +20,9 @@ type Post struct {
 	Currency      string    `json:"currency,omitempty" db:""`
 	MinSubLevel   uint      `json:"min_sub_level" db:"min_sub_level"`
 	MinSubLevelId uint      `json:"-" db:"min_subscription_level_id"`
-	CreationDate  string    `json:"creation_date" db:""`
-	CreationDateSQL sql.NullTime `json:"-" db:"creation_date"`
-	UpdatedAt     string    `json:"last_update" db:"last_update"`
+	CreationDate  string    `json:"created_at" db:""`
+	CreationDateSQL sql.NullTime `json:"-" db:"created_at"`
+	UpdatedAt     string    `json:"updated_at" db:"updated_at"`
 	Header        string    `json:"header" db:"header"`
 	Body          string    `json:"body,omitempty" db:"body"`
 	Likes         uint      `json:"likes" db:"likes"`
