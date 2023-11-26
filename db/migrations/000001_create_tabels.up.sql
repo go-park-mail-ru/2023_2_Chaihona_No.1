@@ -144,7 +144,7 @@ CREATE TABLE answer
   question_id serial    NOT NULL,
               CONSTRAINT FK_question_id FOREIGN KEY (question_id) REFERENCES question (id) ON DELETE CASCADE,
   user_id     serial    NOT NULL,
-              CONSTRAINT FK_user_id FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE SET NULL,
+              CONSTRAINT FK_user_id FOREIGN KEY (user_id) REFERENCES public.user (id) ON DELETE SET NULL,
   rating      smallint  NOT NULL
 );
 
