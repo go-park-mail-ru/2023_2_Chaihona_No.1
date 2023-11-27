@@ -68,6 +68,10 @@ type PostForm struct {
 		Header        string    `json:"header"`
 		Body          string    `json:"body,omitempty"`
 		Attaches []model.Attach `json:"attaches,omitempty"`
+		Pinned struct {
+			Files []model.Attach `json:"files,omitempty"`
+			Deleted []string `json:"deleted"`
+		} `json:"pinned,omitempty"`
 	} `json:"body"`
 }
 

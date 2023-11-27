@@ -7,5 +7,6 @@ import (
 type AttachRepository interface {
 	PinAttach(attach model.Attach) (int, error)
 	GetPostAttaches(postID int) ([]model.Attach, error)
-	// DeleteAttach(id uint) error
+	DeleteAttach(path string) error
+	CountAttaches(postId int) (int, error)
 }

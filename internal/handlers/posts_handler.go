@@ -164,6 +164,40 @@ func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Re
 		//think
 		return Result{}, ErrDataBase
 	}
+
+	for _, deleted_path := range form.Body.Pinned.Deleted {
+		err = p.Attaches.DeleteAttach(deleted_path)
+		if err != nil {
+			return Result{}, ErrDataBase
+		}
+
+		err = files.DeleteFile(deleted_path);
+		if err != nil {
+			log.Println(err)
+			return Result{}, ErrDeleteFile
+		}
+	}
+
+	for i, attach := range form.Body.Pinned.Files {
+		countedAttaches, err := p.Attaches.CountAttaches(postId)
+		if err != nil {
+			return Result{}, ErrDataBase
+		}
+
+		path, err := files.SaveFileBase64(attach.Data, fmt.Sprintf("attach%d_post%d%s", countedAttaches + i, postId, attach.Name[strings.LastIndexByte(attach.Name, '.'):]))
+		if err != nil {
+			log.Println(err)
+			return Result{}, ErrSaveFile
+		}
+		_, err = p.Attaches.PinAttach(model.Attach{
+			PostId: postId,
+			FilePath: path,
+			Name: attach.Name,
+		})
+		if err != nil {
+			return Result{}, ErrDataBase
+		}
+	}
 	return Result{}, nil
 }
 

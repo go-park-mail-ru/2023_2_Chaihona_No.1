@@ -71,3 +71,7 @@ func SaveFileBase64(date string, filename string) (string, error) {
 	}
 	return path, nil
 }
+
+func DeleteFile(path string) error {
+	return nil
+}

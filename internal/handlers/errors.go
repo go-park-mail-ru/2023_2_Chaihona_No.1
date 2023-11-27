@@ -100,6 +100,11 @@ var (
 		StatusCode: http.StatusInternalServerError,
 		Msg: `{"error":"cannot save file"}`,
 	}
+
+	ErrDeleteFile = ErrorHttp{
+		StatusCode: http.StatusInternalServerError,
+		Msg: `{"error":"cannot delete file"}`,
+	}
 )
 
 func WriteHttpError(w http.ResponseWriter, err error) {

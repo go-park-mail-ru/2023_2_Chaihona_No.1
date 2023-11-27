@@ -25,6 +25,19 @@ func SelectPostAttachesSQL(postID int) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
+func CountPostAttachesSQL(postID int) squirrel.SelectBuilder {
+	return squirrel.Select("COUNT(*) as attaches").
+		From(configs.AttachTable + " a").
+		Where(squirrel.Eq{"a.post_id": postID}).
+		PlaceholderFormat(squirrel.Dollar)
+}
+	
+func DeleteAttachSQL(path string) squirrel.DeleteBuilder {
+	return squirrel.Delete(configs.AttachTable).
+		Where(squirrel.Eq{"file_path": path}).
+		PlaceholderFormat(squirrel.Dollar)
+}
+
 type AttachStorage struct {
 	db *sql.DB
 }
@@ -56,4 +69,23 @@ func (storage *AttachStorage) GetPostAttaches(postID int) ([]model.Attach, error
 		return []model.Attach{}, err
 	}
 	return attaches, nil
+}
+
+
+func (storage *AttachStorage) DeleteAttach(path string) error {
+	rows, err := DeleteAttachSQL(path).RunWith(storage.db).Query()
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	return nil
+}
+
+func (storage *AttachStorage) CountAttaches(postId int) (int, error) {
+	var countAttaches int
+	err := CountPostAttachesSQL(postId).RunWith(storage.db).QueryRow().Scan(&countAttaches)
+	if err != nil {
+		return 0, err
+	}
+	return countAttaches, nil
 }
