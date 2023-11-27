@@ -9,4 +9,5 @@ type Profile struct {
 	Currency        string           `json:"currency,omitempty"`
 	Goals           []Goal           `json:"goals,omitempty"`
 	IsFollowed bool `json:"is_followed"`
+	VisiterSubscriptionId int `json:"visiter_subscription_id"`
 }

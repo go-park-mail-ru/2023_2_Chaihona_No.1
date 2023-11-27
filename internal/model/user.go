@@ -20,4 +20,5 @@ type User struct {
 	Is_author    bool   `json:"is_author" db:"is_author"`
 	Subscribers  uint   `json:"-" db:"subscribers"`
 	IsFollowed bool `json:"-" db:"is_followed"`
+	VisiterSubscriptionId int `json:"visiter_subscription_id" db:"visiter_subscription_id"`
 }
