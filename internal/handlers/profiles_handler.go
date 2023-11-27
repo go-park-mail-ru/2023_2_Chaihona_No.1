@@ -108,7 +108,7 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 			Subscribers:     user.Subscribers,
 			SubscribeLevels: levels,
 			IsFollowed:      user.IsFollowed,
-			VisiterSubscriptionId: user.VisiterSubscriptionId,
+			VisiterSubscriptionLevelId: user.VisiterSubscriptionLevelId,
 		}
 		donated, err := p.Payments.GetPaymentsByAuthorId(user.ID)
 		if err != nil {
