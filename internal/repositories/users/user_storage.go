@@ -80,7 +80,7 @@ func SelectUserByIdSQLWithSubscribers(id int, visiterId int) squirrel.SelectBuil
 			From(configs.UserTable).
 		LeftJoin(fmt.Sprintf("%s s ON %s.id = s.creator_id", configs.SubscriptionTable, configs.UserTable)).
 		Suffix(fmt.Sprintf("WHERE %s.id = %d", configs.UserTable, id)).
-		Suffix("GROUP BY " + configs.UserTable + ".id")
+		Suffix("GROUP BY " + configs.UserTable + ".id" + " ,s.id")
 }
 
 func UpdateUserSQL(user model.User) squirrel.UpdateBuilder {
