@@ -323,7 +323,7 @@ func (storage *PostStorage) GetPostsByAuthorIdForStrangerCtx(ctx context.Context
 	if err != nil {
 		return &PostsMapGRPC{}, err
 	}
-	var postsMap *PostsMapGRPC
+	postsMap := &PostsMapGRPC{}
 	for i, post := range posts {
 		postsMap.Posts[int32(i)] = PostToPostGRPC(&post)
 	}
@@ -374,7 +374,7 @@ func (storage *PostStorage) GetOwnPostsByAuthorIdCtx(ctx context.Context, ids *A
 		return &PostsMapGRPC{}, err
 	}
 
-	var postsMap *PostsMapGRPC
+	postsMap := &PostsMapGRPC{}
 	for i, post := range posts {
 		postsMap.Posts[int32(i)] = PostToPostGRPC(&post)
 	}
@@ -424,7 +424,7 @@ func (storage *PostStorage) GetPostsByAuthorIdForFollowerCtx(ctx context.Context
 		return &PostsMapGRPC{}, err
 	}
 
-	var postsMap *PostsMapGRPC
+	postsMap := &PostsMapGRPC{}
 	for i, post := range posts {
 		postsMap.Posts[int32(i)] = PostToPostGRPC(&post)
 	}
@@ -473,7 +473,7 @@ func (storage *PostStorage) GetUsersFeedCtx(ctx context.Context, userId *UInt) (
 		return &PostsMapGRPC{}, err
 	}
 
-	var postsMap *PostsMapGRPC
+	postsMap := &PostsMapGRPC{}
 	for i, post := range posts {
 		postsMap.Posts[int32(i)] = PostToPostGRPC(&post)
 	}
