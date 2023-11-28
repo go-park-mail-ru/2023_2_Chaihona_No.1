@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+// protoc --go_out=. --go-grpc_out=. --go-grpc_opt=paths=source_relative --go_opt=paths=source_relative *.proto  
+option go_package = "./;posts";
+
+package posts;
+
+message TagGRPC {
+	uint32 id = 1;
+	string name = 2;
+}
+
+message TagsGRPC {
+	map<int32, TagGRPC> tags_map = 1;
+}
+
+message CommentGRPC {
+	uint32 id = 1;
+	UserGRPC user = 2;
+	string text = 3; 
+	string creation_date = 4;
+}
+
+message CommentsGRPC {
+	map<int32, CommentGRPC> comments_map = 1;
+}
+
+message UserGRPC {
+	uint32 id = 1;
+	string nickname = 2;
+	string login = 3;
+	string password = 4;
+	string user_type = 5;
+	string status = 6;
+	string avatar = 7;
+	string background = 8;
+	string description = 9;
+	string created_at = 10;
+	string updated_at = 11;
+	bool is_author = 12;
+	uint32 subscribers = 13;
+	bool is_followed = 14;
+	int32 visiter_subscription_level_id = 15;
+}
+
+message PostGRPC {
+  uint32 id = 1;            
+	uint32 author_id = 2;      
+	bool has_access = 3;     
+	string reason = 4;        
+	float payment = 5;          
+	string currency = 6;          
+	uint32 min_sub_level = 7;        
+	uint32 min_sub_level_id = 8;       
+	string creation_date  = 9;     
+	//google.protobuf.Timestamp created_at = 10; 
+	string updated_at = 10;     
+	string header = 11;        
+	string body = 12;          
+	uint32 likes = 13;         
+	CommentsGRPC comments = 14;      
+	TagsGRPC tags = 15;          
+	string attaches = 16;       
+	bool is_liked = 17;  
+}
+
+message PostsMapGRPC {
+  map<int32, PostGRPC> posts = 1;
+}
+
+message UInt {
+  uint32 id = 1;
+}
+
+message Int {
+    int32 i = 1; 
+}
+
+message AuthorSubscriberId {
+    uint32 authorID = 1;
+    uint32 subscriberID = 2; 
+}
+
+message Nothing {
+  bool dummy = 1;
+}
+
+// grpc-сервис проверки авторизации
+service PostsService {
+  rpc CreateNewPostCtx (PostGRPC) returns (Int) {}
+	rpc DeletePostCtx(UInt) returns (Nothing) {}
+	rpc ChangePostCtx(PostGRPC) returns (Nothing) {}
+	rpc GetPostByIdCtx(UInt) returns (PostGRPC) {}
+	rpc GetPostsByAuthorIdForStrangerCtx(AuthorSubscriberId) returns (PostsMapGRPC) {}
+	rpc GetOwnPostsByAuthorIdCtx(AuthorSubscriberId) returns (PostsMapGRPC) {}
+	rpc GetPostsByAuthorIdForFollowerCtx(AuthorSubscriberId) returns (PostsMapGRPC) {}
+	rpc GetUsersFeedCtx(UInt) returns (PostsMapGRPC) {}
+}

@@ -27,13 +27,14 @@ type BodyLike struct {
 
 type PostHandler struct {
 	// Sessions sessrep.SessionRepository
-	Manager *sessrep.RedisManager
-	Posts   postsrep.PostRepository
+	SessionsManager *sessrep.RedisManager
+	PostsManager *postsrep.PostManager
+	// Posts   postsrep.PostRepository
 	Likes   likesrep.LikeRepository
 	Attaches attaches.AttachRepository
 }
 
-func CreatePostHandlerViaRepos(manager *sessrep.RedisManager, posts postsrep.PostRepository,
+func CreatePostHandlerViaRepos(manager *sessrep.RedisManager, posts *postsrep.PostManager,
 	likes likesrep.LikeRepository, attaches attaches.AttachRepository) *PostHandler {
 	return &PostHandler{
 		manager,
@@ -90,18 +91,18 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 	if cookie == nil {
 		return Result{}, ErrNoCookie
 	}
-	session, _ := p.Manager.CheckSessionCtxWrapper(ctx, cookie.Value)
+	session, _ := p.SessionsManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 	var posts []model.Post
 	var errPost error
 	if queryVars["is_owner"] == "true" {
 		//check authorization
-		posts, errPost = p.Posts.GetOwnPostsByAuthorId(uint(authorID), uint(authorID))
+		posts, errPost = p.PostsManager.GetOwnPostsByAuthorId(uint(authorID), uint(authorID))
 	} else {
 		if queryVars["is_followed"] == "true" {
 			//check authorization
-			posts, errPost = p.Posts.GetPostsByAuthorIdForFollower(uint(authorID), uint(session.UserID))
+			posts, errPost = p.PostsManager.GetPostsByAuthorIdForFollower(uint(authorID), uint(session.UserID))
 		} else {
-			posts, errPost = p.Posts.GetPostsByAuthorIdForStranger(uint(authorID), uint(session.UserID))
+			posts, errPost = p.PostsManager.GetPostsByAuthorIdForStranger(uint(authorID), uint(session.UserID))
 		}
 	}
 	for i := range posts {
@@ -125,7 +126,7 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 }
 
 func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Result, error) {
-	if !auth.CheckAuthorizationManager(ctx, p.Manager) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionsManager) {
 		return Result{}, ErrUnathorized
 	}
 
@@ -153,13 +154,13 @@ func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Re
 	if cookie == nil {
 		return Result{}, ErrNoCookie
 	}
-	session, ok := p.Manager.CheckSessionCtxWrapper(ctx, cookie.Value)
+	session, ok := p.SessionsManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 	if !ok {
 		return Result{}, ErrNoSession
 	}
 
 	post.AuthorID = uint(session.UserID)
-	err = p.Posts.ChangePost(post)
+	err = p.PostsManager.ChangePost(post)
 	if err != nil {
 		//think
 		return Result{}, ErrDataBase
@@ -202,7 +203,7 @@ func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Re
 }
 
 func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) (Result, error) {
-	if !auth.CheckAuthorizationManager(ctx, p.Manager) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionsManager) {
 		return Result{}, ErrUnathorized
 	}
 
@@ -210,7 +211,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 	if cookie == nil {
 		return Result{}, ErrNoCookie
 	}
-	session, ok := p.Manager.CheckSessionCtxWrapper(ctx, cookie.Value)
+	session, ok := p.SessionsManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 	if !ok {
 		return Result{}, ErrNoSession
 	}
@@ -221,7 +222,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 		Header:        form.Body.Header,
 		Body:          form.Body.Body,
 	}
-	postId, err := p.Posts.CreateNewPost(post)
+	postId, err := p.PostsManager.CreateNewPost(post)
 	if err != nil {
 		//think
 		return Result{}, ErrDataBase
@@ -251,7 +252,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 }
 
 func (p *PostHandler) DeletePostStrategy(ctx context.Context, form EmptyForm) (Result, error) {
-	if !auth.CheckAuthorizationManager(ctx, p.Manager) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionsManager) {
 		return Result{}, ErrUnathorized
 	}
 
@@ -265,7 +266,7 @@ func (p *PostHandler) DeletePostStrategy(ctx context.Context, form EmptyForm) (R
 		return Result{}, ErrBadID
 	}
 
-	err = p.Posts.DeletePost(uint(id))
+	err = p.PostsManager.DeletePost(uint(id))
 	if err != nil {
 		//think
 		return Result{}, ErrDataBase
@@ -283,12 +284,12 @@ func (p *PostHandler) GetFeedStrategy(ctx context.Context, form EmptyForm) (Resu
 	if cookie == nil {
 		return Result{}, ErrNoCookie
 	}
-	session, ok := p.Manager.CheckSessionCtxWrapper(ctx, cookie.Value)
+	session, ok := p.SessionsManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 	if !ok {
 		return Result{}, ErrNoSession
 	}
 
-	posts, err := p.Posts.GetUsersFeed(uint(session.UserID))
+	posts, err := p.PostsManager.GetUsersFeed(uint(session.UserID))
 	if err != nil {
 		fmt.Println(err)
 		return Result{}, ErrDataBase
@@ -300,7 +301,7 @@ func (p *PostHandler) GetFeedStrategy(ctx context.Context, form EmptyForm) (Resu
 }
 
 func (p *PostHandler) LikePostStrategy(ctx context.Context, form EmptyForm) (Result, error) {
-	if !auth.CheckAuthorizationManager(ctx, p.Manager) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionsManager) {
 		return Result{}, ErrUnathorized
 	}
 
@@ -317,7 +318,7 @@ func (p *PostHandler) LikePostStrategy(ctx context.Context, form EmptyForm) (Res
 	if cookie == nil {
 		return Result{}, ErrNoCookie
 	}
-	session, ok := p.Manager.CheckSessionCtxWrapper(ctx, cookie.Value)
+	session, ok := p.SessionsManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 	if !ok {
 		return Result{}, ErrNoSession
 	}
@@ -331,7 +332,7 @@ func (p *PostHandler) LikePostStrategy(ctx context.Context, form EmptyForm) (Res
 }
 
 func (p *PostHandler) UnlikePostStrategy(ctx context.Context, form EmptyForm) (Result, error) {
-	if !auth.CheckAuthorizationManager(ctx, p.Manager) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionsManager) {
 		return Result{}, ErrUnathorized
 	}
 
@@ -348,7 +349,7 @@ func (p *PostHandler) UnlikePostStrategy(ctx context.Context, form EmptyForm) (R
 	if cookie == nil {
 		return Result{}, ErrNoCookie
 	}
-	session, ok := p.Manager.CheckSessionCtxWrapper(ctx, cookie.Value)
+	session, ok := p.SessionsManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 	if !ok {
 		return Result{}, ErrNoSession
 	}
