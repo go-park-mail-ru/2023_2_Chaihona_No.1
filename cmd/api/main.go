@@ -42,16 +42,26 @@ func main() {
 	}
 	defer db.Close()
 
-	grcpConn, err := grpc.Dial(
+	grcpConnSessions, err := grpc.Dial(
 		"212.233.89.163:8081",
 		grpc.WithInsecure(),
 	)
 	if err != nil {
 		log.Fatalf("cant connect to grpc")
 	}
-	defer grcpConn.Close()
+	defer grcpConnSessions.Close()
 
-	sessManager := &sessrep.RedisManager{sessrep.NewAuthCheckerClient(grcpConn)}
+	grcpConnPayments, err := grpc.Dial(
+		"212.233.89.163:8082",
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+	defer grcpConnPayments.Close()
+
+	sessManager := &sessrep.RedisManager{sessrep.NewAuthCheckerClient(grcpConnSessions)}
+	payManager := &payments.PaymentManager{payments.NewPaymentsServiceClient(grcpConnPayments)}
 	// err = db.MigrateUp()
 	// if err != nil {
 	// 	fmt.Println(err)
@@ -74,7 +84,7 @@ func main() {
 	rep := handlers.CreateRepoHandler(sessManager, userStoarge, levelStorage)
 	profileHandler := handlers.CreateProfileHandlerViaRepos(sessManager, userStoarge, levelStorage, subsStorage, paymentStorage)
 	postHandler := handlers.CreatePostHandlerViaRepos(sessManager, postStorage, likeStorage, attachStorage)
-	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessManager, paymentStorage, subsStorage, subscriptionLevelsStorage)
+	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessManager, payManager, subsStorage, subscriptionLevelsStorage)
 	fileHandler := handlers.CreateFileHandler(sessManager, userStoarge, attachStorage)
 	csatHandler := handlers.CreateCSATHandler(sessManager,questionsStorage)
 	r := mux.NewRouter()

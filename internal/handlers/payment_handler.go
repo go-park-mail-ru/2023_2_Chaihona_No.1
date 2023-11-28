@@ -24,27 +24,27 @@ type BodyPayments struct {
 
 type PaymentHandler struct {
 	// Sessions           sessrep.SessionRepository
-	Manager            *sessrep.RedisManager
-	Payments           paymentsrep.PaymentRepository
+	SessionsManager            *sessrep.RedisManager
+	PaymentsManager           *paymentsrep.PaymentManager
 	Subscriptions      subscriptions.SubscriptionRepository
 	SubscriptionLevels subscriptionlevels.SubscribeLevelRepository
 }
 
 func CreatePaymentHandlerViaRepos(manager *sessrep.RedisManager,
-	payments paymentsrep.PaymentRepository,
+	payments *paymentsrep.PaymentManager,
 	subsciptions subscriptions.SubscriptionRepository,
 	subscriptionLevels subscriptionlevels.SubscribeLevelRepository,
 ) *PaymentHandler {
 	return &PaymentHandler{
-		Manager:            manager,
-		Payments:           payments,
+		SessionsManager:            manager,
+		PaymentsManager:           payments,
 		Subscriptions:      subsciptions,
 		SubscriptionLevels: subscriptionLevels,
 	}
 }
 
 func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (Result, error) {
-	if !auth.CheckAuthorizationManager(ctx, p.Manager) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionsManager) {
 		return Result{}, ErrUnathorized
 	}
 	fmt.Println(form.Body.DonaterId, form.Body.CreatorId)
@@ -68,7 +68,7 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 		return Result{}, ErrDataBase
 	}
 	payment.PaymentInteger = uint(val)
-	id, err := p.Payments.CreateNewPayment(payment)
+	id, err := p.PaymentsManager.CreateNewPayment(payment)
 	if err != nil {
 		//think
 		return Result{}, ErrDataBase
@@ -78,7 +78,7 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 	c := cron.New()
 	_, err = c.AddFunc("* * * * *", func() {
 		fmt.Println("joba")
-		pay.CheckPaymentStatusAPI(p.Payments, payment)
+		pay.CheckPaymentStatusAPI(p.PaymentsManager, payment)
 		if payment.Status != model.PaymentWaitingStatus {
 			levels, err := p.SubscriptionLevels.GetUserLevels(payment.CreatorId)
 			if err != nil {
@@ -131,7 +131,7 @@ func (p *PaymentHandler) GetUsersDonatesStratagy(ctx context.Context, form Payme
 		return Result{}, ErrBadID
 	}
 
-	payments, err := p.Payments.GetPaymentsByUserId(uint(id))
+	payments, err := p.PaymentsManager.GetPaymentsByUserId(uint(id))
 	if err != nil {
 		//think
 		return Result{}, ErrDataBase
