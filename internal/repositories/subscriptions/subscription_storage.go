@@ -63,7 +63,11 @@ func (storage *SubscriptionsStorage) AddNewSubscription(subscription model.Subsc
 	var subId int
 	var err error
 	if (subscription.Id != 0) {
-		err = InsertOrUpdateSubscriptionSQL(subscription).RunWith(storage.db).QueryRow().Scan(&subId)
+		rows, err := InsertOrUpdateSubscriptionSQL(subscription).RunWith(storage.db).Query()
+		defer rows.Close()
+		if err != nil {
+			return 0, err
+		}
 		subId = int(subscription.Id)
 	} else {
 		err = InsertSubscriptionSQL(subscription).RunWith(storage.db).QueryRow().Scan(&subId)
