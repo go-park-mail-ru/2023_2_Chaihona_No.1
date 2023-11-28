@@ -37,6 +37,16 @@ func InsertSubscriptionSQL(subsciption model.Subscription) squirrel.InsertBuilde
 		PlaceholderFormat(squirrel.Dollar)
 }
 
+func InsertOrUpdateSubscriptionSQL(subsciption model.Subscription) squirrel.InsertBuilder {
+	return squirrel.Insert(configs.SubscriptionTable).
+		Columns("id", "creator_id", "subscriber_id", "subscription_level_id").
+		Values(subsciption.Id, subsciption.Creator_id, subsciption.Subscriber_id, subsciption.Subscription_level_id).
+		Suffix(fmt.Sprintf("ON DUPLICATE KEY UPDATE creator_id=%d, subscriber_id=%d, subscription_level_id=%d", 
+												subsciption.Creator_id, subsciption.Subscriber_id, subsciption.Subscription_level_id)).
+		// Suffix("RETURNING \"id\"").
+		PlaceholderFormat(squirrel.Dollar)
+}
+
 func DeleteSubscriptionSQL(levelId, subId int) squirrel.DeleteBuilder {
 	return squirrel.Delete(configs.SubscriptionTable).
 		Where(squirrel.Eq{"subscription_level_id": levelId, "subscriber_id":subId}).
@@ -51,7 +61,13 @@ func CreateSubscriptionsStorage(db *sql.DB) *SubscriptionsStorage {
 
 func (storage *SubscriptionsStorage) AddNewSubscription(subscription model.Subscription) (int, error) {
 	var subId int
-	err := InsertSubscriptionSQL(subscription).RunWith(storage.db).QueryRow().Scan(&subId)
+	var err error
+	if (subscription.Id != 0) {
+		err = InsertOrUpdateSubscriptionSQL(subscription).RunWith(storage.db).QueryRow().Scan(&subId)
+		subId = int(subscription.Id)
+	} else {
+		err = InsertSubscriptionSQL(subscription).RunWith(storage.db).QueryRow().Scan(&subId)
+	}
 	if err != nil {
 		return 0, err
 	}

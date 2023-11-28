@@ -115,6 +115,7 @@ func (f FileForm) IsEmpty() bool {
 type FollowForm struct {
 	Body struct {
 		SubscriptionLevelId int `json:"id"`
+		SubscriptionId int `json:"subscription_id"`
 	} `json:"body"`
 }
 

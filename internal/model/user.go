@@ -21,4 +21,5 @@ type User struct {
 	Subscribers  uint   `json:"-" db:"subscribers"`
 	IsFollowed bool `json:"-" db:"is_followed"`
 	VisiterSubscriptionLevelId int `json:"visiter_subscription_level_id" db:"visiter_subscription_level_id"`
+	SubscriptionId int `json:"visiter_subscription_id" db:"visiter_subscription_id"`
 }
