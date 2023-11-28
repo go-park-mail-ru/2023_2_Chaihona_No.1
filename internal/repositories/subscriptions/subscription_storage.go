@@ -41,7 +41,7 @@ func InsertOrUpdateSubscriptionSQL(subsciption model.Subscription) squirrel.Inse
 	return squirrel.Insert(configs.SubscriptionTable).
 		Columns("id", "creator_id", "subscriber_id", "subscription_level_id").
 		Values(subsciption.Id, subsciption.Creator_id, subsciption.Subscriber_id, subsciption.Subscription_level_id).
-		Suffix(fmt.Sprintf("ON DUPLICATE KEY UPDATE creator_id=%d, subscriber_id=%d, subscription_level_id=%d", 
+		Suffix(fmt.Sprintf(" ON DUPLICATE KEY UPDATE creator_id=%d, subscriber_id=%d, subscription_level_id=%d", 
 												subsciption.Creator_id, subsciption.Subscriber_id, subsciption.Subscription_level_id)).
 		// Suffix("RETURNING \"id\"").
 		PlaceholderFormat(squirrel.Dollar)
