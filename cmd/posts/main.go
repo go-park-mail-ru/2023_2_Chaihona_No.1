@@ -29,6 +29,6 @@ func main() {
 
 	posts.RegisterPostsServiceServer(server, posts.CreatePostStore(db.GetDB()))
 
-	fmt.Println("starting server at :8082")
+	fmt.Println("starting server at :8083")
 	server.Serve(lis)
 }
