@@ -106,6 +106,11 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 	}
 	for i := range posts {
 		posts[i].CreationDate = posts[i].CreationDateSQL.Time.Format("2006-01-02 15:04")
+		if !posts[i].HasAccess {
+			posts[i].Attaches = "";
+			posts[i].Body = "";
+			posts[i].Comments = []model.Comment{};
+		}
 	}
 	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
 	if errPost != nil {
