@@ -16,9 +16,9 @@ message TagsGRPC {
 
 message CommentGRPC {
 	uint32 id = 1;
-	UserGRPC user = 2;
-	string text = 3; 
-	string creation_date = 4;
+	uint32 user_id = 2;
+  uint32 post_id = 3;
+	string text = 4; 
 }
 
 message CommentsGRPC {

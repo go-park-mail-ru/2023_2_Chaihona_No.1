@@ -139,3 +139,18 @@ func (f RatingForm) IsValide() bool {
 func (f RatingForm) IsEmpty() bool {
 	return false
 }
+
+type CommentForm struct {
+	Body struct {
+		PostId int `json:"post_id"`
+		Text string	`json:"text"`
+	}
+}
+
+func (f CommentForm) IsValide() bool {
+	return true
+}
+
+func (f CommentForm) IsEmpty() bool {
+	return false
+}

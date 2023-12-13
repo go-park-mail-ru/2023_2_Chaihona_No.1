@@ -24,6 +24,7 @@ const (
 	AttachTable         = "public.post_attach"
 	LikeTable           = "public.post_like"
 	PaymentTable        = "public.payment"
+	CommentTable = "public.post_comment"
 
 	RedisServerIP   = "127.0.0.1"
 	RedisServerPort = "6379"

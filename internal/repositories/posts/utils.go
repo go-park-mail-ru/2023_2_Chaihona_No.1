@@ -10,25 +10,10 @@ func PostToPostGRPC(post *model.Post) *PostGRPC {
 	for i, comment := range comments {
 		commentsMap[int32(i)] = &CommentGRPC{
 			Id: uint32(comment.ID),
-			User: &UserGRPC{
-				Id:                         uint32(comment.User.ID),
-				Nickname:                   comment.User.Nickname,
-				Login:                      comment.User.Login,
-				Password:                   comment.User.Password,
-				UserType:                   comment.User.UserType,
-				Status:                     comment.User.Status,
-				Avatar:                     comment.User.Avatar,
-				Background:                 comment.User.Background,
-				Description:                comment.User.Description,
-				CreatedAt:                  comment.User.CreationDate,
-				UpdatedAt:                  comment.User.LastUpdate,
-				IsAuthor:                   comment.User.Is_author,
-				Subscribers:                uint32(comment.User.Subscribers),
-				IsFollowed:                 comment.User.IsFollowed,
-				VisiterSubscriptionLevelId: int32(comment.User.VisiterSubscriptionLevelId),
-			},
+			UserId: uint32(comment.PostId),
+			PostId: uint32(comment.PostId),
 			Text:         comment.Text,
-			CreationDate: comment.CreationDate,
+			// CreationDate: comment.CreationDate,
 		}
 	}
 
@@ -68,25 +53,9 @@ func PostGRPCToPost(post *PostGRPC) *model.Post{
 	for _, comment := range post.Comments.CommentsMap {
 		comments = append(comments, model.Comment{
 			ID: uint(comment.Id),
-			User: model.User{
-				ID:                         uint(comment.User.Id),
-				Nickname:                   comment.User.Nickname,
-				Login:                      comment.User.Login,
-				Password:                   comment.User.Password,
-				UserType:                   comment.User.UserType,
-				Status:                     comment.User.Status,
-				Avatar:                     comment.User.Avatar,
-				Background:                 comment.User.Background,
-				Description:                comment.User.Description,
-				CreationDate:               comment.User.CreatedAt,
-				LastUpdate:                 comment.User.UpdatedAt,
-				Is_author:                  comment.User.IsAuthor,
-				Subscribers:                uint(comment.User.Subscribers),
-				IsFollowed:                 comment.User.IsFollowed,
-				VisiterSubscriptionLevelId: int(comment.User.VisiterSubscriptionLevelId),
-			},
+			UserId: int(comment.PostId),
+			PostId: int(comment.PostId),
 			Text:         comment.Text,
-			CreationDate: comment.CreationDate,
 		})
 	}
 

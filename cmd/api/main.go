@@ -12,6 +12,7 @@ import (
 	_ "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/docs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/attaches"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/comments"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/likes"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/payments"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
@@ -72,6 +73,7 @@ func main() {
 	sessManager := &sessrep.RedisManager{sessrep.NewAuthCheckerClient(grcpConnSessions)}
 	payManager := &payments.PaymentManager{payments.NewPaymentsServiceClient(grcpConnPayments)}
 	postManager := &posts.PostManager{posts.NewPostsServiceClient(grcpConnPosts)}
+	commentManager := &comments.CommentManager{comments.NewCommentServiceClient(grcpConnPosts)}
 	// err = db.MigrateUp()
 	// if err != nil {
 	// 	fmt.Println(err)
@@ -93,7 +95,7 @@ func main() {
 
 	rep := handlers.CreateRepoHandler(sessManager, userStoarge, levelStorage)
 	profileHandler := handlers.CreateProfileHandlerViaRepos(sessManager, userStoarge, levelStorage, subsStorage, paymentStorage)
-	postHandler := handlers.CreatePostHandlerViaRepos(sessManager, postManager, likeStorage, attachStorage)
+	postHandler := handlers.CreatePostHandlerViaRepos(sessManager, postManager, likeStorage, attachStorage, commentManager)
 	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessManager, payManager, subsStorage, subscriptionLevelsStorage)
 	fileHandler := handlers.CreateFileHandler(sessManager, userStoarge, attachStorage)
 	csatHandler := handlers.CreateCSATHandler(sessManager,questionsStorage)
@@ -139,6 +141,10 @@ func main() {
 	r.HandleFunc("/api/v1/post/{id:[0-9]+}/attaches", handlers.NewWrapper(fileHandler.LoadAttachesStratagy).ServeHTTP).Methods("GET")
 
 	r.HandleFunc("/api/v1/search/{nickname:.*}", handlers.NewWrapper(profileHandler.Search).ServeHTTP).Methods("GET")
+
+	r.HandleFunc("/api/v1/comment", handlers.NewWrapper(postHandler.CreateNewPostStrategy).ServeHTTP).Methods("POST")
+	r.HandleFunc("/api/v1/comment/{id:[0-9]+}", handlers.NewWrapper(postHandler.DeleteCommentStrategy).ServeHTTP).Methods("DELETE")
+	r.HandleFunc("/api/v1/comment/{id:[0-9]+}", handlers.NewWrapper(postHandler.ChangeCommentStrategy).ServeHTTP).Methods("POST")
 	fmt.Println("Server started")
 	err = http.ListenAndServe(configs.BackendServerPort, r)
 	fmt.Println(err)

@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/attaches"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/comments"
 	likesrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/likes"
 	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
@@ -32,15 +33,17 @@ type PostHandler struct {
 	// Posts   postsrep.PostRepository
 	Likes   likesrep.LikeRepository
 	Attaches attaches.AttachRepository
+	Comments *comments.CommentManager
 }
 
 func CreatePostHandlerViaRepos(manager *sessrep.RedisManager, posts *postsrep.PostManager,
-	likes likesrep.LikeRepository, attaches attaches.AttachRepository) *PostHandler {
+	likes likesrep.LikeRepository, attaches attaches.AttachRepository, comments *comments.CommentManager) *PostHandler {
 	return &PostHandler{
 		manager,
 		posts,
 		likes,
 		attaches,
+		comments,
 	}
 }
 
@@ -356,6 +359,93 @@ func (p *PostHandler) UnlikePostStrategy(ctx context.Context, form EmptyForm) (R
 
 	err = p.Likes.DeleteLike(int(session.UserID), id)
 	if err != nil {
+		return Result{}, ErrDataBase
+	}
+
+	return Result{}, nil
+}
+
+func (p *PostHandler) AddCommentStratagy(ctx context.Context, form CommentForm) (Result, error) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionsManager) {
+		return Result{}, ErrUnathorized
+	}
+
+	cookie := auth.GetSession(ctx)
+	if cookie == nil {
+		return Result{}, ErrNoCookie
+	}
+	session, ok := p.SessionsManager.CheckSessionCtxWrapper(ctx, cookie.Value)
+	if !ok {
+		return Result{}, ErrNoSession
+	}
+
+	comment := model.Comment{
+		UserId: int(session.UserID),
+		PostId: form.Body.PostId,
+		Text: form.Body.Text,
+	}
+	commentId, err := p.Comments.CreateComment(comment)
+	if err != nil {
+		//think
+		return Result{}, ErrDataBase
+	}
+
+	bodyResponse := map[string]interface{}{
+		"id": commentId,
+	}
+	return Result{Body: bodyResponse}, nil
+}
+
+func (p *PostHandler) DeleteCommentStrategy(ctx context.Context, form EmptyForm) (Result, error) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionsManager) {
+		return Result{}, ErrUnathorized
+	}
+
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
+
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return Result{}, ErrBadID
+	}
+
+	err = p.Comments.DeleteComment(uint(id))
+	if err != nil {
+		//think
+		return Result{}, ErrDataBase
+	}
+	return Result{}, nil
+}
+
+func (p *PostHandler) ChangeCommentStrategy(ctx context.Context, form CommentForm) (Result, error) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionsManager) {
+		return Result{}, ErrUnathorized
+	}
+
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
+	_, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return Result{}, ErrBadID
+	}
+
+	commentId, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		return Result{}, ErrBadID
+	}
+	comment := model.Comment{
+		ID:            uint(commentId),
+		PostId:        form.Body.PostId,
+		Text:          form.Body.Text,
+	}
+
+	err = p.Comments.ChangeComment(comment)
+	if err != nil {
+		//think
 		return Result{}, ErrDataBase
 	}
 
