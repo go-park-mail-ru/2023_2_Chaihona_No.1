@@ -26,7 +26,7 @@ type Post struct {
 	Header        string    `json:"header" db:"header"`
 	Body          string    `json:"body,omitempty" db:"body"`
 	Likes         uint      `json:"likes" db:"likes"`
-	Comments      []Comment `json:"comments,omitempty" db:""`
+	Comments      []Comment `json:"comments,omitempty" db:"comments"`
 	Tags          []Tag     `json:"tags" db:""`
 	Attaches      string    `json:"attaches" db:"attaches"`
 	IsLiked bool `json:"is_liked" db:"is_liked"`
