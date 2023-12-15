@@ -337,6 +337,24 @@ func (storage *PostStorage) GetPostsByAuthorIdForStrangerCtx(ctx context.Context
 	if err != nil {
 		return &PostsMapGRPC{}, err
 	}
+
+	
+	for i := range posts {
+		if !posts[i].HasAccess {
+			continue
+		}
+		rows, err := SelectPostCommentsSQL(int(posts[i].ID)).RunWith(storage.db).Query()
+		if err != nil && err != sql.ErrNoRows {
+			return &PostsMapGRPC{}, err
+		}
+		var comments []model.Comment
+		err = dbscan.ScanAll(&comments, rows)
+		if err != nil {
+			return &PostsMapGRPC{}, err
+		}
+		posts[i].Comments = comments
+	}
+
 	postsMap := &PostsMapGRPC{}
 	postsMap.Posts = make(map[int32]*PostGRPC)
 	for i, post := range posts {
@@ -452,6 +470,22 @@ func (storage *PostStorage) GetPostsByAuthorIdForFollowerCtx(ctx context.Context
 	err = dbscan.ScanAll(&posts, rows)
 	if err != nil {
 		return &PostsMapGRPC{}, err
+	}
+
+	for i := range posts {
+		if !posts[i].HasAccess {
+			continue
+		}
+		rows, err := SelectPostCommentsSQL(int(posts[i].ID)).RunWith(storage.db).Query()
+		if err != nil && err != sql.ErrNoRows {
+			return &PostsMapGRPC{}, err
+		}
+		var comments []model.Comment
+		err = dbscan.ScanAll(&comments, rows)
+		if err != nil {
+			return &PostsMapGRPC{}, err
+		}
+		posts[i].Comments = comments
 	}
 
 	postsMap := &PostsMapGRPC{}
