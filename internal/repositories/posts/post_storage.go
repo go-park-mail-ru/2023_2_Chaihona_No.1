@@ -41,7 +41,7 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 
 func SelectPostCommentsSQL(postId int) squirrel.SelectBuilder{
 	return squirrel.Select("c.*").
-		From(configs.CommentTable).
+		From(configs.CommentTable + " c").
 		Where(squirrel.Eq{
 			"c.post_id": postId,
 		}).
