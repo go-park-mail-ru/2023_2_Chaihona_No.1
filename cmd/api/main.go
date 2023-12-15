@@ -142,7 +142,7 @@ func main() {
 
 	r.HandleFunc("/api/v1/search/{nickname:.*}", handlers.NewWrapper(profileHandler.Search).ServeHTTP).Methods("GET")
 
-	r.HandleFunc("/api/v1/comment", handlers.NewWrapper(postHandler.CreateNewPostStrategy).ServeHTTP).Methods("POST")
+	r.HandleFunc("/api/v1/comment", handlers.NewWrapper(postHandler.AddCommentStratagy).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/comment/{id:[0-9]+}", handlers.NewWrapper(postHandler.DeleteCommentStrategy).ServeHTTP).Methods("DELETE")
 	r.HandleFunc("/api/v1/comment/{id:[0-9]+}", handlers.NewWrapper(postHandler.ChangeCommentStrategy).ServeHTTP).Methods("POST")
 	fmt.Println("Server started")
