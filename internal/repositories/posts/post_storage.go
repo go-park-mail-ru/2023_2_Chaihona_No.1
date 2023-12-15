@@ -99,10 +99,10 @@ func SelectOwnUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuil
 		"sl1.level as min_sub_level, "+
 		"array_agg(DISTINCT pa.file_path) as attaches, "+
 		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
-		"array_agg(DISTINCT pc) as comments, " +
+		// "array_agg(DISTINCT pc) as comments, " +
 		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", subscriberId)).
 		From(configs.PostTable+" p").
-		LeftJoin(configs.CommentTable + " pc ON p.id = pc.post_id").
+		// LeftJoin(configs.CommentTable + " pc ON p.id = pc.post_id").
 		LeftJoin(configs.AttachTable+" pa ON p.id = pa.post_id").
 		LeftJoin(configs.LikeTable+" pl ON p.id = pl.post_id").
 		InnerJoin(configs.SubscribeLevelTable+" sl1 ON p.min_subscription_level_id = sl1.id").
