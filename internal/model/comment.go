@@ -6,4 +6,5 @@ type Comment struct {
 	PostId	int `json:"post_id" db:"post_id"`
 	Text         string `json:"text" db:"text"`
 	CreationDate string `json:"created_at" db:"created_at"`
+	UpdatedAt string `json:"updated_at" db:"-"`
 }
