@@ -39,6 +39,16 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
+func SelectPostCommentsSQL(postId int) squirrel.SelectBuilder{
+	return squirrel.Select("c.*").
+		From(configs.CommentTable).
+		Where(squirrel.Eq{
+			"c.post_id": postId,
+		}).
+		PlaceholderFormat(squirrel.Dollar)
+}
+
+
 // For followed users
 func SelectUserPostsForFollowerSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder {
 	return squirrel.Select("p.*, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access, "+
@@ -375,8 +385,22 @@ func (storage *PostStorage) GetOwnPostsByAuthorIdCtx(ctx context.Context, ids *A
 	}
 	var posts []model.Post
 	err = dbscan.ScanAll(&posts, rows)
+	// err = rows.Scan(&)
 	if err != nil {
 		return &PostsMapGRPC{}, err
+	}
+
+	for i := range posts {
+		rows, err := SelectPostCommentsSQL(int(posts[i].ID)).RunWith(storage.db).Query()
+		if err != nil && err != sql.ErrNoRows {
+			return &PostsMapGRPC{}, err
+		}
+		var comments []model.Comment
+		err = dbscan.ScanAll(&comments, rows)
+		if err != nil {
+			return &PostsMapGRPC{}, err
+		}
+		posts[i].Comments = comments
 	}
 
 	postsMap := &PostsMapGRPC{}
