@@ -1,12 +1,9 @@
 package comments
 
-import (
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
-)
+import "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 
-func CommentToCommentGRPC(comment *model.Comment) *posts.CommentGRPC {
-	return &posts.CommentGRPC{
+func CommentToCommentGRPC(comment *model.Comment) *CommentGRPC {
+	return &CommentGRPC{
 		Id:            uint32(comment.ID),
 		PostId: uint32(comment.PostId),
 		UserId: uint32(comment.UserId),
@@ -14,7 +11,7 @@ func CommentToCommentGRPC(comment *model.Comment) *posts.CommentGRPC {
 	}
 }
 
-func CommentGRPCToComment(comment *posts.CommentGRPC) *model.Comment{
+func CommentGRPCToComment(comment *CommentGRPC) *model.Comment{
 	return &model.Comment{
 		ID:            uint(comment.Id),
 		UserId: int(comment.UserId),

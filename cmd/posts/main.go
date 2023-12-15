@@ -6,6 +6,7 @@ import (
 	"net"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/db/postgresql"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/comments"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 
 	"google.golang.org/grpc"
@@ -28,6 +29,7 @@ func main() {
 	defer db.Close()
 
 	posts.RegisterPostsServiceServer(server, posts.CreatePostStore(db.GetDB()))
+	comments.RegisterCommentServiceServer(server, comments.CreateCommentStore(db.GetDB()))
 
 	fmt.Println("starting server at :8083")
 	server.Serve(lis)

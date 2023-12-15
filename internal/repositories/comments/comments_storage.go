@@ -8,7 +8,6 @@ import (
 	"github.com/Masterminds/squirrel"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
-	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 )
 
 func InsertCommentSQL(comment model.Comment) squirrel.InsertBuilder {
@@ -36,13 +35,13 @@ func UpdateCommentSQL(comment model.Comment) squirrel.UpdateBuilder {
 
 type CommentStorage struct {
 	db *sql.DB
-	// UnimplementedCommentServiceServer
-	posts.UnimplementedPostsServiceServer
+	UnimplementedCommentServiceServer
+	// posts.UnimplementedPostsServiceServer
 }
 
 type CommentManager struct {
-	// CLient CommentServiceClient
-	CLient posts.PostsServiceClient
+	CLient CommentServiceClient
+	// CLient posts.PostsServiceClient
 }
 
 func CreateCommentStore(db *sql.DB) *CommentStorage {
@@ -60,29 +59,29 @@ func (manager *CommentManager) CreateComment(comment model.Comment) (int, error)
 	return int(id.I), err
 }
 
-func (storage *CommentStorage) CreateCommentCtx(ctx context.Context, comment *posts.CommentGRPC) (*posts.Int, error) {
+func (storage *CommentStorage) CreateCommentCtx(ctx context.Context, comment *CommentGRPC) (*Int, error) {
 	var commentId int
 
 	err := InsertCommentSQL(*CommentGRPCToComment(comment)).RunWith(storage.db).QueryRow().Scan(&commentId)
 	if err != nil {
-		return &posts.Int{I: 0}, err
+		return &Int{I: 0}, err
 	}
 
-	return &posts.Int{I: int32(commentId)}, nil
+	return &Int{I: int32(commentId)}, nil
 }
 
 func (manager *CommentManager) DeleteComment(id uint) error {
-	_, err := manager.CLient.DeleteCommentCtx(context.Background(), &posts.UInt{Id: uint32(id)})
+	_, err := manager.CLient.DeleteCommentCtx(context.Background(), &UInt{Id: uint32(id)})
 	return err
 }
 
-func (storage *CommentStorage) DeleteCommentCtx(ctx context.Context, id *posts.UInt) (*posts.Nothing, error) {
+func (storage *CommentStorage) DeleteCommentCtx(ctx context.Context, id *UInt) (*Nothing, error) {
 	rows, err := DeleteCommentSQL(uint(id.Id)).RunWith(storage.db).Query()
 	if err != nil {
-		return &posts.Nothing{}, err
+		return &Nothing{}, err
 	}
 	defer rows.Close()
-	return &posts.Nothing{}, nil
+	return &Nothing{}, nil
 }
 
 func (manager *CommentManager) ChangeComment(comment model.Comment) error {
@@ -91,11 +90,11 @@ func (manager *CommentManager) ChangeComment(comment model.Comment) error {
 	return err
 }
 
-func (storage *CommentStorage) ChangeCommentCtx(ctx context.Context, post *posts.CommentGRPC) (*posts.Nothing, error) {
+func (storage *CommentStorage) ChangeCommentCtx(ctx context.Context, post *CommentGRPC) (*Nothing, error) {
 	rows, err := UpdateCommentSQL(*CommentGRPCToComment(post)).RunWith(storage.db).Query()
 	if err != nil {
-		return &posts.Nothing{}, err
+		return &Nothing{}, err
 	}
 	defer rows.Close()
-	return &posts.Nothing{}, nil
+	return &Nothing{}, nil
 }
