@@ -30,6 +30,9 @@ type PostsServiceClient interface {
 	GetOwnPostsByAuthorIdCtx(ctx context.Context, in *AuthorSubscriberId, opts ...grpc.CallOption) (*PostsMapGRPC, error)
 	GetPostsByAuthorIdForFollowerCtx(ctx context.Context, in *AuthorSubscriberId, opts ...grpc.CallOption) (*PostsMapGRPC, error)
 	GetUsersFeedCtx(ctx context.Context, in *UInt, opts ...grpc.CallOption) (*PostsMapGRPC, error)
+	CreateCommentCtx(ctx context.Context, in *CommentGRPC, opts ...grpc.CallOption) (*Int, error)
+	DeleteCommentCtx(ctx context.Context, in *UInt, opts ...grpc.CallOption) (*Nothing, error)
+	ChangeCommentCtx(ctx context.Context, in *CommentGRPC, opts ...grpc.CallOption) (*Nothing, error)
 }
 
 type postsServiceClient struct {
@@ -112,6 +115,33 @@ func (c *postsServiceClient) GetUsersFeedCtx(ctx context.Context, in *UInt, opts
 	return out, nil
 }
 
+func (c *postsServiceClient) CreateCommentCtx(ctx context.Context, in *CommentGRPC, opts ...grpc.CallOption) (*Int, error) {
+	out := new(Int)
+	err := c.cc.Invoke(ctx, "/posts.PostsService/CreateCommentCtx", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *postsServiceClient) DeleteCommentCtx(ctx context.Context, in *UInt, opts ...grpc.CallOption) (*Nothing, error) {
+	out := new(Nothing)
+	err := c.cc.Invoke(ctx, "/posts.PostsService/DeleteCommentCtx", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *postsServiceClient) ChangeCommentCtx(ctx context.Context, in *CommentGRPC, opts ...grpc.CallOption) (*Nothing, error) {
+	out := new(Nothing)
+	err := c.cc.Invoke(ctx, "/posts.PostsService/ChangeCommentCtx", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PostsServiceServer is the server API for PostsService service.
 // All implementations must embed UnimplementedPostsServiceServer
 // for forward compatibility
@@ -124,6 +154,9 @@ type PostsServiceServer interface {
 	GetOwnPostsByAuthorIdCtx(context.Context, *AuthorSubscriberId) (*PostsMapGRPC, error)
 	GetPostsByAuthorIdForFollowerCtx(context.Context, *AuthorSubscriberId) (*PostsMapGRPC, error)
 	GetUsersFeedCtx(context.Context, *UInt) (*PostsMapGRPC, error)
+	CreateCommentCtx(context.Context, *CommentGRPC) (*Int, error)
+	DeleteCommentCtx(context.Context, *UInt) (*Nothing, error)
+	ChangeCommentCtx(context.Context, *CommentGRPC) (*Nothing, error)
 	mustEmbedUnimplementedPostsServiceServer()
 }
 
@@ -154,6 +187,15 @@ func (UnimplementedPostsServiceServer) GetPostsByAuthorIdForFollowerCtx(context.
 }
 func (UnimplementedPostsServiceServer) GetUsersFeedCtx(context.Context, *UInt) (*PostsMapGRPC, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUsersFeedCtx not implemented")
+}
+func (UnimplementedPostsServiceServer) CreateCommentCtx(context.Context, *CommentGRPC) (*Int, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateCommentCtx not implemented")
+}
+func (UnimplementedPostsServiceServer) DeleteCommentCtx(context.Context, *UInt) (*Nothing, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteCommentCtx not implemented")
+}
+func (UnimplementedPostsServiceServer) ChangeCommentCtx(context.Context, *CommentGRPC) (*Nothing, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ChangeCommentCtx not implemented")
 }
 func (UnimplementedPostsServiceServer) mustEmbedUnimplementedPostsServiceServer() {}
 
@@ -312,6 +354,60 @@ func _PostsService_GetUsersFeedCtx_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PostsService_CreateCommentCtx_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CommentGRPC)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PostsServiceServer).CreateCommentCtx(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/posts.PostsService/CreateCommentCtx",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PostsServiceServer).CreateCommentCtx(ctx, req.(*CommentGRPC))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PostsService_DeleteCommentCtx_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UInt)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PostsServiceServer).DeleteCommentCtx(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/posts.PostsService/DeleteCommentCtx",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PostsServiceServer).DeleteCommentCtx(ctx, req.(*UInt))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PostsService_ChangeCommentCtx_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CommentGRPC)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PostsServiceServer).ChangeCommentCtx(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/posts.PostsService/ChangeCommentCtx",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PostsServiceServer).ChangeCommentCtx(ctx, req.(*CommentGRPC))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PostsService_ServiceDesc is the grpc.ServiceDesc for PostsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -350,6 +446,18 @@ var PostsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUsersFeedCtx",
 			Handler:    _PostsService_GetUsersFeedCtx_Handler,
+		},
+		{
+			MethodName: "CreateCommentCtx",
+			Handler:    _PostsService_CreateCommentCtx_Handler,
+		},
+		{
+			MethodName: "DeleteCommentCtx",
+			Handler:    _PostsService_DeleteCommentCtx_Handler,
+		},
+		{
+			MethodName: "ChangeCommentCtx",
+			Handler:    _PostsService_ChangeCommentCtx_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

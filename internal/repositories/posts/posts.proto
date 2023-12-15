@@ -95,4 +95,8 @@ service PostsService {
 	rpc GetOwnPostsByAuthorIdCtx(AuthorSubscriberId) returns (PostsMapGRPC) {}
 	rpc GetPostsByAuthorIdForFollowerCtx(AuthorSubscriberId) returns (PostsMapGRPC) {}
 	rpc GetUsersFeedCtx(UInt) returns (PostsMapGRPC) {}
+
+	rpc CreateCommentCtx (CommentGRPC) returns (Int) {}
+	rpc DeleteCommentCtx(UInt) returns (Nothing) {}
+	rpc ChangeCommentCtx(CommentGRPC) returns (Nothing) {}
 }
