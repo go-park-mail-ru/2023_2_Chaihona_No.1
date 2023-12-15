@@ -3,6 +3,7 @@ package comments
 import (
 	context "context"
 	"database/sql"
+	"fmt"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
@@ -49,7 +50,8 @@ func CreateCommentStore(db *sql.DB) *CommentStorage {
 
 func (manager *CommentManager) CreateComment(comment model.Comment) (int, error) {
 	id, err := manager.CLient.CreateCommentCtx(context.Background(), CommentToCommentGRPC(&comment))
-
+	fmt.Println(id);
+	fmt.Println(id.I);
 	return int(id.I), err
 }
 
