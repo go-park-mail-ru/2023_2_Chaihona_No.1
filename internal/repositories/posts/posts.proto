@@ -25,6 +25,11 @@ message CommentsGRPC {
 	map<int32, CommentGRPC> comments_map = 1;
 }
 
+
+message CommentsMapGRPC {
+  map<int32, CommentsGRPC> comments = 1;
+}
+
 message UserGRPC {
 	uint32 id = 1;
 	string nickname = 2;
