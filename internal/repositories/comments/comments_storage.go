@@ -50,8 +50,10 @@ func CreateCommentStore(db *sql.DB) *CommentStorage {
 
 func (manager *CommentManager) CreateComment(comment model.Comment) (int, error) {
 	id, err := manager.CLient.CreateCommentCtx(context.Background(), CommentToCommentGRPC(&comment))
-	fmt.Println(id);
-	fmt.Println(id.I);
+	fmt.Println(err)
+	if err != nil {
+		return 0, err
+	}
 	return int(id.I), err
 }
 
