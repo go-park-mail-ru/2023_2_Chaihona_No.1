@@ -58,6 +58,7 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 	responseUkassa, err := pay.Donate(payment)
 	if err != nil {
 		//think
+		log.Println(err)
 		return Result{}, ErrDataBase
 	}
 
@@ -75,11 +76,13 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 	integer, err := strconv.Atoi(splitedValue[0])
 	if err != nil {
 		//think
+		log.Println(err)
 		return Result{}, ErrDataBase
 	}
 	fractional, err := strconv.Atoi(splitedValue[1])
 	if err != nil {
 		//think
+		log.Println(err)
 		return Result{}, ErrDataBase
 	}
 	payment.PaymentInteger = uint(integer)
@@ -87,6 +90,7 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 	id, err := p.PaymentsManager.CreateNewPayment(payment)
 	if err != nil {
 		//think
+		log.Println(err)
 		return Result{}, ErrDataBase
 	}
 	payment.Id = id
@@ -131,6 +135,7 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 
 	if err != nil {
 		//think
+		log.Println(err)
 		return Result{}, ErrDataBase
 	}
 
