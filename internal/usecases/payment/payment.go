@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -54,7 +53,6 @@ func Donate(paymentDB model.Payment) (model.ResponseUKassa, error) {
 		log.Println(err)
 		return model.ResponseUKassa{}, err
 	} 
-	fmt.Println(configs.ShopId, string(file), base64.StdEncoding.EncodeToString([]byte(configs.ShopId + ":" + string(file))))
 	req.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(configs.ShopId + ":" + string(file))))
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -70,7 +68,6 @@ func Donate(paymentDB model.Payment) (model.ResponseUKassa, error) {
 		log.Println(err)
 		return model.ResponseUKassa{}, err
 	}
-	fmt.Println(responseUKassa)
 	return responseUKassa, nil
 }
 
@@ -88,7 +85,7 @@ func requestPaymentStatusAPI(payment model.Payment) (int, error) {
 		log.Println(err)
 		return 0, err
 	} 
-	req.Header.Set("Authorization", base64.StdEncoding.EncodeToString([]byte(configs.ShopId + ":" + string(file))))
+	req.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(configs.ShopId + ":" + string(file))))
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
