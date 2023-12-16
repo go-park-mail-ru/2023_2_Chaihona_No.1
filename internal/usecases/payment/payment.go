@@ -80,8 +80,10 @@ func requestPaymentStatusAPI(payment model.Payment) (int, error) {
 		log.Println(err)
 		return 0, err
 	} 
-	req.Header.Set("Idempotence-Key", payment.UUID)
-	file, err := os.ReadFile("API_key")
+	// req.Header.Set("Idempotence-Key", payment.UUID)
+	fileDir, _ := os.Getwd()
+	filePath := filepath.Join(fileDir, "API_key")
+	file, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Println(err)
 		return 0, err
