@@ -76,7 +76,8 @@ func SelectUserByIdSQLWithSubscribers(id int, visiterId int) squirrel.SelectBuil
 			configs.UserTable, configs.UserTable, configs.UserTable,
 			configs.UserTable, configs.UserTable) +
 			fmt.Sprintf("CASE WHEN array_position(array_agg(s.subscriber_id), %d) IS NOT NULL THEN TRUE ELSE FALSE END AS is_followed, ", visiterId) +
-			"CASE WHEN s.subscription_level_id IS NOT NULL THEN s.subscription_level_id ELSE 0 END AS visiter_subscription_level_id").
+			"CASE WHEN s.subscription_level_id IS NOT NULL THEN s.subscription_level_id ELSE 0 END AS visiter_subscription_level_id, " + 
+			"CASE WHEN s.id IS NOT NULL THEN s.id ELSE 0 END AS visiter_subscription_id").
 			From(configs.UserTable).
 		LeftJoin(fmt.Sprintf("%s s ON %s.id = s.creator_id", configs.SubscriptionTable, configs.UserTable)).
 		Suffix(fmt.Sprintf("WHERE %s.id = %d", configs.UserTable, id)).

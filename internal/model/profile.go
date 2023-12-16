@@ -10,4 +10,5 @@ type Profile struct {
 	Goals           []Goal           `json:"goals,omitempty"`
 	IsFollowed bool `json:"is_followed"`
 	VisiterSubscriptionLevelId int `json:"visiter_subscription_level_id"`
+	SubscriptionId int `json:"visiter_subscription_id" db:"visiter_subscription_id"`
 }

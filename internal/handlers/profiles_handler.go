@@ -109,6 +109,7 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 			SubscribeLevels: levels,
 			IsFollowed:      user.IsFollowed,
 			VisiterSubscriptionLevelId: user.VisiterSubscriptionLevelId,
+			SubscriptionId: user.SubscriptionId,
 		}
 		donated, err := p.Payments.GetPaymentsByAuthorId(user.ID)
 		if err != nil {
@@ -327,6 +328,7 @@ func (p *ProfileHandler) FollowStratagy(ctx context.Context, form FollowForm) (R
 	}
 
 	subscription := model.Subscription{
+		Id: uint(form.Body.SubscriptionId),
 		Subscriber_id:         uint(session.UserID),
 		Creator_id:            uint(id),
 		Subscription_level_id: uint(form.Body.SubscriptionLevelId),
