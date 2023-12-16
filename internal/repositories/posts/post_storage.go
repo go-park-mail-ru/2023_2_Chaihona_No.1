@@ -41,7 +41,7 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 
 func SelectPostCommentsSQL(postId, UserId int) squirrel.SelectBuilder{
 	return squirrel.Select("c.*, " +
-		fmt.Sprintf("CASE WHEN c.user_id = %d THEN TRUE ELSE TRUE END AS is_owner")).
+		fmt.Sprintf("CASE WHEN c.user_id = %d THEN TRUE ELSE FALSE END AS is_owner ", UserId)).
 		From(configs.CommentTable + " c").
 		Where(squirrel.Eq{
 			"c.post_id": postId,
