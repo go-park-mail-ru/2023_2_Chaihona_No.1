@@ -10,7 +10,7 @@ func PostToPostGRPC(post *model.Post) *PostGRPC {
 	for i, comment := range comments {
 		commentsMap[int32(i)] = &CommentGRPC{
 			Id: uint32(comment.ID),
-			UserId: uint32(comment.PostId),
+			UserId: uint32(comment.UserId),
 			PostId: uint32(comment.PostId),
 			Text:         comment.Text,
 			// CreationDate: comment.CreationDate,
@@ -53,7 +53,7 @@ func PostGRPCToPost(post *PostGRPC) *model.Post{
 	for _, comment := range post.Comments.CommentsMap {
 		comments = append(comments, model.Comment{
 			ID: uint(comment.Id),
-			UserId: int(comment.PostId),
+			UserId: int(comment.UserId),
 			PostId: int(comment.PostId),
 			Text:         comment.Text,
 		})
