@@ -7,6 +7,7 @@ func CommentToCommentGRPC(comment *model.Comment) *CommentGRPC {
 		Id:            uint32(comment.ID),
 		PostId: uint32(comment.PostId),
 		UserId: uint32(comment.UserId),
+		IsOwner: comment.IsOwner,
 		Text: comment.Text,
 	}
 }
@@ -17,5 +18,6 @@ func CommentGRPCToComment(comment *CommentGRPC) *model.Comment{
 		UserId: int(comment.UserId),
 		PostId: int(comment.PostId),
 		Text: comment.Text,
+		IsOwner: comment.IsOwner,
 	}
 }

@@ -10,6 +10,7 @@ message CommentGRPC {
 	uint32 user_id = 2;
   uint32 post_id = 3;
 	string text = 4; 
+  bool is_owner = 5;
 }
 
 message CommentsGRPC {

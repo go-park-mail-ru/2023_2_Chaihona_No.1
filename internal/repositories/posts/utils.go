@@ -13,6 +13,7 @@ func PostToPostGRPC(post *model.Post) *PostGRPC {
 			UserId: uint32(comment.UserId),
 			PostId: uint32(comment.PostId),
 			Text:         comment.Text,
+			IsOwner: comment.IsOwner,
 			// CreationDate: comment.CreationDate,
 		}
 	}
@@ -56,6 +57,7 @@ func PostGRPCToPost(post *PostGRPC) *model.Post{
 			UserId: int(comment.UserId),
 			PostId: int(comment.PostId),
 			Text:         comment.Text,
+			IsOwner: comment.IsOwner,
 		})
 	}
 

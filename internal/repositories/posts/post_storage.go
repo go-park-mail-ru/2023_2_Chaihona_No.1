@@ -39,8 +39,9 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
-func SelectPostCommentsSQL(postId int) squirrel.SelectBuilder{
-	return squirrel.Select("c.*").
+func SelectPostCommentsSQL(postId, UserId int) squirrel.SelectBuilder{
+	return squirrel.Select("c.*, " +
+		fmt.Sprintf("CASE WHEN c.user_id = %d THEN TRUE ELSE TRUE END AS is_owner")).
 		From(configs.CommentTable + " c").
 		Where(squirrel.Eq{
 			"c.post_id": postId,
@@ -343,7 +344,7 @@ func (storage *PostStorage) GetPostsByAuthorIdForStrangerCtx(ctx context.Context
 		if !posts[i].HasAccess {
 			continue
 		}
-		rows, err := SelectPostCommentsSQL(int(posts[i].ID)).RunWith(storage.db).Query()
+		rows, err := SelectPostCommentsSQL(int(posts[i].ID), int(ids.SubscriberID)).RunWith(storage.db).Query()
 		if err != nil && err != sql.ErrNoRows {
 			return &PostsMapGRPC{}, err
 		}
@@ -409,7 +410,7 @@ func (storage *PostStorage) GetOwnPostsByAuthorIdCtx(ctx context.Context, ids *A
 	}
 
 	for i := range posts {
-		rows, err := SelectPostCommentsSQL(int(posts[i].ID)).RunWith(storage.db).Query()
+		rows, err := SelectPostCommentsSQL(int(posts[i].ID), int(ids.SubscriberID)).RunWith(storage.db).Query()
 		if err != nil && err != sql.ErrNoRows {
 			return &PostsMapGRPC{}, err
 		}
@@ -476,7 +477,7 @@ func (storage *PostStorage) GetPostsByAuthorIdForFollowerCtx(ctx context.Context
 		if !posts[i].HasAccess {
 			continue
 		}
-		rows, err := SelectPostCommentsSQL(int(posts[i].ID)).RunWith(storage.db).Query()
+		rows, err := SelectPostCommentsSQL(int(posts[i].ID), int(ids.SubscriberID)).RunWith(storage.db).Query()
 		if err != nil && err != sql.ErrNoRows {
 			return &PostsMapGRPC{}, err
 		}
