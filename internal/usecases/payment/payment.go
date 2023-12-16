@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
@@ -45,7 +46,9 @@ func Donate(paymentDB model.Payment) (model.ResponseUKassa, error) {
 	} 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Idempotence-Key", paymentDB.UUID)
-	file, err := os.ReadFile("API_key")
+	fileDir, _ := os.Getwd()
+	filePath := filepath.Join(fileDir, "API_key")
+	file, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Println(err)
 		return model.ResponseUKassa{}, err
