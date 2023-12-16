@@ -146,8 +146,10 @@ func main() {
 	r.HandleFunc("/api/v1/comment/{id:[0-9]+}", handlers.NewWrapper(postHandler.DeleteCommentStrategy).ServeHTTP).Methods("DELETE")
 	r.HandleFunc("/api/v1/comment/{id:[0-9]+}", handlers.NewWrapper(postHandler.ChangeCommentStrategy).ServeHTTP).Methods("POST")
 	fmt.Println("Server started")
-	// err = http.ListenAndServe(configs.BackendServerPort, r)
-	err = http.ListenAndServeTLS(configs.BackendServerPort, "/etc/letsencrypt/live/my-kopilka.ru/fullchain.pem",
-		"/etc/letsencrypt/live/my-kopilka.ru/privkey.pem", nil)
+	 err = http.ListenAndServe(configs.BackendServerPort, r)
+	//err = http.ListenAndServeTLS(configs.BackendServerPort, "/etc/letsencrypt/live/my-kopilka.ru/fullchain.pem",
+	//	"/etc/letsencrypt/live/my-kopilka.ru/privkey.pem", nil)
+	//err = http.ListenAndServeTLS(configs.BackendServerPort, "cert.pem", "key.pem", nil)
 	fmt.Println(err)
 }
+
