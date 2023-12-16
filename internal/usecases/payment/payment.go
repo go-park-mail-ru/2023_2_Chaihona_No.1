@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -68,6 +69,7 @@ func Donate(paymentDB model.Payment) (model.ResponseUKassa, error) {
 		log.Println(err)
 		return model.ResponseUKassa{}, err
 	}
+	fmt.Println(responseUKassa)
 	return responseUKassa, nil
 }
 
