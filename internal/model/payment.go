@@ -17,3 +17,39 @@ type Payment struct {
 	Currency          string `json:"currency,omitempty" db:"currency"`
 	Value             string `json:"value,omitempty" db:""`
 }
+
+type Amount struct {
+	Value string `json:"value"`
+	Currency string `json:"currency"`
+} 
+
+type Confirmation struct {
+	Type string `json:"type"`
+	ReturnURL string `json:"return_url,omitempty"`
+	ConfirmationURL string `json:"confirmation_url,omitempty"`
+}
+
+type RequestUKassa struct {
+	Amount `json:"amount"`
+	Capture bool `json:"capture"`
+	Confirmation `json:"confirmation"`
+}
+
+type Recipient struct {
+	AccountId string `json:"account_id"`
+	GatewayId string `json:"gateway_id"`
+}
+
+type ResponseUKassa struct {
+	Id string `json:"id"`
+	Status string `json:"status"`
+	Paid bool `json:"paid"`
+	Amount `json:"amount"`
+	Confirmation `json:"confirmation"`
+	CreatedAt string `json:"created_at"`
+	Description string `json:"description,omitempty"`
+	Metadata interface{} `json:"metadata"`
+	Recipient `json:"recipient"`
+	Refundable bool `json:"refundable"`
+	Test bool `json:"test"`
+}

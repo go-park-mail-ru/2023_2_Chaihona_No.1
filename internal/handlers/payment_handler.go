@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/robfig/cron/v3"
 
@@ -54,20 +55,35 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 		Currency:  form.Body.Currency,
 		Value:     form.Body.Value,
 	}
-	paymentId, redirectURL, err := pay.Donate(payment)
+	responseUkassa, err := pay.Donate(payment)
 	if err != nil {
 		//think
 		return Result{}, ErrDataBase
 	}
 
-	payment.Status = model.PaymentWaitingStatus
-	payment.UUID = paymentId
-	val, err := strconv.Atoi(payment.Value)
+	switch responseUkassa.Status {
+	case "pending":
+		payment.Status = model.PaymentWaitingStatus
+	case "succeeded":
+		payment.Status = model.PaymentSucceededStatus
+	case "canceled":
+		payment.Status = model.PaymentCanceledStatus
+	}
+
+	payment.UUID = responseUkassa.Id
+	splitedValue := strings.Split(responseUkassa.Amount.Value, ".")
+	integer, err := strconv.Atoi(splitedValue[0])
 	if err != nil {
 		//think
 		return Result{}, ErrDataBase
 	}
-	payment.PaymentInteger = uint(val)
+	fractional, err := strconv.Atoi(splitedValue[1])
+	if err != nil {
+		//think
+		return Result{}, ErrDataBase
+	}
+	payment.PaymentInteger = uint(integer)
+	payment.PaymentFractional = uint(fractional)
 	id, err := p.PaymentsManager.CreateNewPayment(payment)
 	if err != nil {
 		//think
@@ -78,7 +94,11 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 	c := cron.New()
 	_, err = c.AddFunc("* * * * *", func() {
 		fmt.Println("joba")
-		pay.CheckPaymentStatusAPI(p.PaymentsManager, payment)
+		payment, err := pay.CheckPaymentStatusAPI(p.PaymentsManager, payment)
+		if err != nil {
+			log.Println(err)
+			return
+		}
 		if payment.Status != model.PaymentWaitingStatus {
 			levels, err := p.SubscriptionLevels.GetUserLevels(payment.CreatorId)
 			if err != nil {
@@ -114,7 +134,7 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 		return Result{}, ErrDataBase
 	}
 
-	return Result{Body: BodyPayments{RedirectURL: redirectURL}}, nil
+	return Result{Body: BodyPayments{RedirectURL: responseUkassa.Confirmation.ConfirmationURL}}, nil
 }
 
 func (p *PaymentHandler) GetUsersDonatesStratagy(ctx context.Context, form PaymentForm) (Result, error) {
