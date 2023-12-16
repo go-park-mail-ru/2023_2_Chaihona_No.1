@@ -68,8 +68,7 @@ func Donate(paymentDB model.Payment) (model.ResponseUKassa, error) {
 		log.Println(err)
 		return model.ResponseUKassa{}, err
 	}
-
-	return model.ResponseUKassa{}, nil
+	return responseUKassa, nil
 }
 
 func requestPaymentStatusAPI(payment model.Payment) (int, error) {
