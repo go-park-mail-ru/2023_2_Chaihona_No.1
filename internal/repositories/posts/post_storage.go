@@ -55,7 +55,7 @@ func SelectUserPostsForFollowerSQL(authorId uint, subscriberId uint) squirrel.Se
 	return squirrel.Select("p.*, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access, "+
 		"sl1.level as min_sub_level, "+
 		"array_agg(DISTINCT pa.file_path) as attaches, "+
-		"array_agg(DISTINCT pc) as comments, " +
+		// "array_agg(DISTINCT pc) as comments, " +
 		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
 		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", subscriberId)).
 		From(configs.PostTable+" p").
