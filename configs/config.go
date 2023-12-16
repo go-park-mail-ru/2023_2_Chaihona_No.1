@@ -33,7 +33,7 @@ const (
 
 	PaymentAPI      = "https://api.yookassa.ru/v3/"
 	PaymentKeyPath  = "API_key"
-	ShopId          = "273632"
+	ShopId          = "294126"
 	ReturnURL       = FrontendServerIP + FrontendServerPort + "/payment"
 	FakeRedirectURL = "https://yoomoney.ru/payments/external/confirmation?orderId=22e12f66-000f-5000-8000-18db351245c7"
 
