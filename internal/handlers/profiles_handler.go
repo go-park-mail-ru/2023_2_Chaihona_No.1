@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"log"
 	"strconv"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
@@ -13,6 +14,8 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/files"
+	pay "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/payment"
+	"github.com/robfig/cron/v3"
 )
 
 type BodyProfile struct {
@@ -335,18 +338,112 @@ func (p *ProfileHandler) FollowStratagy(ctx context.Context, form FollowForm) (R
 		return Result{}, ErrNoSession
 	}
 
-	subscription := model.Subscription{
-		Id: uint(form.Body.SubscriptionId),
-		Subscriber_id:         uint(session.UserID),
-		Creator_id:            uint(id),
-		Subscription_level_id: uint(form.Body.SubscriptionLevelId),
-	}
-	_, err = p.Subscriptions.AddNewSubscription(subscription)
+	levels, err := p.Levels.GetUserLevels(uint(id))
 	if err != nil {
-		fmt.Println(err)
 		return Result{}, ErrDataBase
 	}
-	return Result{}, nil
+	subLevel := model.SubscribeLevel{}
+	subLevel.Level = 9999
+	for _, level := range levels {
+		if level.ID == uint(form.Body.SubscriptionLevelId) {
+			subLevel = level
+			break
+		}
+	}
+
+	switch subLevel.Level {
+	case 9999:
+		return Result{}, ErrNoLevelId
+
+	case 0:
+		subscription := model.Subscription{
+			Id: uint(form.Body.SubscriptionId),
+			Subscriber_id:         uint(session.UserID),
+			Creator_id:            uint(id),
+			Subscription_level_id: uint(form.Body.SubscriptionLevelId),
+		}
+		subId, err := p.Subscriptions.AddNewSubscription(subscription)
+		if err != nil {
+			return Result{}, ErrDataBase
+		}
+		return Result{Body: map[string]interface{}{"id": subId}}, nil
+
+	default:
+		value := strconv.Itoa(int(subLevel.CostInteger))
+		if subLevel.CostFractional < 10 {
+			value += ".0" + strconv.Itoa(int(subLevel.CostFractional))
+		} else {
+			value += "." +strconv.Itoa(int(subLevel.CostFractional))
+		}
+
+		payment := model.Payment{
+			DonaterId: uint(session.UserID),
+			CreatorId: uint(id),
+			Currency: subLevel.Currency,
+			Value: value,
+		}
+		responseUkassa, err := pay.Subscribe(payment)
+		if err != nil {
+			//think
+			log.Println(err)
+			return Result{}, ErrPayment
+		}
+
+		switch responseUkassa.Status {
+		case "pending":
+			payment.Status = model.PaymentWaitingStatus
+		case "succeeded":
+			payment.Status = model.PaymentSucceededStatus
+		case "canceled":
+			payment.Status = model.PaymentCanceledStatus
+		}
+
+		payment.UUID = responseUkassa.Id
+		payment.PaymentInteger = subLevel.CostInteger
+		payment.PaymentFractional = subLevel.CostFractional
+		id, err := p.Payments.CreateNewPayment(payment)
+		if err != nil {
+			//think
+			log.Println(err)
+			return Result{}, ErrDataBase
+		}
+		payment.Id = id
+
+		c := cron.New()
+		_, err = c.AddFunc("* * * * *", func () {
+			fmt.Println("joba2")
+			payment, err := pay.CheckPaymentStatusAPI(p.Payments, payment)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			if payment.Status == model.PaymentSucceededStatus {
+					subscription := model.Subscription{
+						Id: uint(form.Body.SubscriptionId),
+						Subscriber_id:         payment.DonaterId,
+						Creator_id:            payment.CreatorId,
+						Subscription_level_id: subLevel.ID,
+					}
+					_, err := p.Subscriptions.AddNewSubscription(subscription)
+					if err != nil {
+						log.Println(err)
+						return
+					}
+				c.Stop()
+			}
+			if payment.Status == model.PaymentCanceledStatus {
+				c.Stop()
+			}
+		})
+		c.Start()
+
+		if err != nil {
+			//think
+			log.Println(err)
+			return Result{}, ErrDataBase
+		}
+		return Result{Body: BodyPayments{RedirectURL: responseUkassa.Confirmation.ConfirmationURL}}, nil
+	}
 }
 
 func (p *ProfileHandler) UnfollowStratagy(ctx context.Context, form FollowForm) (Result, error) {

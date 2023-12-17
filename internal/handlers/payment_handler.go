@@ -48,7 +48,7 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 	if !auth.CheckAuthorizationManager(ctx, p.SessionsManager) {
 		return Result{}, ErrUnathorized
 	}
-	fmt.Println(form.Body.DonaterId, form.Body.CreatorId)
+
 	payment := model.Payment{
 		DonaterId: form.Body.DonaterId,
 		CreatorId: form.Body.CreatorId,
@@ -103,7 +103,7 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 			log.Println(err)
 			return
 		}
-		if payment.Status != model.PaymentWaitingStatus {
+		if payment.Status == model.PaymentSucceededStatus {
 			levels, err := p.SubscriptionLevels.GetUserLevels(payment.CreatorId)
 			if err != nil {
 				log.Println(err)
@@ -128,6 +128,9 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 				}
 				break
 			}
+			c.Stop()
+		}
+		if payment.Status == model.PaymentCanceledStatus {
 			c.Stop()
 		}
 	})

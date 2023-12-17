@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -17,16 +18,16 @@ import (
 	"github.com/google/uuid"
 )
 
-func Donate(paymentDB model.Payment) (model.ResponseUKassa, error) {
+func createPaymentUKassa(payment model.Payment, save bool) (model.Payment, model.RequestUKassa, error) {
 	paymnetId, err := uuid.NewRandom()
 	if err != nil {
-		return  model.ResponseUKassa{} ,err
+		return  model.Payment{}, model.RequestUKassa{}, err
 	}
-	paymentDB.UUID = paymnetId.String();
+	payment.UUID = paymnetId.String();
 	requestUkassa := model.RequestUKassa{
 		Amount: model.Amount{
-			Value: paymentDB.Value,
-			Currency: paymentDB.Currency,
+			Value: payment.Value,
+			Currency: payment.Currency,
 		},
 		Capture: true,
 		Confirmation: model.Confirmation{
@@ -34,19 +35,36 @@ func Donate(paymentDB model.Payment) (model.ResponseUKassa, error) {
 			ReturnURL: "https://my-kopilka.ru",
 		},
 	}
-	requestJson, err := json.Marshal(requestUkassa)
+	if save {
+		requestUkassa.SavePaymentMethod = true
+		requestUkassa.PaymentMethodData = model.PaymentMethodData{
+			Type: "bank_card",
+		}
+	}
+	return payment, requestUkassa, nil
+}
+
+func makeRequestUKassa(reader io.Reader, method string, UUID string) (model.ResponseUKassa, error) {
+	var url string
+	switch method {
+	case "GET":
+		url = configs.PaymentAPI + "payments/" + UUID
+		reader = nil
+	case "POST":
+		url = configs.PaymentAPI + "payments"
+	}
+	
+	req, err := http.NewRequest(method, url, reader)
 	if err != nil {
 		log.Println(err)
 		return model.ResponseUKassa{}, err
 	} 
-	reader := bytes.NewReader(requestJson)
-	req, err := http.NewRequest("POST", configs.PaymentAPI + "payments", reader)
-	if err != nil {
-		log.Println(err)
-		return model.ResponseUKassa{}, err
-	} 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Idempotence-Key", paymentDB.UUID)
+
+	if method == "POST" {
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Idempotence-Key", UUID)
+	}
+
 	fileDir, _ := os.Getwd()
 	filePath := filepath.Join(fileDir, "API_key")
 	file, err := os.ReadFile(filePath)
@@ -55,6 +73,7 @@ func Donate(paymentDB model.Payment) (model.ResponseUKassa, error) {
 		return model.ResponseUKassa{}, err
 	} 
 	req.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(configs.ShopId + ":" + string(file))))
+	
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -72,31 +91,116 @@ func Donate(paymentDB model.Payment) (model.ResponseUKassa, error) {
 	return responseUKassa, nil
 }
 
-func requestPaymentStatusAPI(payment model.Payment) (int, error) {
-	req, err := http.NewRequest("GET", configs.PaymentAPI + "payments/" + payment.UUID, nil)
+func Donate(paymentDB model.Payment) (model.ResponseUKassa, error) {
+	// paymnetId, err := uuid.NewRandom()
+	// if err != nil {
+	// 	return  model.ResponseUKassa{} ,err
+	// }
+	// paymentDB.UUID = paymnetId.String();
+	// requestUkassa := model.RequestUKassa{
+	// 	Amount: model.Amount{
+	// 		Value: paymentDB.Value,
+	// 		Currency: paymentDB.Currency,
+	// 	},
+	// 	Capture: true,
+	// 	Confirmation: model.Confirmation{
+	// 		Type: "redirect",
+	// 		ReturnURL: "https://my-kopilka.ru",
+	// 	},
+	// }
+	paymentDB, requestUkassa, err := createPaymentUKassa(paymentDB, false)
 	if err != nil {
-		log.Println(err)
-		return 0, err
-	} 
-	// req.Header.Set("Idempotence-Key", payment.UUID)
-	fileDir, _ := os.Getwd()
-	filePath := filepath.Join(fileDir, "API_key")
-	file, err := os.ReadFile(filePath)
-	if err != nil {
-		log.Println(err)
-		return 0, err
-	} 
-	req.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(configs.ShopId + ":" + string(file))))
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Println(err)
-		return 0, err
+		return  model.ResponseUKassa{} ,err
 	}
-	defer resp.Body.Close()
+	requestJson, err := json.Marshal(requestUkassa)
+	if err != nil {
+		log.Println(err)
+		return model.ResponseUKassa{}, err
+	} 
+	reader := bytes.NewReader(requestJson)
+	responseUKassa, err := makeRequestUKassa(reader, "POST", paymentDB.UUID)
+		if err != nil {
+		log.Println(err)
+		return model.ResponseUKassa{}, err
+	}
+	// req, err := http.NewRequest("POST", configs.PaymentAPI + "payments", reader)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return model.ResponseUKassa{}, err
+	// } 
+	// req.Header.Set("Content-Type", "application/json")
+	// req.Header.Set("Idempotence-Key", paymentDB.UUID)
+	// fileDir, _ := os.Getwd()
+	// filePath := filepath.Join(fileDir, "API_key")
+	// file, err := os.ReadFile(filePath)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return model.ResponseUKassa{}, err
+	// } 
+	// req.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(configs.ShopId + ":" + string(file))))
+	// client := &http.Client{}
+	// resp, err := client.Do(req)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return model.ResponseUKassa{}, err
+	// }
+	// defer resp.Body.Close()
 
-	var responseUKassa model.ResponseUKassa
-	err = json.NewDecoder(resp.Body).Decode(&responseUKassa)
+	// var responseUKassa model.ResponseUKassa
+	// err = json.NewDecoder(resp.Body).Decode(&responseUKassa)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return model.ResponseUKassa{}, err
+	// }
+	return responseUKassa, nil
+}
+
+func Subscribe(payment model.Payment) (model.ResponseUKassa, error) {
+	paymentDB, requestUkassa, err := createPaymentUKassa(payment, true)
+	if err != nil {
+		return  model.ResponseUKassa{} ,err
+	}
+	requestJson, err := json.Marshal(requestUkassa)
+	if err != nil {
+		log.Println(err)
+		return model.ResponseUKassa{}, err
+	} 
+	reader := bytes.NewReader(requestJson)
+	responseUKassa, err := makeRequestUKassa(reader, "POST", paymentDB.UUID)
+		if err != nil {
+		log.Println(err)
+		return model.ResponseUKassa{}, err
+	}
+	return responseUKassa, nil
+}
+
+func requestPaymentStatusAPI(payment model.Payment) (int, error) {
+	// req, err := http.NewRequest("GET", configs.PaymentAPI + "payments/" + payment.UUID, nil)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return 0, err
+	// } 
+
+	// fileDir, _ := os.Getwd()
+	// filePath := filepath.Join(fileDir, "API_key")
+	// file, err := os.ReadFile(filePath)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return 0, err
+	// } 
+	// req.Header.Set("Authorization", "Basic " + base64.StdEncoding.EncodeToString([]byte(configs.ShopId + ":" + string(file))))
+	// client := &http.Client{}
+	// resp, err := client.Do(req)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return 0, err
+	// }
+	// defer resp.Body.Close()
+
+	// var responseUKassa model.ResponseUKassa
+	// err = json.NewDecoder(resp.Body).Decode(&responseUKassa)
+
+	responseUKassa, err := makeRequestUKassa(nil, "GET", payment.UUID)
 	if err != nil {
 		log.Println(err)
 		return 0, err
@@ -134,7 +238,6 @@ func CheckPaymentStatusAPI(paymentRepository payments.PaymentRepository, payment
 			}
 			return payment, nil
 		default:
-			fmt.Println("try to change payment", payment)
 			err = paymentRepository.ChangePayment(payment)
 			if err != nil {
 				log.Println(err)

@@ -29,10 +29,18 @@ type Confirmation struct {
 	ConfirmationURL string `json:"confirmation_url,omitempty"`
 }
 
+type PaymentMethodData struct {
+	Type string `json:"type,omitempty"`
+	Id string `json:"id,omitempty"`
+	Saved bool `json:"saved,omitempty"`
+}
+
 type RequestUKassa struct {
 	Amount `json:"amount"`
 	Capture bool `json:"capture"`
 	Confirmation `json:"confirmation"`
+	SavePaymentMethod bool `json:"save_payment_method,omitempty"`
+	PaymentMethodData `json:"payment_method_data,omitempty"`
 }
 
 type Recipient struct {

@@ -105,6 +105,16 @@ var (
 		StatusCode: http.StatusInternalServerError,
 		Msg: `{"error":"cannot delete file"}`,
 	}
+	
+	ErrNoLevelId = ErrorHttp{
+		StatusCode: http.StatusBadRequest,
+		Msg:  `{"error":"no such level id"}`,
+	}
+
+	ErrPayment = ErrorHttp{
+		StatusCode: http.StatusInternalServerError,
+		Msg: `{"error":"something wrong with payment API"}`,
+	}
 )
 
 func WriteHttpError(w http.ResponseWriter, err error) {
