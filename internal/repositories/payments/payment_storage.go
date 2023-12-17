@@ -49,6 +49,7 @@ func SelectPaymentsByUserIdSQL(userId uint) squirrel.SelectBuilder {
 }
 
 func UpdatePaymentSQL(payment model.Payment) squirrel.UpdateBuilder {
+	fmt.Println("SQL ", payment)
 	return squirrel.Update(configs.PaymentTable).
 		SetMap(map[string]interface{}{
 			"status": payment.Status,

@@ -134,6 +134,7 @@ func CheckPaymentStatusAPI(paymentRepository payments.PaymentRepository, payment
 			}
 			return payment, nil
 		default:
+			fmt.Println("try to change payment", payment)
 			err = paymentRepository.ChangePayment(payment)
 			if err != nil {
 				log.Println(err)
