@@ -22,7 +22,7 @@ message Nothing {
 }
 
 message PaymentGRPC {
-    int32 id = 1;
+	int32 id = 1;
 	string uuid = 2;              
 	uint32 payment_integer = 3;    
 	uint32 payment_fractional = 4; 
@@ -42,7 +42,7 @@ service PaymentsService {
     rpc CreateNewPaymentCtx(PaymentGRPC) returns (Int) {}
 	rpc DeletePaymentCtx(UInt) returns (Nothing) {}
 	rpc GetPaymentCtx(UUid) returns (PaymentGRPC) {}
-	rpc GetPaymentsByAuthorIdCtx(UInt) returns (PaymentGRPC) {}
+	rpc GetPaymentsByAuthorIdCtx(UInt) returns (PaymentsGRPC) {}
 	rpc GetPaymentsByUserIdCtx(UInt) returns (PaymentsGRPC) {}
 	rpc ChangePaymentCtx(PaymentGRPC) returns (Nothing) {}
 }

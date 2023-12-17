@@ -8,7 +8,7 @@ type PaymentRepository interface {
 	CreateNewPayment(payment model.Payment) (int, error)
 	DeletePayment(id uint) error
 	GetPayment(uuid string) (model.Payment, error)
-	GetPaymentsByAuthorId(authorID uint) (model.Payment, error)
+	GetPaymentsByAuthorId(authorID uint) ([]model.Payment, error)
 	GetPaymentsByUserId(userId uint) ([]model.Payment, error)
 	ChangePayment(payment model.Payment) error
 }

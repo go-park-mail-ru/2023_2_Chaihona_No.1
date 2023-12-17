@@ -117,19 +117,28 @@ func (manager *PaymentManager) ChangePayment(payment model.Payment) error {
 	return err
 }
 
-func (manager *PaymentManager) GetPaymentsByAuthorId(authorId uint) (model.Payment, error) {
-	payment, err := manager.Client.GetPaymentsByAuthorIdCtx(context.Background(), &UInt{Id: uint32(authorId)})
+func (manager *PaymentManager) GetPaymentsByAuthorId(authorId uint) ([]model.Payment, error) {
+	paymentsGRPC, err := manager.Client.GetPaymentsByAuthorIdCtx(context.Background(), &UInt{Id: uint32(authorId)})
 
-	return model.Payment{
-		Id:             int(payment.Id),
-		UUID:           payment.Uuid,
-		PaymentInteger: uint(payment.PaymentInteger),
-		Status:         uint(payment.Status),
-		DonaterId:      uint(payment.DonaterId),
-		CreatorId:      uint(payment.CreatorId),
-		Currency:       payment.Currency,
-		Value:          payment.Value,
-	}, err
+	if err != nil {
+		return []model.Payment{}, err
+	}
+
+	var payments []model.Payment
+	for _, payment := range paymentsGRPC.Payments {
+		payments = append(payments, model.Payment{
+			Id:             int(payment.Id),
+			UUID:           payment.Uuid,
+			PaymentInteger: uint(payment.PaymentInteger),
+			PaymentFractional: uint(payment.PaymentFractional),
+			Status:         uint(payment.Status),
+			DonaterId:      uint(payment.DonaterId),
+			CreatorId:      uint(payment.CreatorId),
+			Currency:       payment.Currency,
+			Value:          payment.Value,
+		})
+	}
+	return payments, nil
 }
 
 func (manager *PaymentManager) GetPaymentsByUserId(userId uint) ([]model.Payment, error) {
@@ -157,11 +166,11 @@ func (manager *PaymentManager) GetPaymentsByUserId(userId uint) ([]model.Payment
 	return payments, nil
 }
 
-func CreatePaymentStorage(db *sql.DB) PaymentRepository {
-	return &PaymentStorage{
-		db: db,
-	}
-}
+// func CreatePaymentStorage(db *sql.DB) PaymentRepository {
+// 	return &PaymentStorage{
+// 		db: db,
+// 	}
+// }
 
 func CreatePaymentStore(db *sql.DB) *PaymentStorage {
 	return &PaymentStorage{
@@ -301,29 +310,31 @@ func (storage *PaymentStorage) GetPaymentsByAuthorId(authorId uint) (model.Payme
 	return model.Payment{}, nil
 }
 
-func (storage *PaymentStorage) GetPaymentsByAuthorIdCtx(ctx context.Context, authorID *UInt) (*PaymentGRPC, error) {
+func (storage *PaymentStorage) GetPaymentsByAuthorIdCtx(ctx context.Context, authorID *UInt) (*PaymentsGRPC, error) {
 	rows, err := SelectPaymentsByAuthorIdSQL(uint(authorID.Id)).RunWith(storage.db).Query()
 	if err != nil {
-		return &PaymentGRPC{}, err
+		return &PaymentsGRPC{}, err
 	}
 	var payments []model.Payment
 	err = dbscan.ScanAll(&payments, rows)
 	if err != nil {
-		return &PaymentGRPC{}, err
+		return &PaymentsGRPC{}, err
 	}
-	if len(payments) > 0 {
-		return &PaymentGRPC{
-			Id:             int32(payments[0].Id),
-			Uuid:           payments[0].UUID,
-			PaymentInteger: uint32(payments[0].PaymentInteger),
-			Status:         uint32(payments[0].Status),
-			DonaterId:      uint32(payments[0].DonaterId),
-			CreatorId:      uint32(payments[0].CreatorId),
-			Currency:       payments[0].Currency,
-			Value:          payments[0].Value,
-		}, nil
+	paymetsMap := &PaymentsGRPC{}
+	for i, payment := range payments {
+		paymetsMap.Payments[int32(i)] = &PaymentGRPC{
+			Id:             int32(payment.Id),
+			Uuid:           payment.UUID,
+			PaymentInteger: uint32(payment.PaymentInteger),
+			PaymentFractional: uint32(payment.PaymentFractional),
+			Status:         uint32(payment.Status),
+			DonaterId:      uint32(payment.DonaterId),
+			CreatorId:      uint32(payment.CreatorId),
+			Currency:       payment.Currency,
+			Value:          payment.Value,
+		}
 	}
-	return &PaymentGRPC{}, nil
+	return paymetsMap, nil
 }
 
 func (storage *PaymentStorage) GetPaymentsByUserId(userId uint) ([]model.Payment, error) {
