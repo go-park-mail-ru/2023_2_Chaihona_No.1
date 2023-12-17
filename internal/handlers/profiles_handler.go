@@ -115,7 +115,15 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 		if err != nil {
 			return Result{}, err
 		}
-		profile.Donated = strconv.Itoa(int(donated.PaymentInteger)) + "," + strconv.Itoa(int(donated.PaymentFractional))
+		var sumInteger int
+		var sumFractional int
+		for _, payment := range donated {
+			sumInteger += int(payment.PaymentInteger)
+			sumFractional += int(payment.PaymentInteger)
+		}
+		sumInteger += sumFractional % 100
+		sumFractional = sumFractional / 100
+		profile.Donated = strconv.Itoa(int(sumInteger)) + "," + strconv.Itoa(int(sumFractional))
 		profile.Currency = "RUB"
 	} else {
 		subscriptions, err := p.Subscriptions.GetUserSubscriptions(id)
