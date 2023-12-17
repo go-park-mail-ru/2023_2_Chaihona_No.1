@@ -121,8 +121,8 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 			sumInteger += int(payment.PaymentInteger)
 			sumFractional += int(payment.PaymentInteger)
 		}
-		sumInteger += sumFractional % 100
-		sumFractional = sumFractional / 100
+		sumInteger += sumFractional / 100
+		sumFractional = sumFractional % 100
 		profile.Donated = strconv.Itoa(int(sumInteger)) + "," + strconv.Itoa(int(sumFractional))
 		profile.Currency = "RUB"
 	} else {
