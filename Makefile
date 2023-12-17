@@ -7,4 +7,4 @@ dc:
 run: dc build
 	./main &
 stop:
-	docke compose down
+	docker compose down

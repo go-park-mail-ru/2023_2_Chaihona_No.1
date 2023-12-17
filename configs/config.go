@@ -2,10 +2,10 @@ package configs
 
 const (
 	// FrontendServerIP   = "http://212.233.89.163"
-	FrontendServerIP = "https://my-kopilka.ru"
+	FrontendServerIP   = "https://my-kopilka.ru"
 	FrontendServerPort = ""
 	// FrontendServerPort = ":8000"
-	BackendServerPort  = ":8001"
+	BackendServerPort = ":8001"
 
 	DriverSQL            = "pgx"
 	DatabaseDMS          = "postgres"
@@ -26,7 +26,7 @@ const (
 	AttachTable         = "public.post_attach"
 	LikeTable           = "public.post_like"
 	PaymentTable        = "public.payment"
-	CommentTable = "public.post_comment"
+	CommentTable        = "public.post_comment"
 
 	RedisServerIP   = "127.0.0.1"
 	RedisServerPort = "6379"
@@ -38,4 +38,9 @@ const (
 	FakeRedirectURL = "https://yoomoney.ru/payments/external/confirmation?orderId=22e12f66-000f-5000-8000-18db351245c7"
 
 	BasePath = "~/go/src/github.com/M0rdovorot/kopilka"
+
+	KafkaNotificationsTopic          = "notifications"
+	KafkaNotificationsBroker1Address = "localhost:9091"
+	KafkaNotificationsBroker2Address = "localhost:9092"
+	KafkaNotificationsBroker3Address = "localhost:9093"
 )
