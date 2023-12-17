@@ -119,7 +119,7 @@ func (p *ProfileHandler) GetInfoStrategy(ctx context.Context, form EmptyForm) (R
 		var sumFractional int
 		for _, payment := range donated {
 			sumInteger += int(payment.PaymentInteger)
-			sumFractional += int(payment.PaymentInteger)
+			sumFractional += int(payment.PaymentFractional)
 		}
 		sumInteger += sumFractional / 100
 		sumFractional = sumFractional % 100
