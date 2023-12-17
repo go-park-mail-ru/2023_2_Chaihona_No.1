@@ -29,7 +29,7 @@ type ProfileHandler struct {
 	Users         users.UserRepository
 	Levels        subscribelevels.SubscribeLevelRepository
 	Subscriptions subscriptions.SubscriptionRepository
-	Payments      payments.PaymentRepository
+	Payments      *payments.PaymentManager
 }
 
 func CreateProfileHandlerViaRepos(
@@ -37,7 +37,7 @@ func CreateProfileHandlerViaRepos(
 	users users.UserRepository,
 	levels subscribelevels.SubscribeLevelRepository,
 	subscriptions subscriptions.SubscriptionRepository,
-	payments payments.PaymentRepository,
+	payments *payments.PaymentManager,
 ) *ProfileHandler {
 	return &ProfileHandler{
 		sessionManager,

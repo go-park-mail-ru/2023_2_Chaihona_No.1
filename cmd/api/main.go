@@ -87,14 +87,14 @@ func main() {
 	subsStorage := subs.CreateSubscriptionsStorage(db.GetDB())
 	// postStorage := posts.CreatePostStorage(db.GetDB())
 	likeStorage := likes.CreateLikeStorage(db.GetDB())
-	paymentStorage := payments.CreatePaymentStorage(db.GetDB())
+	// paymentStorage := payments.CreatePaymentStorage(db.GetDB())
 	questionsStorage := questions.CreateQuestionStorage(db.GetDB())
 	// answersStorage := answers.CreateAnswerStorage(db.GetDB())
 	subscriptionLevelsStorage := subscriptionlevels.CreateSubscribeLevelStorage(db.GetDB())
 	attachStorage := attaches.CreateAttachStorage(db.GetDB())
 
 	rep := handlers.CreateRepoHandler(sessManager, userStoarge, levelStorage)
-	profileHandler := handlers.CreateProfileHandlerViaRepos(sessManager, userStoarge, levelStorage, subsStorage, paymentStorage)
+	profileHandler := handlers.CreateProfileHandlerViaRepos(sessManager, userStoarge, levelStorage, subsStorage, payManager)
 	postHandler := handlers.CreatePostHandlerViaRepos(sessManager, postManager, likeStorage, attachStorage, commentManager)
 	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessManager, payManager, subsStorage, subscriptionLevelsStorage)
 	fileHandler := handlers.CreateFileHandler(sessManager, userStoarge, attachStorage)
@@ -152,4 +152,3 @@ func main() {
 	//err = http.ListenAndServeTLS(configs.BackendServerPort, "cert.pem", "key.pem", nil)
 	fmt.Println(err)
 }
-
