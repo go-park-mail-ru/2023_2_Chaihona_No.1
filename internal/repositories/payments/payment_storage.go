@@ -3,6 +3,7 @@ package payments
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/dbscan"
@@ -266,6 +267,7 @@ func (storage *PaymentStorage) ChangePayment(payment model.Payment) error {
 }
 
 func (storage *PaymentStorage) ChangePaymentCtx(ctx context.Context, payment *PaymentGRPC) (*Nothing, error) {
+	fmt.Println(payment.Status)
 	rows, err := UpdatePaymentSQL(model.Payment{
 		Id:             int(payment.Id),
 		UUID:           payment.Uuid,
