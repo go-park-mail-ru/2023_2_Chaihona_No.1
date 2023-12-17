@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -120,7 +121,8 @@ func CheckPaymentStatusAPI(paymentRepository payments.PaymentRepository, payment
 		log.Println(err)
 		return model.Payment{}, err
 	}
-	payment.Status = uint(status);
+	fmt.Println(status)
+	payment.Status = uint(status)
 	switch status {
 		case model.PaymentWaitingStatus:
 			return payment, nil
