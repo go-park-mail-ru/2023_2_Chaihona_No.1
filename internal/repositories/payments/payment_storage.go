@@ -321,6 +321,7 @@ func (storage *PaymentStorage) GetPaymentsByAuthorIdCtx(ctx context.Context, aut
 		return &PaymentsGRPC{}, err
 	}
 	paymetsMap := &PaymentsGRPC{}
+	paymetsMap.Payments = make(map[int32]*PaymentGRPC)
 	for i, payment := range payments {
 		paymetsMap.Payments[int32(i)] = &PaymentGRPC{
 			Id:             int32(payment.Id),
