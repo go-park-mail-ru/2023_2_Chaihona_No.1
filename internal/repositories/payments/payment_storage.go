@@ -13,8 +13,8 @@ import (
 
 func InsertPaymentSQL(payment model.Payment) squirrel.InsertBuilder {
 	return squirrel.Insert(configs.PaymentTable).
-		Columns("payment_integer", "payment_fractional", "status", "donater_id", "creator_id").
-		Values(payment.PaymentInteger, payment.PaymentFractional, payment.Status, payment.DonaterId, payment.CreatorId).
+		Columns("uuid","payment_integer", "payment_fractional", "status", "donater_id", "creator_id").
+		Values(payment.UUID, payment.PaymentInteger, payment.PaymentFractional, payment.Status, payment.DonaterId, payment.CreatorId).
 		Suffix("RETURNING \"id\"").
 		PlaceholderFormat(squirrel.Dollar)
 }
@@ -49,13 +49,12 @@ func SelectPaymentsByUserIdSQL(userId uint) squirrel.SelectBuilder {
 }
 
 func UpdatePaymentSQL(payment model.Payment) squirrel.UpdateBuilder {
-	fmt.Println("SQL ", payment)
 	return squirrel.Update(configs.PaymentTable).
 		SetMap(map[string]interface{}{
 			"status": payment.Status,
 		}).
-		// Where(squirrel.Eq{"uuid": payment.UUID}).
-		Where(squirrel.Eq{"id": payment.Id}).
+		Where(squirrel.Eq{"uuid": payment.UUID}).
+		// Where(squirrel.Eq{"id": payment.Id}).
 		PlaceholderFormat(squirrel.Dollar)
 }
 

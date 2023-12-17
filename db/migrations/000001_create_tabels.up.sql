@@ -78,6 +78,7 @@ CREATE TABLE payment
 (
   PRIMARY KEY (id),
   id                 serial   NOT NULL,
+  uuid               text NOT NULL UNIQUE,
   payment_integer    bigint   NOT NULL,
                      CONSTRAINT payment_integer_range CHECK(payment_integer >= 0),
   payment_fractional bigint   NOT NULL,
