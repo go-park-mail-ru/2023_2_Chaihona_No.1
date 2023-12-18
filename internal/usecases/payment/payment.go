@@ -339,6 +339,7 @@ func MakeCronCheckSubscriptions(paymentRepository payments.PaymentRepository,
 				case "canceled":
 					payment.Status = model.PaymentCanceledStatus
 				}
+				payment.UUID = responseUkassa.Id
 				id, err := paymentRepository.CreateNewPayment(payment)
 				if err != nil {
 					//think
