@@ -62,9 +62,9 @@ func SelectUserByNicknameSQLWithSubscribers(nickname string) squirrel.SelectBuil
 			configs.UserTable, configs.UserTable)).
 		From(configs.UserTable).
 		LeftJoin(fmt.Sprintf("%s s ON %s.id = s.creator_id", configs.SubscriptionTable, configs.UserTable)).
-		// Where(squirrel.Like{"email":nickname+"%"}).
-		Suffix("WHERE public.user.is_author = TRUE " + 
-					fmt.Sprintf("AND similarity(%s.email, '%s') > 0.5 ", configs.UserTable, nickname)).
+		Where(squirrel.Like{"email":nickname+"%"}).
+		Suffix("AND public.user.is_author = TRUE " + 
+					fmt.Sprintf("AND word_similarity(%s.email, '%s') > 0.3 ", configs.UserTable, nickname)).
 		Suffix("GROUP BY " + configs.UserTable + ".id").
 		Suffix("ORDER BY subscribers DESC").
 		PlaceholderFormat(squirrel.Dollar)
