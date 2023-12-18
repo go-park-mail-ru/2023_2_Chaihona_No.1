@@ -28,8 +28,8 @@ func SelectLastSuccessfulSubscriptionPaymentSQL(donaterId, creatorId int) squirr
 
 func InsertPaymentSQL(payment model.Payment) squirrel.InsertBuilder {
 	return squirrel.Insert(configs.PaymentTable).
-		Columns("uuid","payment_integer", "payment_fractional", "status", "donater_id", "creator_id", "payment_type", "currency").
-		Values(payment.UUID, payment.PaymentInteger, payment.PaymentFractional, payment.Status, payment.DonaterId, payment.CreatorId, payment.Type, payment.Currency).
+		Columns("uuid","payment_integer", "payment_fractional", "status", "donater_id", "creator_id", "payment_type", "currency", "payment_method_id").
+		Values(payment.UUID, payment.PaymentInteger, payment.PaymentFractional, payment.Status, payment.DonaterId, payment.CreatorId, payment.Type, payment.Currency, payment.PaymentMethodId).
 		Suffix("RETURNING \"id\"").
 		PlaceholderFormat(squirrel.Dollar)
 }
@@ -216,6 +216,7 @@ func (storage *PaymentStorage) CreateNewPayment(payment model.Payment) (int, err
 
 func (storage *PaymentStorage) CreateNewPaymentCtx(ctx context.Context, payment *PaymentGRPC) (*Int, error) {
 	var paymentId int
+	fmt.Println()
 	err := InsertPaymentSQL(model.Payment{
 		Id:             int(payment.Id),
 		UUID:           payment.Uuid,
