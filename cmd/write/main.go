@@ -18,6 +18,6 @@ func main() {
 		fmt.Println("nil")
 	}
 	// fmt.Println(w)
-	err := notifications.ProduceNotification(context.Background(), w, notifications.PostEvent{1})
+	err := notifications.ProduceNotification(context.Background(), w, notifications.Event{1, map[string]any{"id": 1}})
 	fmt.Println(err)
 }

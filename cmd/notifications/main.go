@@ -22,7 +22,7 @@ func main() {
 		log.Println(err)
 	}
 
-	fmt.Println(event.GetEventType())
+	fmt.Println(event)
 
 	// data, err := event.GetMarshalled()
 	// if err != nil {

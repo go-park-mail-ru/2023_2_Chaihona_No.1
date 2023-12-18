@@ -3,7 +3,7 @@ package notifications
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"log"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -16,14 +16,14 @@ func ConsumeEvent(ctx context.Context, reader *kafka.Reader) (Event, error) {
 	// })
 	msg, err := reader.ReadMessage(ctx)
 	if err != nil {
-		return nil, err
+		return Event{}, err
 	}
 
-	var event Event
-	err = json.Unmarshal(msg.Value, event)
-	fmt.Println(string(msg.Value))
+	event := Event{}
+	err = json.Unmarshal(msg.Value, &event)
+	log.Println(string(msg.Value))
 	if err != nil {
-		return nil, err
+		return Event{}, err
 	}
 
 	return event, nil
