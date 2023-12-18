@@ -15,6 +15,8 @@ func main() {
 		Topic:   configs.KafkaNotificationsTopic,
 	})
 	// fmt.Println(w)
-	err := notifications.ProduceNotification(context.Background(), w, notifications.Event{1, map[string]any{"id": 1}})
+	err := notifications.ProduceNotification(context.Background(), w, notifications.Event{
+		EventType: 1,
+		Body:      map[string]any{"id": 1}})
 	log.Println("Error writer:", err)
 }
