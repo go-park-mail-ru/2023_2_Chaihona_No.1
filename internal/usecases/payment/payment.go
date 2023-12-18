@@ -132,6 +132,7 @@ func Donate(paymentDB model.Payment) (model.ResponseUKassa, error) {
 	if err != nil {
 		return  model.ResponseUKassa{} ,err
 	}
+	fmt.Println(requestUkassa)
 	requestJson, err := json.Marshal(requestUkassa)
 	if err != nil {
 		log.Println(err)
