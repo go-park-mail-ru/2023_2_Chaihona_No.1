@@ -2,7 +2,6 @@ package notifications
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 
 	"github.com/segmentio/kafka-go"
