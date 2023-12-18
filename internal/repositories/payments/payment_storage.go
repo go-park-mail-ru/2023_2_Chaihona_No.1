@@ -28,8 +28,8 @@ func SelectLastSuccessfulSubscriptionPaymentSQL(donaterId, creatorId int) squirr
 
 func InsertPaymentSQL(payment model.Payment) squirrel.InsertBuilder {
 	return squirrel.Insert(configs.PaymentTable).
-		Columns("uuid","payment_integer", "payment_fractional", "status", "donater_id", "creator_id", "payment_type").
-		Values(payment.UUID, payment.PaymentInteger, payment.PaymentFractional, payment.Status, payment.DonaterId, payment.CreatorId, payment.Type).
+		Columns("uuid","payment_integer", "payment_fractional", "status", "donater_id", "creator_id", "payment_type", "currency").
+		Values(payment.UUID, payment.PaymentInteger, payment.PaymentFractional, payment.Status, payment.DonaterId, payment.CreatorId, payment.Type, payment.Currency).
 		Suffix("RETURNING \"id\"").
 		PlaceholderFormat(squirrel.Dollar)
 }

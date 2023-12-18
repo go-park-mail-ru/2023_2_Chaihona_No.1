@@ -22,6 +22,22 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
+func createAutoPaymentUKassa(payment model.Payment) (model.Payment, model.SubRequestUKassa, error) {
+	paymnetId, err := uuid.NewRandom()
+	if err != nil {
+		return  model.Payment{}, model.SubRequestUKassa{}, err
+	}
+	payment.UUID = paymnetId.String();
+	requestUkassa := model.SubRequestUKassa{
+		Amount: model.Amount{
+			Value: payment.Value,
+			Currency: payment.Currency,
+		},
+		Capture: true,
+	}
+	return payment, requestUkassa, nil
+}
+
 func createPaymentUKassa(payment model.Payment, save bool) (model.Payment, model.RequestUKassa, error) {
 	paymnetId, err := uuid.NewRandom()
 	if err != nil {
@@ -286,7 +302,7 @@ func MakeCronCheckSubscriptions(paymentRepository payments.PaymentRepository,
 				} else {
 					value += "." +strconv.Itoa(int(lastPayment.PaymentFractional))
 				}
-				payment, requestUkassa, err := createPaymentUKassa(
+				payment, requestUkassa, err := createAutoPaymentUKassa(
 					model.Payment{
 						DonaterId: lastPayment.DonaterId,
 						CreatorId: lastPayment.CreatorId,
@@ -296,7 +312,6 @@ func MakeCronCheckSubscriptions(paymentRepository payments.PaymentRepository,
 						Value: value,
 						Type: model.PaymentTypeSubscription,
 					},
-					false,
 				)
 				if err != nil {
 					log.Println(err)

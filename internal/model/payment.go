@@ -51,6 +51,12 @@ type RequestUKassa struct {
 	PaymentMethodId string `json:"payment_method_id,omitempty"`
 }
 
+type SubRequestUKassa struct {
+	Amount `json:"amount"`
+	Capture bool `json:"capture"`
+	PaymentMethodId string `json:"payment_method_id,omitempty"`
+}
+
 type Recipient struct {
 	AccountId string `json:"account_id"`
 	GatewayId string `json:"gateway_id"`

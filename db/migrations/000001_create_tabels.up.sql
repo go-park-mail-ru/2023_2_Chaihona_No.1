@@ -89,7 +89,8 @@ CREATE TABLE payment
   creator_id         serial   NOT NULL,
                      CONSTRAINT FK_creator_id FOREIGN KEY (creator_id) REFERENCES public.user (id) ON DELETE RESTRICT,
   payment_type       smallint NOT NULL,
-  payment_method_id text,
+  currency           text NOT NULL,
+  payment_method_id  text,
   created_at         timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
   updated_at         timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
