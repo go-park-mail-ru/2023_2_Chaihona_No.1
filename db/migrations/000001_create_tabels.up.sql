@@ -1,5 +1,7 @@
 BEGIN;
 
+CREATE EXTENSION IF NOT EXIST pg_trgm;
+
 CREATE TABLE public.user
 (
     PRIMARY KEY (id),
