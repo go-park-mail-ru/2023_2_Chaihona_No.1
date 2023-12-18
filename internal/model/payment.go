@@ -22,6 +22,7 @@ type Payment struct {
 	Type uint `json:"type" db:"payment_type"`
 	CreatedAt string `json:"created_at" db:"created_at"`
 	PaymentMethodId string `json:"payment_method_id" db:"payment_method_id"`
+	UpdatedAt string `json:"updated_at" db:"updated_at"`
 }
 
 type Amount struct {

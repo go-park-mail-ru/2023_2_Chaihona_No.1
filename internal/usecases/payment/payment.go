@@ -276,9 +276,10 @@ func MakeCronCheckSubscriptions(paymentRepository payments.PaymentRepository,
 					log.Println(err)
 					return
 				}
-				if (payDay.AddDate(0, 1, 0).After(time.Now())) {
-					continue
-				}
+				payDay.AddDate(0, 1, 0)
+				// if (payDay.AddDate(0, 1, 0).After(time.Now())) {
+				// 	continue
+				// }
 				value := strconv.Itoa(int(lastPayment.PaymentInteger))
 				if lastPayment.PaymentFractional < 10 {
 					value += ".0" + strconv.Itoa(int(lastPayment.PaymentFractional))
