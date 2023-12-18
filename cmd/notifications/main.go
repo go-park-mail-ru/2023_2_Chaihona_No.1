@@ -14,7 +14,7 @@ func main() {
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: []string{configs.KafkaNotificationsBroker1Address},
 		Topic:   configs.KafkaNotificationsTopic,
-		// GroupID: "my-group",
+		GroupID: "my-group",
 	})
 
 	for {
