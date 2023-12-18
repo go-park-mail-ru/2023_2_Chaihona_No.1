@@ -11,7 +11,7 @@ import (
 
 func main() {
 	w := kafka.NewWriter(kafka.WriterConfig{
-		Brokers: []string{configs.KafkaNotificationsBroker1Address, configs.KafkaNotificationsBroker3Address},
+		Brokers: []string{configs.KafkaNotificationsBroker1Address},
 		Topic:   configs.KafkaNotificationsTopic,
 	})
 	if w == nil {

@@ -13,7 +13,7 @@ import (
 
 func main() {
 	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: []string{configs.KafkaNotificationsBroker1Address, configs.KafkaNotificationsBroker3Address},
+		Brokers: []string{configs.KafkaNotificationsBroker1Address},
 		Topic:   configs.KafkaNotificationsTopic,
 		GroupID: "my-group",
 	})
