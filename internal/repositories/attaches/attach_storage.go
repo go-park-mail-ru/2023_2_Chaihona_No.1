@@ -12,14 +12,14 @@ import (
 //add metadata
 func InsertAttachSQL(attach model.Attach) squirrel.InsertBuilder {
 	return squirrel.Insert(configs.AttachTable).
-		Columns("file_path", "post_id", "name").
-		Values(attach.FilePath, attach.PostId, attach.Name).
+		Columns("file_path", "post_id", "name", "is_media").
+		Values(attach.FilePath, attach.PostId, attach.Name, attach.IsMedia).
 		Suffix("RETURNING \"id\"").
 		PlaceholderFormat(squirrel.Dollar)
 }
 
 func SelectPostAttachesSQL(postID int) squirrel.SelectBuilder {
-	return squirrel.Select("file_path", "name").
+	return squirrel.Select("file_path", "name", "is_media").
 		From(configs.AttachTable + " a").
 		Where(squirrel.Eq{"a.post_id": postID}).
 		PlaceholderFormat(squirrel.Dollar)

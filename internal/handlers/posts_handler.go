@@ -174,26 +174,19 @@ func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Re
 		return Result{}, ErrDataBase
 	}
 
-	for _, deleted_path := range form.Body.Pinned.Deleted {
-		err = p.Attaches.DeleteAttach(deleted_path)
-		if err != nil {
-			return Result{}, ErrDataBase
-		}
-
-		err = files.DeleteFile(deleted_path);
-		if err != nil {
-			log.Println(err)
-			return Result{}, ErrDeleteFile
-		}
-	}
-
+	
 	for i, attach := range form.Body.Pinned.Files {
 		countedAttaches, err := p.Attaches.CountAttaches(postId)
 		if err != nil {
 			return Result{}, ErrDataBase
 		}
-
-		path, err := files.SaveFileBase64(attach.Data, fmt.Sprintf("attach%d_post%d%s", countedAttaches + i, postId, attach.Name[strings.LastIndexByte(attach.Name, '.'):]))
+		
+		var path string
+		if (attach.IsMedia) {
+			path, err = files.SaveFileBase64(attach.Data, fmt.Sprintf("attach%d_post%d%s", countedAttaches + i, postId, attach.Name[strings.LastIndexByte(attach.Name, '.'):]))
+		} else {
+			path, err = files.SaveText(attach.Data, fmt.Sprintf("attach%d_post%d%s.txt", countedAttaches + i, postId, attach.Name))
+		}
 		if err != nil {
 			log.Println(err)
 			return Result{}, ErrSaveFile
@@ -202,9 +195,22 @@ func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Re
 			PostId: postId,
 			FilePath: path,
 			Name: attach.Name,
+			IsMedia: attach.IsMedia,
 		})
 		if err != nil {
 			return Result{}, ErrDataBase
+		}
+	}
+	for _, deleted_path := range form.Body.Pinned.Deleted {
+		err = p.Attaches.DeleteAttach(deleted_path)
+		if err != nil {
+			return Result{}, ErrDataBase
+		}
+	
+		err = files.DeleteFile(deleted_path);
+		if err != nil {
+			log.Println(err)
+			return Result{}, ErrDeleteFile
 		}
 	}
 	return Result{}, nil
@@ -228,7 +234,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 		AuthorID:      uint(session.UserID),
 		MinSubLevelId: form.Body.MinSubLevelId,
 		Header:        form.Body.Header,
-		Body:          form.Body.Body,
+		// Body:          form.Body.Body,
 	}
 	postId, err := p.PostsManager.CreateNewPost(post)
 	if err != nil {
@@ -238,7 +244,13 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 	
 	for i, attach := range form.Body.Attaches {
 		//check extension
-		path, err := files.SaveFileBase64(attach.Data, fmt.Sprintf("attach%d_post%d%s", i, postId, attach.Name[strings.LastIndexByte(attach.Name, '.'):]))
+		var path string
+		var err error
+		if (attach.IsMedia) {
+			path, err = files.SaveFileBase64(attach.Data, fmt.Sprintf("attach%d_post%d%s", i, postId, attach.Name[strings.LastIndexByte(attach.Name, '.'):]))
+		} else {
+			path, err = files.SaveText(attach.Data, fmt.Sprintf("attach%d_post%d%s.txt", i, postId, attach.Name))
+		}
 		if err != nil {
 			log.Println(err)
 			return Result{}, ErrSaveFile
@@ -247,6 +259,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 			PostId: postId,
 			FilePath: path,
 			Name: attach.Name,
+			IsMedia: attach.IsMedia,
 		})
 		if err != nil {
 			return Result{}, ErrDataBase

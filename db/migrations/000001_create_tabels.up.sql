@@ -71,6 +71,7 @@ CREATE TABLE post_attach
   name            text         NOT NULL,
   post_id         serial       NOT NULL,
                   CONSTRAINT FK_post_id FOREIGN KEY (post_id) REFERENCES post (id) ON DELETE CASCADE,
+  is_media        boolean      NOT NULL,
   created_at      timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
 

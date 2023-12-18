@@ -6,4 +6,5 @@ type Attach struct {
 	FilePath string `json:"file_path" db:"file_path"`
 	Name string `json:"name" db:"name"`
 	Data string `json:"data" db:""`
+	IsMedia bool `json:"isMedia" db:"is_media"`
 }

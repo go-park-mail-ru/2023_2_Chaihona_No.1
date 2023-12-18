@@ -121,14 +121,23 @@ func (f *FileHandler) LoadAttachesStratagy(ctx context.Context, form EmptyForm) 
 	}
 
 	for i := range attaches {
-		fileDir, _ := os.Getwd()
-		filePath := filepath.Join(fileDir, attaches[i].FilePath)
-	
-		body, _ := os.ReadFile(filePath)
-		// if err != nil {
-		// 	return Result{}, ErrReadFile
-		// }
-		attaches[i].Data = base64.StdEncoding.EncodeToString(body)
+		if attaches[i].IsMedia {
+			fileDir, _ := os.Getwd()
+			filePath := filepath.Join(fileDir, attaches[i].FilePath)
+			
+			body, _ := os.ReadFile(filePath)
+			// if err != nil {
+			// 	return Result{}, ErrReadFile
+			// }
+			attaches[i].Data = base64.StdEncoding.EncodeToString(body)
+		} else {
+			fileDir, _ := os.Getwd()
+			filePath := filepath.Join(fileDir, attaches[i].FilePath)
+			
+			body, _ := os.ReadFile(filePath)
+			attaches[i].Data = string(body)
+		}
+			
 	}
 	return Result{Body: BodyAttaches{Attaches: attaches}}, nil
 }
