@@ -216,7 +216,6 @@ func (storage *PaymentStorage) CreateNewPayment(payment model.Payment) (int, err
 
 func (storage *PaymentStorage) CreateNewPaymentCtx(ctx context.Context, payment *PaymentGRPC) (*Int, error) {
 	var paymentId int
-	fmt.Println()
 	err := InsertPaymentSQL(model.Payment{
 		Id:             int(payment.Id),
 		UUID:           payment.Uuid,

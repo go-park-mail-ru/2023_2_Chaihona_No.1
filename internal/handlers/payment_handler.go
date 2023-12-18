@@ -73,9 +73,7 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 	}
 
 	payment.UUID = responseUkassa.Id
-	fmt.Println(responseUkassa.Amount.Value)
 	splitedValue := strings.Split(responseUkassa.Amount.Value, ".")
-	fmt.Println(splitedValue)
 	integer, err := strconv.Atoi(splitedValue[0])
 	if err != nil {
 		//think

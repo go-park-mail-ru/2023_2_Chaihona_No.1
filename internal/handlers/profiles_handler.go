@@ -167,8 +167,6 @@ func (p *ProfileHandler) ChangeUserStratagy(ctx context.Context, form FileForm) 
 	// if session.UserID != uint32(formUserId) {
 	// 	return Result{}, fmt.Errorf("%s", "wrong_change")
 	// }
-
-	fmt.Println(session.UserID)
 	user := model.User{
 		ID:          uint(session.UserID),
 		Nickname:    GetFirst[string](form.Form.Value["nickname"]),
