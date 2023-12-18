@@ -16,6 +16,7 @@ import (
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/files"
+	"github.com/google/uuid"
 )
 
 type BodyPosts struct {
@@ -182,10 +183,28 @@ func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Re
 		}
 		
 		var path string
+		uniqueKey, err := uuid.NewRandom()
+		if err != nil {
+			return  Result{}, err
+		}
 		if (attach.IsMedia) {
-			path, err = files.SaveFileBase64(attach.Data, fmt.Sprintf("attach%d_post%d%s", countedAttaches + i, postId, attach.Name[strings.LastIndexByte(attach.Name, '.'):]))
+			path, err = files.SaveFileBase64(attach.Data, 
+				fmt.Sprintf("attach%d_post%d%s%s", 
+				countedAttaches + i, 
+				postId, 
+				uniqueKey.String(),
+				attach.Name[strings.LastIndexByte(attach.Name, '.'):],
+				),
+			)
 		} else {
-			path, err = files.SaveText(attach.Data, fmt.Sprintf("attach%d_post%d%s.txt", countedAttaches + i, postId, attach.Name))
+			path, err = files.SaveText(attach.Data, 
+				fmt.Sprintf("attach%d_post%d%s%s.txt", 
+				countedAttaches + i, 
+				postId, 
+				attach.Name,
+				uniqueKey.String(),
+				),
+			)
 		}
 		if err != nil {
 			log.Println(err)
@@ -246,10 +265,29 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 		//check extension
 		var path string
 		var err error
+		uniqueKey, err := uuid.NewRandom()
+		if err != nil {
+			return  Result{}, err
+		}
 		if (attach.IsMedia) {
-			path, err = files.SaveFileBase64(attach.Data, fmt.Sprintf("attach%d_post%d%s", i, postId, attach.Name[strings.LastIndexByte(attach.Name, '.'):]))
+			path, err = files.SaveFileBase64(attach.Data, 
+				fmt.Sprintf("attach%d_post%d%s%s", 
+				i, 
+				postId, 
+				uniqueKey.String(),
+				attach.Name[strings.LastIndexByte(attach.Name, '.'):],
+				),
+			)
 		} else {
-			path, err = files.SaveText(attach.Data, fmt.Sprintf("attach%d_post%d%s.txt", i, postId, attach.Name))
+			path, err = files.SaveText(
+				attach.Data, 
+				fmt.Sprintf("attach%d_post%d%s%s.txt", 
+				i, 
+				postId, 
+				attach.Name,
+				uniqueKey.String(),
+				),
+			)
 		}
 		if err != nil {
 			log.Println(err)
