@@ -11,4 +11,5 @@ type SubscriptionRepository interface {
 	GetUserSubscriptions(id int) ([]model.User, error)
 	ChangeSubscription(subscription model.Subscription) error
 	CountSubscribers(id int) (int, error)
+	GetAllNotFreeSubscriptions() ([]model.Subscription, error)
 }

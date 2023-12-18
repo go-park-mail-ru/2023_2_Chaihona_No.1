@@ -28,6 +28,7 @@ type PaymentsServiceClient interface {
 	GetPaymentsByAuthorIdCtx(ctx context.Context, in *UInt, opts ...grpc.CallOption) (*PaymentsGRPC, error)
 	GetPaymentsByUserIdCtx(ctx context.Context, in *UInt, opts ...grpc.CallOption) (*PaymentsGRPC, error)
 	ChangePaymentCtx(ctx context.Context, in *PaymentGRPC, opts ...grpc.CallOption) (*Nothing, error)
+	GetLastSuccessfulSubscriptionPaymentCtx(ctx context.Context, in *DonaterCreatorId, opts ...grpc.CallOption) (*PaymentGRPC, error)
 }
 
 type paymentsServiceClient struct {
@@ -92,6 +93,15 @@ func (c *paymentsServiceClient) ChangePaymentCtx(ctx context.Context, in *Paymen
 	return out, nil
 }
 
+func (c *paymentsServiceClient) GetLastSuccessfulSubscriptionPaymentCtx(ctx context.Context, in *DonaterCreatorId, opts ...grpc.CallOption) (*PaymentGRPC, error) {
+	out := new(PaymentGRPC)
+	err := c.cc.Invoke(ctx, "/payments.PaymentsService/GetLastSuccessfulSubscriptionPaymentCtx", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PaymentsServiceServer is the server API for PaymentsService service.
 // All implementations must embed UnimplementedPaymentsServiceServer
 // for forward compatibility
@@ -102,6 +112,7 @@ type PaymentsServiceServer interface {
 	GetPaymentsByAuthorIdCtx(context.Context, *UInt) (*PaymentsGRPC, error)
 	GetPaymentsByUserIdCtx(context.Context, *UInt) (*PaymentsGRPC, error)
 	ChangePaymentCtx(context.Context, *PaymentGRPC) (*Nothing, error)
+	GetLastSuccessfulSubscriptionPaymentCtx(context.Context, *DonaterCreatorId) (*PaymentGRPC, error)
 	mustEmbedUnimplementedPaymentsServiceServer()
 }
 
@@ -126,6 +137,9 @@ func (UnimplementedPaymentsServiceServer) GetPaymentsByUserIdCtx(context.Context
 }
 func (UnimplementedPaymentsServiceServer) ChangePaymentCtx(context.Context, *PaymentGRPC) (*Nothing, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangePaymentCtx not implemented")
+}
+func (UnimplementedPaymentsServiceServer) GetLastSuccessfulSubscriptionPaymentCtx(context.Context, *DonaterCreatorId) (*PaymentGRPC, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetLastSuccessfulSubscriptionPaymentCtx not implemented")
 }
 func (UnimplementedPaymentsServiceServer) mustEmbedUnimplementedPaymentsServiceServer() {}
 
@@ -248,6 +262,24 @@ func _PaymentsService_ChangePaymentCtx_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _PaymentsService_GetLastSuccessfulSubscriptionPaymentCtx_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DonaterCreatorId)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentsServiceServer).GetLastSuccessfulSubscriptionPaymentCtx(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/payments.PaymentsService/GetLastSuccessfulSubscriptionPaymentCtx",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentsServiceServer).GetLastSuccessfulSubscriptionPaymentCtx(ctx, req.(*DonaterCreatorId))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // PaymentsService_ServiceDesc is the grpc.ServiceDesc for PaymentsService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -278,6 +310,10 @@ var PaymentsService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ChangePaymentCtx",
 			Handler:    _PaymentsService_ChangePaymentCtx_Handler,
+		},
+		{
+			MethodName: "GetLastSuccessfulSubscriptionPaymentCtx",
+			Handler:    _PaymentsService_GetLastSuccessfulSubscriptionPaymentCtx_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

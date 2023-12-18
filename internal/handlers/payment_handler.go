@@ -54,6 +54,7 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 		CreatorId: form.Body.CreatorId,
 		Currency:  form.Body.Currency,
 		Value:     form.Body.Value,
+		Type: model.PaymentTypeDonate,
 	}
 	responseUkassa, err := pay.Donate(payment)
 	if err != nil {
@@ -104,30 +105,30 @@ func (p *PaymentHandler) DonateStratagy(ctx context.Context, form PaymentForm) (
 			return
 		}
 		if payment.Status == model.PaymentSucceededStatus {
-			levels, err := p.SubscriptionLevels.GetUserLevels(payment.CreatorId)
-			if err != nil {
-				log.Println(err)
-				return
-			}
-			for _, level := range levels {
-				if level.CostInteger > payment.PaymentInteger {
-					continue
-				}
-				if level.CostInteger == payment.PaymentInteger && level.CostFractional > payment.PaymentFractional {
-					continue
-				}
-				subscription := model.Subscription{
-					Subscriber_id:         payment.DonaterId,
-					Creator_id:            payment.CreatorId,
-					Subscription_level_id: level.ID,
-				}
-				_, err := p.Subscriptions.AddNewSubscription(subscription)
-				if err != nil {
-					log.Println(err)
-					return
-				}
-				break
-			}
+			// levels, err := p.SubscriptionLevels.GetUserLevels(payment.CreatorId)
+			// if err != nil {
+			// 	log.Println(err)
+			// 	return
+			// }
+			// for _, level := range levels {
+			// 	if level.CostInteger > payment.PaymentInteger {
+			// 		continue
+			// 	}
+			// 	if level.CostInteger == payment.PaymentInteger && level.CostFractional > payment.PaymentFractional {
+			// 		continue
+			// 	}
+			// 	subscription := model.Subscription{
+			// 		Subscriber_id:         payment.DonaterId,
+			// 		Creator_id:            payment.CreatorId,
+			// 		Subscription_level_id: level.ID,
+			// 	}
+			// 	_, err := p.Subscriptions.AddNewSubscription(subscription)
+			// 	if err != nil {
+			// 		log.Println(err)
+			// 		return
+			// 	}
+			// 	break
+			// }
 			c.Stop()
 		}
 		if payment.Status == model.PaymentCanceledStatus {

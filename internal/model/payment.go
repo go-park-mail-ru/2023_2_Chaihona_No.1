@@ -4,6 +4,9 @@ const (
 	PaymentWaitingStatus   = 0
 	PaymentCanceledStatus  = 1
 	PaymentSucceededStatus = 2
+
+	PaymentTypeDonate = 0
+	PaymentTypeSubscription = 1
 )
 
 type Payment struct {
@@ -16,6 +19,9 @@ type Payment struct {
 	CreatorId         uint   `json:"creator_id" db:"creator_id"`
 	Currency          string `json:"currency,omitempty" db:"currency"`
 	Value             string `json:"value,omitempty" db:""`
+	Type uint `json:"type" db:"payment_type"`
+	CreatedAt string `json:"created_at" db:"created_at"`
+	PaymentMethodId string `json:"payment_method_id" db:"payment_method_id"`
 }
 
 type Amount struct {
@@ -24,7 +30,7 @@ type Amount struct {
 } 
 
 type Confirmation struct {
-	Type string `json:"type"`
+	Type string `json:"type,omitempty"`
 	ReturnURL string `json:"return_url,omitempty"`
 	ConfirmationURL string `json:"confirmation_url,omitempty"`
 }
@@ -38,9 +44,10 @@ type PaymentMethodData struct {
 type RequestUKassa struct {
 	Amount `json:"amount"`
 	Capture bool `json:"capture"`
-	Confirmation `json:"confirmation"`
+	Confirmation `json:"confirmation,omitempty"`
 	SavePaymentMethod bool `json:"save_payment_method,omitempty"`
 	PaymentMethodData `json:"payment_method_data,omitempty"`
+	PaymentMethodId string `json:"payment_method_id,omitempty"`
 }
 
 type Recipient struct {
@@ -60,4 +67,5 @@ type ResponseUKassa struct {
 	Recipient `json:"recipient"`
 	Refundable bool `json:"refundable"`
 	Test bool `json:"test"`
+	PaymentMethodData `json:"payment_method"`
 }

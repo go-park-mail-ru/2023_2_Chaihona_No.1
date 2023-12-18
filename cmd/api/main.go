@@ -22,6 +22,7 @@ import (
 	subscriptionlevels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscription_levels"
 	subs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/payment"
 	_ "github.com/go-swagger/go-swagger"
 	"github.com/gorilla/mux"
 )
@@ -145,10 +146,14 @@ func main() {
 	r.HandleFunc("/api/v1/comment", handlers.NewWrapper(postHandler.AddCommentStratagy).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/comment/{id:[0-9]+}", handlers.NewWrapper(postHandler.DeleteCommentStrategy).ServeHTTP).Methods("DELETE")
 	r.HandleFunc("/api/v1/comment/{id:[0-9]+}", handlers.NewWrapper(postHandler.ChangeCommentStrategy).ServeHTTP).Methods("POST")
+	
+	err = payment.MakeCronCheckSubscriptions(payManager, subsStorage)
+	log.Println(err)
 	fmt.Println("Server started")
-	 err = http.ListenAndServe(configs.BackendServerPort, r)
+	err = http.ListenAndServe(configs.BackendServerPort, r)
 	//err = http.ListenAndServeTLS(configs.BackendServerPort, "/etc/letsencrypt/live/my-kopilka.ru/fullchain.pem",
 	//	"/etc/letsencrypt/live/my-kopilka.ru/privkey.pem", nil)
 	//err = http.ListenAndServeTLS(configs.BackendServerPort, "cert.pem", "key.pem", nil)
 	fmt.Println(err)
+
 }

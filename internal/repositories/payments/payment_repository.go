@@ -11,4 +11,5 @@ type PaymentRepository interface {
 	GetPaymentsByAuthorId(authorID uint) ([]model.Payment, error)
 	GetPaymentsByUserId(userId uint) ([]model.Payment, error)
 	ChangePayment(payment model.Payment) error
+	GetLastSuccessfulSubscriptionPayment(donaterId, creatorId int) (model.Payment, error)
 }

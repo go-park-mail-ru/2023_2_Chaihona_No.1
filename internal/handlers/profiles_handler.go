@@ -381,6 +381,7 @@ func (p *ProfileHandler) FollowStratagy(ctx context.Context, form FollowForm) (R
 			CreatorId: uint(id),
 			Currency: subLevel.Currency,
 			Value: value,
+			Type: model.PaymentTypeSubscription,
 		}
 		responseUkassa, err := pay.Subscribe(payment)
 		if err != nil {

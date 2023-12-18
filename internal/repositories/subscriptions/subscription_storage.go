@@ -14,6 +14,14 @@ type SubscriptionsStorage struct {
 	db *sql.DB
 }
 
+func SelectAllNotFreeSubscriptionsSQL() squirrel.SelectBuilder {
+	return squirrel.Select("s.*").
+		From(configs.SubscriptionTable +" s").
+		InnerJoin(configs.SubscribeLevelTable + " sl ON s.subscription_level_id = sl.id").
+		Where("sl.level <> 0").
+		PlaceholderFormat(squirrel.Dollar)
+}
+
 func CountSubscribersSQL(id int) squirrel.SelectBuilder {
 	return squirrel.Select("COUNT(*)").
 		From(configs.SubscriptionTable).
@@ -119,4 +127,17 @@ func (storage *SubscriptionsStorage) CountSubscribers(id int) (int, error) {
 		return 0, err
 	}
 	return *counts[0], nil
+}
+
+func (storage *SubscriptionsStorage) GetAllNotFreeSubscriptions() ([]model.Subscription, error) {
+	rows, err := SelectAllNotFreeSubscriptionsSQL().RunWith(storage.db).Query()
+	if err != nil {
+		return []model.Subscription{},err
+	}
+	var subscriptions []model.Subscription
+	err = dbscan.ScanAll(&subscriptions, rows)
+	if err != nil {
+		return []model.Subscription{},err
+	}
+	return subscriptions, nil
 }

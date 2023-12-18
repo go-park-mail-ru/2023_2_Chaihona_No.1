@@ -11,10 +11,25 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 )
 
+func SelectLastSuccessfulSubscriptionPaymentSQL(donaterId, creatorId int) squirrel.SelectBuilder {
+	return squirrel.Select("p.*").
+		From(configs.PaymentTable + " p").
+		Where(squirrel.Eq{
+			"donater_id": donaterId,
+			"creator_id": creatorId,
+			"status": model.PaymentSucceededStatus,
+			"payment_type": model.PaymentTypeSubscription, 
+		}).
+		GroupBy("p.id").
+		OrderBy("created_at DESC").
+		Limit(1).
+		PlaceholderFormat(squirrel.Dollar)
+}
+
 func InsertPaymentSQL(payment model.Payment) squirrel.InsertBuilder {
 	return squirrel.Insert(configs.PaymentTable).
-		Columns("uuid","payment_integer", "payment_fractional", "status", "donater_id", "creator_id").
-		Values(payment.UUID, payment.PaymentInteger, payment.PaymentFractional, payment.Status, payment.DonaterId, payment.CreatorId).
+		Columns("uuid","payment_integer", "payment_fractional", "status", "donater_id", "creator_id", "payment_type").
+		Values(payment.UUID, payment.PaymentInteger, payment.PaymentFractional, payment.Status, payment.DonaterId, payment.CreatorId, payment.Type).
 		Suffix("RETURNING \"id\"").
 		PlaceholderFormat(squirrel.Dollar)
 }
@@ -52,6 +67,7 @@ func UpdatePaymentSQL(payment model.Payment) squirrel.UpdateBuilder {
 	return squirrel.Update(configs.PaymentTable).
 		SetMap(map[string]interface{}{
 			"status": payment.Status,
+			"payment_method_id": payment.PaymentMethodId,
 		}).
 		Where(squirrel.Eq{"uuid": payment.UUID}).
 		// Where(squirrel.Eq{"id": payment.Id}).
@@ -78,6 +94,7 @@ func (manager *PaymentManager) CreateNewPayment(payment model.Payment) (int, err
 		CreatorId:      uint32(payment.CreatorId),
 		Currency:       payment.Currency,
 		Value:          payment.Value,
+		Type: uint32(payment.Type),
 	})
 
 	return int(i.I), err
@@ -100,6 +117,8 @@ func (manager *PaymentManager) GetPayment(uuid string) (model.Payment, error) {
 		CreatorId:      uint(payment.CreatorId),
 		Currency:       payment.Currency,
 		Value:          payment.Value,
+		PaymentMethodId: payment.PaymentMethodId,
+		CreatedAt: payment.CreatedAt,
 	}, err
 }
 
@@ -114,6 +133,8 @@ func (manager *PaymentManager) ChangePayment(payment model.Payment) error {
 		CreatorId:      uint32(payment.CreatorId),
 		Currency:       payment.Currency,
 		Value:          payment.Value,
+		Type: uint32(payment.Type),
+		PaymentMethodId: payment.PaymentMethodId,
 	})
 
 	return err
@@ -138,6 +159,9 @@ func (manager *PaymentManager) GetPaymentsByAuthorId(authorId uint) ([]model.Pay
 			CreatorId:      uint(payment.CreatorId),
 			Currency:       payment.Currency,
 			Value:          payment.Value,
+			Type: uint(payment.Type),
+			PaymentMethodId: payment.PaymentMethodId,
+			CreatedAt: payment.CreatedAt,
 		})
 	}
 	return payments, nil
@@ -201,6 +225,7 @@ func (storage *PaymentStorage) CreateNewPaymentCtx(ctx context.Context, payment 
 		CreatorId:      uint(payment.CreatorId),
 		Currency:       payment.Currency,
 		Value:          payment.Value,
+		Type: uint(payment.Type),
 	}).RunWith(storage.db).QueryRow().Scan(&paymentId)
 	if err != nil {
 		return &Int{
@@ -264,6 +289,9 @@ func (storage *PaymentStorage) GetPaymentCtx(ctx context.Context, uuid *UUid) (*
 			CreatorId:      uint32(payments[0].CreatorId),
 			Currency:       payments[0].Currency,
 			Value:          payments[0].Value,
+			Type: uint32(payments[0].Type),
+			PaymentMethodId: payments[0].PaymentMethodId,
+			CreatedAt: payments[0].CreatedAt,
 		}, nil
 	}
 	return &PaymentGRPC{}, nil
@@ -279,7 +307,6 @@ func (storage *PaymentStorage) ChangePayment(payment model.Payment) error {
 }
 
 func (storage *PaymentStorage) ChangePaymentCtx(ctx context.Context, payment *PaymentGRPC) (*Nothing, error) {
-	fmt.Println(payment.Status)
 	rows, err := UpdatePaymentSQL(model.Payment{
 		Id:             int(payment.Id),
 		UUID:           payment.Uuid,
@@ -290,6 +317,8 @@ func (storage *PaymentStorage) ChangePaymentCtx(ctx context.Context, payment *Pa
 		CreatorId:      uint(payment.CreatorId),
 		Currency:       payment.Currency,
 		Value:          payment.Value,
+		Type: uint(payment.Type),
+		PaymentMethodId: payment.PaymentMethodId,
 	}).RunWith(storage.db).Query()
 	defer rows.Close()
 	if err != nil {
@@ -337,6 +366,9 @@ func (storage *PaymentStorage) GetPaymentsByAuthorIdCtx(ctx context.Context, aut
 			CreatorId:      uint32(payment.CreatorId),
 			Currency:       payment.Currency,
 			Value:          payment.Value,
+			Type: uint32(payment.Type),
+			PaymentMethodId: payment.PaymentMethodId,
+			CreatedAt: payment.CreatedAt,
 		}
 	}
 	return paymetsMap, nil
@@ -377,8 +409,66 @@ func (storage *PaymentStorage) GetPaymentsByUserIdCtx(ctx context.Context, userI
 			CreatorId:      uint32(payment.CreatorId),
 			Currency:       payment.Currency,
 			Value:          payment.Value,
+			PaymentMethodId: payment.PaymentMethodId,
+			Type: uint32(payment.Type),
+			CreatedAt: payment.CreatedAt,
 		}
 	}
 
 	return paymentsMap, nil
+}
+
+func (storage *PaymentStorage) GetLastSuccessfulSubscriptionPaymentCtx(ctx context.Context, ids *DonaterCreatorId) (*PaymentGRPC, error) {
+	rows, err := SelectLastSuccessfulSubscriptionPaymentSQL(int(ids.DonaterId), int(ids.CreatorId)).RunWith(storage.db).Query()
+	if err != nil {
+		return &PaymentGRPC{}, err
+	}
+	var payments []model.Payment
+	err = dbscan.ScanAll(&payments, rows)
+	if err != nil {
+		return &PaymentGRPC{}, err
+	}
+	if len(payments) == 0 {
+		return &PaymentGRPC{}, fmt.Errorf("no payments")
+	}
+	payment := payments[0]
+ 	return &PaymentGRPC{
+			Id:             int32(payment.Id),
+			Uuid:           payment.UUID,
+			PaymentInteger: uint32(payment.PaymentInteger),
+			Status:         uint32(payment.Status),
+			DonaterId:      uint32(payment.DonaterId),
+			CreatorId:      uint32(payment.CreatorId),
+			Currency:       payment.Currency,
+			Value:          payment.Value,
+			Type: uint32(payment.Type),
+			PaymentMethodId: payment.PaymentMethodId,
+			CreatedAt: payment.CreatedAt,
+		}, nil
+}
+
+func (manager *PaymentManager) GetLastSuccessfulSubscriptionPayment(donaterId, creatorId int) (model.Payment, error) {
+	payment, err := manager.Client.GetLastSuccessfulSubscriptionPaymentCtx(
+		context.Background(), 
+		&DonaterCreatorId{
+			DonaterId: uint32(donaterId),
+			CreatorId: uint32(creatorId),
+		})
+	
+	if err != nil {
+		return model.Payment{}, err
+	}
+	return model.Payment{
+			Id:             int(payment.Id),
+			UUID:           payment.Uuid,
+			PaymentInteger: uint(payment.PaymentInteger),
+			Status:         uint(payment.Status),
+			DonaterId:      uint(payment.DonaterId),
+			CreatorId:      uint(payment.CreatorId),
+			Currency:       payment.Currency,
+			Value:          payment.Value,
+			Type: uint(payment.Type),
+			CreatedAt: payment.CreatedAt,
+			PaymentMethodId: payment.PaymentMethodId,
+		}, nil
 }

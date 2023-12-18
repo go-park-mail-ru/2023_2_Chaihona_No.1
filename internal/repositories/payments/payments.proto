@@ -30,19 +30,28 @@ message PaymentGRPC {
 	uint32 donater_id = 6;         
 	uint32 creator_id = 7;         
 	string currency = 8;          
-	string value = 9;             
+	string value = 9;          
+	uint32 Type = 10;
+	string created_at = 11;
+	string payment_method_id = 12;
 }
 
 message PaymentsGRPC {
     map<int32, PaymentGRPC> payments = 1;
 }
 
+message DonaterCreatorId {
+    uint32 donater_id = 1;
+    uint32 creator_id = 2; 
+}
+
 // grpc-сервис оплаты
 service PaymentsService {
-    rpc CreateNewPaymentCtx(PaymentGRPC) returns (Int) {}
+	rpc CreateNewPaymentCtx(PaymentGRPC) returns (Int) {}
 	rpc DeletePaymentCtx(UInt) returns (Nothing) {}
 	rpc GetPaymentCtx(UUid) returns (PaymentGRPC) {}
 	rpc GetPaymentsByAuthorIdCtx(UInt) returns (PaymentsGRPC) {}
 	rpc GetPaymentsByUserIdCtx(UInt) returns (PaymentsGRPC) {}
 	rpc ChangePaymentCtx(PaymentGRPC) returns (Nothing) {}
+	rpc GetLastSuccessfulSubscriptionPaymentCtx(DonaterCreatorId) returns (PaymentGRPC) {}
 }
