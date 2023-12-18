@@ -311,6 +311,7 @@ func MakeCronCheckSubscriptions(paymentRepository payments.PaymentRepository,
 						Currency: lastPayment.Currency,
 						Value: value,
 						Type: model.PaymentTypeSubscription,
+						PaymentMethodId: lastPayment.PaymentMethodId,
 					},
 				)
 				if err != nil {
