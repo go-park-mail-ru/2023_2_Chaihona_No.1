@@ -140,7 +140,8 @@ func Donate(paymentDB model.Payment) (model.ResponseUKassa, error) {
 	} 
 	reader := bytes.NewReader(requestJson)
 	responseUKassa, err := makeRequestUKassa(reader, "POST", paymentDB.UUID)
-		if err != nil {
+	fmt.Println(responseUKassa)
+	if err != nil {
 		log.Println(err)
 		return model.ResponseUKassa{}, err
 	}
