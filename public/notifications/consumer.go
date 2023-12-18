@@ -20,8 +20,8 @@ func ConsumeEvent(ctx context.Context, reader *kafka.Reader) (Event, error) {
 	}
 
 	var event Event
-	err = json.Unmarshal(msg.Value, &event)
-	log.Println(string(msg.Value))
+	err = kafka.Unmarshal(msg.Value, &event)
+	log.Println(event)
 	if err != nil {
 		return Event{}, err
 	}
