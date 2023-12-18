@@ -38,6 +38,26 @@ func createAutoPaymentUKassa(payment model.Payment) (model.Payment, model.SubReq
 	return payment, requestUkassa, nil
 }
 
+func createDonatePaymentUKassa(payment model.Payment) (model.Payment, model.DonateRequestUKassa, error) {
+	paymnetId, err := uuid.NewRandom()
+	if err != nil {
+		return  model.Payment{}, model.DonateRequestUKassa{}, err
+	}
+	payment.UUID = paymnetId.String();
+	requestUkassa := model.DonateRequestUKassa{
+		Amount: model.Amount{
+			Value: payment.Value,
+			Currency: payment.Currency,
+		},
+		Capture: true,
+		Confirmation: model.Confirmation{
+			Type: "redirect",
+			ReturnURL: "https://my-kopilka.ru",
+		},
+	}
+	return payment, requestUkassa, nil
+}
+
 func createPaymentUKassa(payment model.Payment, save bool) (model.Payment, model.RequestUKassa, error) {
 	paymnetId, err := uuid.NewRandom()
 	if err != nil {
@@ -128,7 +148,7 @@ func Donate(paymentDB model.Payment) (model.ResponseUKassa, error) {
 	// 		ReturnURL: "https://my-kopilka.ru",
 	// 	},
 	// }
-	paymentDB, requestUkassa, err := createPaymentUKassa(paymentDB, false)
+	paymentDB, requestUkassa, err := createDonatePaymentUKassa(paymentDB)
 	if err != nil {
 		return  model.ResponseUKassa{} ,err
 	}

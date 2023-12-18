@@ -42,6 +42,12 @@ type PaymentMethodData struct {
 	Saved bool `json:"saved,omitempty"`
 }
 
+type DonateRequestUKassa struct {
+	Amount `json:"amount"`
+	Capture bool `json:"capture"`
+	Confirmation `json:"confirmation,omitempty"`
+}
+
 type RequestUKassa struct {
 	Amount `json:"amount"`
 	Capture bool `json:"capture"`
