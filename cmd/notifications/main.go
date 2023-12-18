@@ -17,13 +17,14 @@ func main() {
 		// GroupID: "my-group",
 	})
 
-	event, err := notifications.ConsumeEvent(context.Background(), r)
-	if err != nil {
-		log.Println(err)
+	for {
+		event, err := notifications.ConsumeEvent(context.Background(), r)
+		if err != nil {
+			log.Println(err)
+		}
+
+		fmt.Println(event.Body["id"])
 	}
-
-	fmt.Println(event.Body["id"])
-
 	// data, err := event.GetMarshalled()
 	// if err != nil {
 	// 	log.Println(err)
