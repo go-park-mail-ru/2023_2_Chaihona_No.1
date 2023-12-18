@@ -95,6 +95,7 @@ func (manager *PaymentManager) CreateNewPayment(payment model.Payment) (int, err
 		Currency:       payment.Currency,
 		Value:          payment.Value,
 		Type: uint32(payment.Type),
+		PaymentMethodId: payment.PaymentMethodId,
 	})
 
 	return int(i.I), err
@@ -226,6 +227,7 @@ func (storage *PaymentStorage) CreateNewPaymentCtx(ctx context.Context, payment 
 		Currency:       payment.Currency,
 		Value:          payment.Value,
 		Type: uint(payment.Type),
+		PaymentMethodId: payment.PaymentMethodId,
 	}).RunWith(storage.db).QueryRow().Scan(&paymentId)
 	if err != nil {
 		return &Int{

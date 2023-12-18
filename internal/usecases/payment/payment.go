@@ -319,7 +319,6 @@ func MakeCronCheckSubscriptions(paymentRepository payments.PaymentRepository,
 					return
 				}
 				requestUkassa.PaymentMethodId = lastPayment.PaymentMethodId
-				payment.PaymentMethodId = lastPayment.PaymentMethodId
 				requestJson, err := json.Marshal(requestUkassa)
 				if err != nil {
 					log.Println(err)
