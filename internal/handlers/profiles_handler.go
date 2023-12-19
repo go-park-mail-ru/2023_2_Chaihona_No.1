@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/analytics"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/payments"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	subscribelevels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscribe_levels"
@@ -26,6 +27,10 @@ type Profiles struct {
 	Profiles []model.Profile `json:"profiles"`
 }
 
+type Analytics struct {
+	Analytics model.Analitycs `json:"analytics"`
+}
+
 type ProfileHandler struct {
 	SessionManager *sessions.RedisManager
 	// Session       sessions.SessionRepository
@@ -33,6 +38,7 @@ type ProfileHandler struct {
 	Levels        subscribelevels.SubscribeLevelRepository
 	Subscriptions subscriptions.SubscriptionRepository
 	Payments      *payments.PaymentManager
+	Analytics	analytics.AnalyticsRepository
 }
 
 func CreateProfileHandlerViaRepos(
@@ -41,6 +47,7 @@ func CreateProfileHandlerViaRepos(
 	levels subscribelevels.SubscribeLevelRepository,
 	subscriptions subscriptions.SubscriptionRepository,
 	payments *payments.PaymentManager,
+	analytic analytics.AnalyticsRepository,
 ) *ProfileHandler {
 	return &ProfileHandler{
 		sessionManager,
@@ -48,6 +55,7 @@ func CreateProfileHandlerViaRepos(
 		levels,
 		subscriptions,
 		payments,
+		analytic,
 	}
 }
 
@@ -516,6 +524,17 @@ func  (p *ProfileHandler) Analitycs(ctx context.Context, form EmptyForm) (Result
 	if !auth.CheckAuthorizationManager(ctx, p.SessionManager) {
 		return Result{}, ErrUnathorized
 	}
+	
+	cookie := auth.GetSession(ctx)
+	session, ok := p.SessionManager.CheckSessionCtxWrapper(ctx, cookie.Value)
+	if !ok {
+		return Result{}, ErrNoSession
+	}
 
-	return Result{}, nil
+	analytic, err := p.Analytics.GetLastAnalytics(int(session.UserID))
+	if err != nil {
+		return Result{}, ErrDataBase
+	}
+
+	return Result{Body: Analytics{Analytics: analytic}}, nil
 }
