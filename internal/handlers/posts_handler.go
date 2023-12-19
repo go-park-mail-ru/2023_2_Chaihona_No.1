@@ -144,7 +144,7 @@ func (d DeviceIdForm) IsEmpty() bool {
 }
 
 func (d DeviceIdForm) IsValide() bool {
-	return false
+	return true
 }
 
 type DeviceHandler struct {
