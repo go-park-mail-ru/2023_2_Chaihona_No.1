@@ -45,7 +45,7 @@ func CountCommentsSQL(userId int) squirrel.SelectBuilder {
 }
 
 func CountDonationsSQL(userId int) squirrel.SelectBuilder {
-	return squirrel.Select("COUNT(*) as total_donations, coalesce(SUM(p.payment_fractional), 0) as total_donations_earned_integer, coalesce(SUM(p.payment_integer), 0) as total_donations_earned_fractional").
+	return squirrel.Select("COUNT(*) as total_donations, coalesce(SUM(p.payment_integer), 0) as total_donations_earned_integer, coalesce(SUM(p.payment_fractional), 0) as total_donations_earned_fractional").
 		From(configs.PaymentTable + " p").
 		Where(squirrel.And{
 			squirrel.Eq{"p.creator_id": userId}, 
@@ -56,7 +56,7 @@ func CountDonationsSQL(userId int) squirrel.SelectBuilder {
 }
 
 func CountEarnedSQL(userId int) squirrel.SelectBuilder {
-	return squirrel.Select("SUM(p.payment_fractional) as total_donations_earned_integer, SUM(p.payment_integer) as total_donations_earned_fractional").
+	return squirrel.Select("coalesce(SUM(p.payment_integer), 0) as total_donations_earned_integer, coalesce(SUM(p.payment_fractional), 0) as total_donations_earned_fractional").
 		From(configs.PaymentTable + " p").
 		Where(squirrel.And{
 			squirrel.Eq{"p.creator_id": userId}, 
