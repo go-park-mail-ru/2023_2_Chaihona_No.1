@@ -15,7 +15,7 @@ func SelectLastAnalyticsSQL(userId int) squirrel.SelectBuilder {
 	return squirrel.Select("*").
 		From(configs.AnalitycsTable + " a").
 		Where(squirrel.Eq{"user_id": userId}).
-		GroupBy("a.user_id").
+		GroupBy("a.user_id, a.id").
 		OrderBy("a.created_at DESC").
 		Limit(1).
 		PlaceholderFormat(squirrel.Dollar)	
