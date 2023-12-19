@@ -89,6 +89,7 @@ func MakeAnalytics(multiStorage *multistorage.MultiStorage) {
 				log.Println(err)
 				return
 			}
+			fmt.Println("added")
 		}
 	}
 
