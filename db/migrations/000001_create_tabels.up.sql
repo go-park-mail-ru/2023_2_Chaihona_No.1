@@ -116,6 +116,15 @@ CREATE TABLE post_like
   created_at    timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE user_device
+(
+  PRIMARY KEY (id),
+  id            serial NOT NULL,
+  user_id       serial NOT NULL,
+                CONSTRAINT FK_user_id FOREIGN KEY (user_id) REFERENCES public.user (id) ON DELETE CASCADE,
+  device_id     serial NOT NULL
+);
+
 CREATE TABLE subscription
 (
  PRIMARY KEY (id),

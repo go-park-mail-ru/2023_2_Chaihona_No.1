@@ -32,6 +32,50 @@ func DeletePostSQL(postId uint) squirrel.DeleteBuilder {
 // 		PlaceholderFormat(squirrel.Dollar)
 // }
 
+func SelectSubscribersByPostId(postID int) squirrel.SelectBuilder {
+	return squirrel.Select("s.subscriber_id").
+		From(configs.SubscriptionTable+" s").
+		Join(configs.PostTable+" p ON s.creator_id = p.creator_id").
+		Where("p.id = ?", postID).
+		Where("s.subscription_level_id >= p.min_subscription_level_id")
+}
+
+func SelectDevicesIdsByUserId(userID int) squirrel.SelectBuilder {
+	return squirrel.Select("ud.device_id").
+		From("public.user_device ud").
+		Where("ud.user_id = ?", userID)
+}
+
+func SelectSubscribersDevicesByPostId(postID int) squirrel.SelectBuilder {
+	return squirrel.Select("ud.device_id").
+	From("public.user_device ud").
+	Join("public.subscription s ON ud.user_id = s.subscriber_id").
+	Where("s.creator_id = (SELECT creator_id FROM public.post WHERE id = ?)", postID).
+	Where("s.subscription_level_id >= (SELECT min_subscription_level_id FROM public.post WHERE id = ?)", postID)  
+}
+
+type DeviceID struct {
+	DeviceId int `json:"device_id" db:"device_id"`
+}
+
+type SubscriberID struct {
+	SubscriberId int `json:"subscriber_id" db:"subscriber_id"`
+}
+
+func (storage *PostStorage) GetDevicesID(postId int) ([]DeviceID, error) {
+	rows, err := SelectSubscribersDevicesByPostId(postId).RunWith(storage.db).Query()
+	if err != nil {
+		return []DeviceID{}, err
+	}
+	var devices []DeviceID
+	err = dbscan.ScanAll(&devices, rows)
+	if err != nil {
+		return []DeviceID{}, err
+	}
+
+	return devices, nil
+}
+
 func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 	return squirrel.Select("*").
 		From(configs.PostTable).
@@ -39,7 +83,7 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
-func SelectPostCommentsSQL(postId, UserId int) squirrel.SelectBuilder{
+func SelectPostCommentsSQL(postId, UserId int) squirrel.SelectBuilder {
 	return squirrel.Select("c.*, " +
 		fmt.Sprintf("CASE WHEN c.user_id = %d THEN TRUE ELSE FALSE END AS is_owner ", UserId)).
 		From(configs.CommentTable + " c").
@@ -48,7 +92,6 @@ func SelectPostCommentsSQL(postId, UserId int) squirrel.SelectBuilder{
 		}).
 		PlaceholderFormat(squirrel.Dollar)
 }
-
 
 // For followed users
 func SelectUserPostsForFollowerSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder {
@@ -60,7 +103,7 @@ func SelectUserPostsForFollowerSQL(authorId uint, subscriberId uint) squirrel.Se
 		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", subscriberId)).
 		From(configs.PostTable+" p").
 		CrossJoin(configs.SubscriptionTable+" s").
-		LeftJoin(configs.CommentTable + " pc ON p.id = pc.post_id").
+		LeftJoin(configs.CommentTable+" pc ON p.id = pc.post_id").
 		LeftJoin(configs.AttachTable+" pa ON p.id = pa.post_id").
 		LeftJoin(configs.LikeTable+" pl ON p.id = pl.post_id").
 		InnerJoin(configs.SubscribeLevelTable+" sl1 ON p.min_subscription_level_id = sl1.id").
@@ -133,7 +176,6 @@ func SelectAvailiblePostsSQL(userId uint) squirrel.SelectBuilder {
 		OrderBy("created_at DESC").
 		PlaceholderFormat(squirrel.Dollar)
 }
-
 
 // func SelectAvailiblePostsSQL(userId uint) squirrel.SelectBuilder {
 // 	return squirrel.Select("p.*, TRUE AS has_access, "+
@@ -341,7 +383,6 @@ func (storage *PostStorage) GetPostsByAuthorIdForStrangerCtx(ctx context.Context
 		return &PostsMapGRPC{}, err
 	}
 
-	
 	for i := range posts {
 		if !posts[i].HasAccess {
 			continue

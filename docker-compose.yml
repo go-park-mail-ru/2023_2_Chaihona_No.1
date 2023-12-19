@@ -76,6 +76,15 @@ services:
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_BROKER_ID=1
       - ZOOKEEPER=zookeeper:2181
+
+  redpandadata-console:
+    image: redpandadata/console:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - KAFKA_BROKERS=kafka1:29091,kafka2:29092,kafka2:29093
+    depends_on:
+      - kafka1
   
 networks:
   net:
@@ -133,14 +142,5 @@ networks:
   #     echo -e 'Successfully created the following topics:'
   #     kafka-topics --bootstrap-server kafka:29092 --list
   #     "
-
-  # redpandadata-console:
-  #   image: redpandadata/console:latest
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     - KAFKA_BROKERS=kafka1:29091,kafka2:29092,kafka2:29093
-  #   depends_on:
-  #     - kafka1
-  #     - kafka2
-  #     - kafka3
+      # - kafka2
+      # - kafka3
