@@ -151,7 +151,7 @@ func main() {
 	r.HandleFunc("/api/v1/comment/{id:[0-9]+}", handlers.NewWrapper(postHandler.DeleteCommentStrategy).ServeHTTP).Methods("DELETE")
 	r.HandleFunc("/api/v1/comment/{id:[0-9]+}", handlers.NewWrapper(postHandler.ChangeCommentStrategy).ServeHTTP).Methods("POST")
 	
-	r.HandleFunc("/api/v1/analitycs", handlers.NewWrapper(profileHandler.Analitycs).ServeHTTP).Methods("GET")
+	r.HandleFunc("/api/v1/analytics", handlers.NewWrapper(profileHandler.Analitycs).ServeHTTP).Methods("GET")
 
 
 	mltStorage := &multistorage.MultiStorage{
