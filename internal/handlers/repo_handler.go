@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/analytics"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	levelrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscribe_levels"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
@@ -16,6 +17,7 @@ type RepoHandler struct {
 	sessionsManager *sessrep.RedisManager
 	users    usrep.UserRepository
 	levels levelrep.SubscribeLevelRepository
+	Analytics	analytics.AnalyticsRepository
 }
 
 type EmptyForm struct{}
@@ -32,11 +34,13 @@ func CreateRepoHandler(
 	sessionsManager *sessrep.RedisManager,
 	users usrep.UserRepository,
 	levels levelrep.SubscribeLevelRepository,
+	analytic analytics.AnalyticsRepository,
 ) *RepoHandler {
 	return &RepoHandler{
 		sessionsManager,
 		users,
 		levels,
+		analytic,
 	}
 }
 
@@ -122,6 +126,15 @@ func (api *RepoHandler) SignupStrategy(ctx context.Context, form reg.SignupForm)
 			return nil, err
 		}
 	}
+
+
+	analytic := model.Analitycs{}
+	analytic.UserId = id
+	_, err := api.Analytics.AddNewAnalytics(analytic)
+	if (err != nil) {
+		return &Result{}, err
+	}
+
 	bodyResponse := map[string]interface{}{
 		"id": id,
 	}
