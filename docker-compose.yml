@@ -1,3 +1,5 @@
+# /bin/kafka-topics --create --topic notifications --bootstrap-server localhost:9091 - создание топика
+# /bin/kafka-consumer-groups --bootstrap-server localhost:9091 --group my-group --reset-offsets --to-earliest --execute --topic notifications - создание группы
 version: "3.9"
 services:
   postgres:
@@ -42,6 +44,8 @@ services:
       - "2181:2181"
       - "2888:2888"
       - "3888:3888"
+    networks:
+      - net
     healthcheck:
       test: echo stat | nc localhost 2181
       interval: 10s
@@ -62,6 +66,8 @@ services:
       - zookeeper
     ports:
       - "9091:9091"
+    networks:
+      - net
     environment:
       - KAFKA_LISTENERS=LISTENER_INT://kafka1:29091,LISTENER_EXT://0.0.0.0:9091
       - KAFKA_ADVERTISED_LISTENERS=LISTENER_INT://kafka1:29091,LISTENER_EXT://localhost:9091
@@ -70,7 +76,10 @@ services:
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_BROKER_ID=1
       - ZOOKEEPER=zookeeper:2181
-
+  
+networks:
+  net:
+    driver: bridge
   # kafka2:
   #   image: confluentinc/cp-kafka:latest
   #   healthcheck:

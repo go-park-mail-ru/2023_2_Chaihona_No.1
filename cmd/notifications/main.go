@@ -25,11 +25,12 @@ func main() {
 
 		fmt.Println(event.Body["id"])
 	}
-	// data, err := event.GetMarshalled()
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// var ev notifications.PostEvent
-	// json.Unmarshal(data, &ev)
-	// fmt.Println(ev)
 }
+
+// data, err := event.GetMarshalled()
+// if err != nil {
+// 	log.Println(err)
+// }
+// var ev notifications.PostEvent
+// json.Unmarshal(data, &ev)
+// fmt.Println(ev)
