@@ -179,7 +179,7 @@ CREATE TABLE analytics
   difference_earned_integer int NOT NULL,
   difference_earned_fractional int NOT NULL,
   difference_subscribers int NOT NULL,
-  created_at            timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+  created_at            timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 );
 
 COMMIT;
