@@ -35,7 +35,7 @@ func MakeAnalytics(multiStorage *multistorage.MultiStorage) {
 			}
 
 			var newAnalytics model.Analitycs
-			newAnalytics.Id = int(user.ID)
+			newAnalytics.UserId = int(user.ID)
 			newAnalytics.TotalPosts, err = multiStorage.Analytics.CountPosts(int(user.ID))
 			if err != nil {
 				log.Println(err)

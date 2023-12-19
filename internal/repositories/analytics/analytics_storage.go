@@ -175,7 +175,6 @@ func (storage *AnalyticsStorage) CountSubscribers(userId int) (int, error) {
 
 func (storage *AnalyticsStorage) AddNewAnalytics(analytics model.Analitycs) (int, error) {
 	var analyticsId int
-	fmt.Println(analytics.UserId)
 	err := InsertAnalyticsSQL(analytics).RunWith(storage.db).QueryRow().Scan(&analyticsId)
 	if err != nil {
 		return 0, err
