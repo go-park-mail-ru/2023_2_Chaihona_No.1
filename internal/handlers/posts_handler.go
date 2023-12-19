@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"strconv"
 	"strings"
 
@@ -131,6 +132,17 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 	}
 
 	return Result{Body: BodyPosts{Posts: posts}}, nil
+}
+
+
+func GetDevice(w http.ResponseWriter, r *http.Request) {
+	var data []byte
+	
+	_, err := r.Body.Read(data)
+	if err != nil {
+		fmt.Println("error", err)
+	}
+	fmt.Println("token", string(data))
 }
 
 func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Result, error) {

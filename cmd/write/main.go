@@ -17,6 +17,6 @@ func main() {
 	// fmt.Println(w)
 	err := notifications.ProduceNotification(context.Background(), w, notifications.Event{
 		EventType: 1,
-		Body:      map[string]any{"id": 1}})
+		Body:      map[string]any{"id": int(1)}})
 	log.Println("Error writer:", err)
 }

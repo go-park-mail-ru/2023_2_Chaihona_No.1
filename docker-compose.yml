@@ -85,10 +85,9 @@ services:
       - KAFKA_BROKERS=kafka1:29091,kafka2:29092,kafka2:29093
     depends_on:
       - kafka1
+      # - kafka2
+      # - kafka3
   
-networks:
-  net:
-    driver: bridge
   # kafka2:
   #   image: confluentinc/cp-kafka:latest
   #   healthcheck:
@@ -142,5 +141,6 @@ networks:
   #     echo -e 'Successfully created the following topics:'
   #     kafka-topics --bootstrap-server kafka:29092 --list
   #     "
-      # - kafka2
-      # - kafka3
+networks:
+  net:
+    driver: bridge

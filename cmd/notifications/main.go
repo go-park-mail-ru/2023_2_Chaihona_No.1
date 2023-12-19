@@ -13,18 +13,19 @@ import (
 )
 
 func main() {
-	// var db postgresql.Database
-	// err := db.Connect()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
-	// }
-	// defer db.Close()
-	// postStorage := posts.CreatePostStorage(db)
+	var db postgresql.Database
+	err := db.Connect()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer db.Close()
+	postStorage := posts.CreatePostStorage(db.GetDB())
 	r := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: []string{configs.KafkaNotificationsBroker1Address},
-		Topic:   configs.KafkaNotificationsTopic,
-		GroupID: "my-group",
+		// Brokers: []string{"localhost:2181"},
+		Topic: configs.KafkaNotificationsTopic,
+		// GroupID: "my-group",
 	})
 
 	for {
@@ -32,12 +33,22 @@ func main() {
 		if err != nil {
 			log.Println(err)
 		}
-		// data, ok := event.Body["id"]
-		// if ok {
-		// 	ids, err := postStorage.GetDevicesID()
-		// 	fmt.Println("ids: ", ids, err)
+		id, ok := event.Body["id"].(float64)
+		// fmt.Println(data)
+		// if !ok {
+		// 	continue
+		// } else {
+		// 	fmt.Println("error data types")
 		// }
-		fmt.Println(event.Body["id"])
+		// id, ok := data.(int)
+		if ok {
+			ids, err := postStorage.GetDevicesID(int(id))
+			fmt.Println("ids: ", ids, err)
+		} else {
+			fmt.Println(id)
+			fmt.Println(event.Body["id"])
+			fmt.Println("error convert data")
+		}
 	}
 }
 

@@ -98,7 +98,7 @@ func main() {
 	postHandler := handlers.CreatePostHandlerViaRepos(sessManager, postManager, likeStorage, attachStorage, commentManager)
 	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessManager, payManager, subsStorage, subscriptionLevelsStorage)
 	fileHandler := handlers.CreateFileHandler(sessManager, userStoarge, attachStorage)
-	csatHandler := handlers.CreateCSATHandler(sessManager,questionsStorage)
+	csatHandler := handlers.CreateCSATHandler(sessManager, questionsStorage)
 	r := mux.NewRouter()
 
 	r.Methods("OPTIONS").HandlerFunc(handlers.OptionsHandler)
@@ -106,6 +106,7 @@ func main() {
 	r.HandleFunc("/api/v1/logout", handlers.NewWrapper(rep.LogoutStrategy).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/registration", handlers.NewWrapper(rep.SignupStrategy).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/is_authorized", handlers.NewWrapper(rep.IsAuthorizedStrategy).ServeHTTP).Methods("GET")
+	r.HandleFunc("/api/v1/add_device", handlers.GetDevice).Methods("POST")
 
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", handlers.NewWrapper(profileHandler.GetInfoStrategy).ServeHTTP).Methods("GET")
 	// r.HandleFunc("/api/v1/profile/{id:[0-9]+}", handlers.NewWrapper(profileHandler.ChangeUserStratagy).ServeHTTP).Methods("POST")
@@ -137,7 +138,7 @@ func main() {
 	r.HandleFunc("/api/v1/questions", handlers.NewWrapper(csatHandler.GetQuestions).ServeHTTP).Methods("GET")
 	r.HandleFunc("/api/v1/rate/{id:[0-9]+}", handlers.NewWrapper(csatHandler.Rate).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/statistic", handlers.NewWrapper(csatHandler.GetStatistic).ServeHTTP).Methods("GET")
-	
+
 	r.HandleFunc("/api/v1/post/{id:[0-9]+}/attaches", handlers.NewWrapper(fileHandler.LoadAttachesStratagy).ServeHTTP).Methods("GET")
 
 	r.HandleFunc("/api/v1/search/{nickname:.*}", handlers.NewWrapper(profileHandler.Search).ServeHTTP).Methods("GET")
@@ -146,7 +147,7 @@ func main() {
 	r.HandleFunc("/api/v1/comment/{id:[0-9]+}", handlers.NewWrapper(postHandler.DeleteCommentStrategy).ServeHTTP).Methods("DELETE")
 	r.HandleFunc("/api/v1/comment/{id:[0-9]+}", handlers.NewWrapper(postHandler.ChangeCommentStrategy).ServeHTTP).Methods("POST")
 	fmt.Println("Server started")
-	 err = http.ListenAndServe(configs.BackendServerPort, r)
+	err = http.ListenAndServe(configs.BackendServerPort, r)
 	//err = http.ListenAndServeTLS(configs.BackendServerPort, "/etc/letsencrypt/live/my-kopilka.ru/fullchain.pem",
 	//	"/etc/letsencrypt/live/my-kopilka.ru/privkey.pem", nil)
 	//err = http.ListenAndServeTLS(configs.BackendServerPort, "cert.pem", "key.pem", nil)
