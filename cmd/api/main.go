@@ -11,9 +11,11 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/db/postgresql"
 	_ "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/docs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/handlers"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/analytics"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/attaches"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/comments"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/likes"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/multistorage"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/payments"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/questions"
@@ -22,6 +24,7 @@ import (
 	subscriptionlevels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscription_levels"
 	subs "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscriptions"
 	usrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/users"
+	anal "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/analytics"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/payment"
 	_ "github.com/go-swagger/go-swagger"
 	"github.com/gorilla/mux"
@@ -93,6 +96,7 @@ func main() {
 	// answersStorage := answers.CreateAnswerStorage(db.GetDB())
 	subscriptionLevelsStorage := subscriptionlevels.CreateSubscribeLevelStorage(db.GetDB())
 	attachStorage := attaches.CreateAttachStorage(db.GetDB())
+	analyticsStorage := analytics.CreateAnalyticsStorage(db.GetDB())
 
 	rep := handlers.CreateRepoHandler(sessManager, userStoarge, levelStorage)
 	profileHandler := handlers.CreateProfileHandlerViaRepos(sessManager, userStoarge, levelStorage, subsStorage, payManager)
@@ -147,8 +151,24 @@ func main() {
 	r.HandleFunc("/api/v1/comment/{id:[0-9]+}", handlers.NewWrapper(postHandler.DeleteCommentStrategy).ServeHTTP).Methods("DELETE")
 	r.HandleFunc("/api/v1/comment/{id:[0-9]+}", handlers.NewWrapper(postHandler.ChangeCommentStrategy).ServeHTTP).Methods("POST")
 	
+	r.HandleFunc("/api/v1/analitycs", handlers.NewWrapper(profileHandler.Analitycs).ServeHTTP).Methods("GET")
+
+
+	mltStorage := &multistorage.MultiStorage{
+		Attaches: attachStorage,
+		Comments: commentManager,
+		Likes: likeStorage,
+		Payments: payManager,
+		Posts: postManager,
+		SubscriptionLevels: subscriptionLevelsStorage,
+		Users: userStoarge,
+		Analytics: analyticsStorage,
+	}
+	anal.MakeCronAnalytics(mltStorage)
 	err = payment.MakeCronCheckSubscriptions(payManager, subsStorage)
 	log.Println(err)
+
+
 	fmt.Println("Server started")
 	err = http.ListenAndServe(configs.BackendServerPort, r)
 	//err = http.ListenAndServeTLS(configs.BackendServerPort, "/etc/letsencrypt/live/my-kopilka.ru/fullchain.pem",

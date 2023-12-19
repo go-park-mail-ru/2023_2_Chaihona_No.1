@@ -155,4 +155,30 @@ CREATE TABLE answer
   rating      smallint  NOT NULL
 );
 
+CREATE TABLE analytics
+(
+  PRIMARY KEY (id),
+  id serial NOT NULL,
+  user_id serial NOT NULL,
+          CONSTRAINT FK_user_id FOREIGN KEY (user_id) REFERENCES public.user (id) ON DELETE CASCADE,
+  total_posts int NOT NULL,
+  total_likes int NOT NULL,
+  total_comments int NOT NULL,
+  total_donations int NOT NULL,
+  total_donations_earned_integer int NOT NULL,
+  total_donations_earned_fractional int NOT NULL,
+  total_earned_integer int NOT NULL,
+  total_earned_fractional int NOT NULL,
+  total_subscribers int NOT NULL,
+  difference_posts int NOT NULL,
+  difference_likes int NOT NULL,
+  difference_comments int NOT NULL,
+  difference_donations int NOT NULL,
+  difference_donations_earned_integer int NOT NULL,
+  difference_donations_earned_fractional int NOT NULL,
+  difference_earned_integer int NOT NULL,
+  difference_earned_fractional int NOT NULL,
+  difference_subscribers int NOT NULL
+);
+
 COMMIT;

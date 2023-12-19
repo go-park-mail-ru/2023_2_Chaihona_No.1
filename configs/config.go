@@ -27,6 +27,7 @@ const (
 	LikeTable           = "public.post_like"
 	PaymentTable        = "public.payment"
 	CommentTable = "public.post_comment"
+	AnalitycsTable = "public.analytics"
 
 	RedisServerIP   = "127.0.0.1"
 	RedisServerPort = "6379"

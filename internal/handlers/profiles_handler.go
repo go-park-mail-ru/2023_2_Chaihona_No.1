@@ -511,3 +511,11 @@ func (p *ProfileHandler) Search(ctx context.Context, form EmptyForm) (Result, er
 
 	return Result{Body: Profiles{Profiles: profiles}}, nil
 }
+
+func  (p *ProfileHandler) Analitycs(ctx context.Context, form EmptyForm) (Result, error) {
+	if !auth.CheckAuthorizationManager(ctx, p.SessionManager) {
+		return Result{}, ErrUnathorized
+	}
+
+	return Result{}, nil
+}
