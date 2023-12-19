@@ -1,5 +1,7 @@
 BEGIN;
 
+DROP TABLE IF EXISTS analytics;
+
 DROP TABLE IF EXISTS notification;
 
 DROP TABLE IF EXISTS subscription;
@@ -21,6 +23,5 @@ DROP TABLE IF EXISTS question;
 DROP TABLE IF EXISTS answer;
 
 DROP TABLE IF EXISTS public.user;
-
 
 COMMIT;
