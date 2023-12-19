@@ -55,7 +55,7 @@ func SelectSubscribersDevicesByPostId(postID int) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
-func InsertUserDeviceSQL(userID, deviceID uint) squirrel.InsertBuilder {
+func InsertUserDeviceSQL(userID uint, deviceID string) squirrel.InsertBuilder {
 	return squirrel.Insert("public.user_device").
 		Columns("user_id", "device_id").
 		Values(userID, deviceID).
@@ -64,7 +64,7 @@ func InsertUserDeviceSQL(userID, deviceID uint) squirrel.InsertBuilder {
 }
 
 type DeviceID struct {
-	DeviceId int `json:"device_id" db:"device_id"`
+	DeviceId string `json:"device_id" db:"device_id"`
 }
 
 type SubscriberID struct {
@@ -83,6 +83,15 @@ func (storage *PostStorage) GetDevicesID(postId int) ([]DeviceID, error) {
 	}
 
 	return devices, nil
+}
+
+func (storage *PostStorage) AddNewDevice(userID int, deviceID string) (int, error) {
+	var rowId int
+	err := InsertUserDeviceSQL(uint(userID), deviceID).RunWith(storage.db).QueryRow().Scan(&rowId)
+	if err != nil {
+		return 0, err
+	}
+	return rowId, nil
 }
 
 func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {

@@ -14,4 +14,5 @@ type PostRepository interface {
 	GetPostsByAuthorIdForFollower(authorID uint, subscriberId uint) ([]model.Post, error)
 	GetUsersFeed(userId uint) ([]model.Post, error)
 	GetDevicesID(postId int) ([]DeviceID, error)
+	AddNewDevice(userID int, deviceID string) (int, error)
 }

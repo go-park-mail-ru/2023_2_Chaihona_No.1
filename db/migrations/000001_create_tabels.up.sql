@@ -122,7 +122,7 @@ CREATE TABLE user_device
   id            serial NOT NULL,
   user_id       serial NOT NULL,
                 CONSTRAINT FK_user_id FOREIGN KEY (user_id) REFERENCES public.user (id) ON DELETE CASCADE,
-  device_id     serial NOT NULL
+  device_id     text NOT NULL
 );
 
 CREATE TABLE subscription

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"strconv"
 	"strings"
 
@@ -30,9 +29,9 @@ type BodyLike struct {
 type PostHandler struct {
 	// Sessions sessrep.SessionRepository
 	SessionsManager *sessrep.RedisManager
-	PostsManager *postsrep.PostManager
+	PostsManager    *postsrep.PostManager
 	// Posts   postsrep.PostRepository
-	Likes   likesrep.LikeRepository
+	Likes    likesrep.LikeRepository
 	Attaches attaches.AttachRepository
 	Comments *comments.CommentManager
 }
@@ -112,9 +111,9 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 	for i := range posts {
 		posts[i].CreationDate = posts[i].CreationDateSQL.Time.Format("2006-01-02 15:04")
 		if !posts[i].HasAccess {
-			posts[i].Attaches = "";
-			posts[i].Body = "";
-			posts[i].Comments = []model.Comment{};
+			posts[i].Attaches = ""
+			posts[i].Body = ""
+			posts[i].Comments = []model.Comment{}
 		}
 	}
 	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
@@ -134,15 +133,41 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 	return Result{Body: BodyPosts{Posts: posts}}, nil
 }
 
+type DeviceIdForm struct {
+	Body struct {
+		DeviceId string `json:"device_id"`
+	} `json:"body"`
+}
 
-func GetDevice(w http.ResponseWriter, r *http.Request) {
-	var data []byte
-	
-	_, err := r.Body.Read(data)
-	if err != nil {
-		fmt.Println("error", err)
+func (d DeviceIdForm) IsEmpty() bool {
+	return false
+}
+
+func (d DeviceIdForm) IsValide() bool {
+	return false
+}
+
+type DeviceHandler struct {
+	// Sessions sessrep.SessionRepository
+	SessionsManager *sessrep.RedisManager
+	// PostsManager    *postsrep.PostManager
+	Posts postsrep.PostRepository
+}
+
+func (d *DeviceHandler) GetDevice(ctx context.Context, form DeviceIdForm) (Result, error) {
+	fmt.Println("here we are")
+	cookie := auth.GetSession(ctx)
+	if cookie == nil {
+		return Result{}, ErrNoCookie
 	}
-	fmt.Println("token", string(data))
+
+	session, ok := d.SessionsManager.CheckSessionCtxWrapper(ctx, cookie.Value)
+	if !ok {
+		return Result{}, ErrNoSession
+	}
+
+	d.Posts.AddNewDevice(int(session.UserID), form.Body.DeviceId)
+	return Result{}, nil
 }
 
 func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Result, error) {
@@ -192,7 +217,7 @@ func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Re
 			return Result{}, ErrDataBase
 		}
 
-		err = files.DeleteFile(deleted_path);
+		err = files.DeleteFile(deleted_path)
 		if err != nil {
 			log.Println(err)
 			return Result{}, ErrDeleteFile
@@ -205,15 +230,15 @@ func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Re
 			return Result{}, ErrDataBase
 		}
 
-		path, err := files.SaveFileBase64(attach.Data, fmt.Sprintf("attach%d_post%d%s", countedAttaches + i, postId, attach.Name[strings.LastIndexByte(attach.Name, '.'):]))
+		path, err := files.SaveFileBase64(attach.Data, fmt.Sprintf("attach%d_post%d%s", countedAttaches+i, postId, attach.Name[strings.LastIndexByte(attach.Name, '.'):]))
 		if err != nil {
 			log.Println(err)
 			return Result{}, ErrSaveFile
 		}
 		_, err = p.Attaches.PinAttach(model.Attach{
-			PostId: postId,
+			PostId:   postId,
 			FilePath: path,
-			Name: attach.Name,
+			Name:     attach.Name,
 		})
 		if err != nil {
 			return Result{}, ErrDataBase
@@ -247,7 +272,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 		//think
 		return Result{}, ErrDataBase
 	}
-	
+
 	for i, attach := range form.Body.Attaches {
 		//check extension
 		path, err := files.SaveFileBase64(attach.Data, fmt.Sprintf("attach%d_post%d%s", i, postId, attach.Name[strings.LastIndexByte(attach.Name, '.'):]))
@@ -256,9 +281,9 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 			return Result{}, ErrSaveFile
 		}
 		_, err = p.Attaches.PinAttach(model.Attach{
-			PostId: postId,
+			PostId:   postId,
 			FilePath: path,
-			Name: attach.Name,
+			Name:     attach.Name,
 		})
 		if err != nil {
 			return Result{}, ErrDataBase
@@ -294,7 +319,7 @@ func (p *PostHandler) DeletePostStrategy(ctx context.Context, form EmptyForm) (R
 	return Result{}, nil
 }
 
-//Добавить обработку для ананоимного ползователя
+// Добавить обработку для ананоимного ползователя
 func (p *PostHandler) GetFeedStrategy(ctx context.Context, form EmptyForm) (Result, error) {
 	// if !auth.CheckAuthorizationManager(ctx, p.Manager) {
 	// 	return Result{}, ErrUnathorized
@@ -399,7 +424,7 @@ func (p *PostHandler) AddCommentStratagy(ctx context.Context, form CommentForm) 
 	comment := model.Comment{
 		UserId: int(session.UserID),
 		PostId: form.Body.PostId,
-		Text: form.Body.Text,
+		Text:   form.Body.Text,
 	}
 	commentId, err := p.Comments.CreateComment(comment)
 	if err != nil {
@@ -455,9 +480,9 @@ func (p *PostHandler) ChangeCommentStrategy(ctx context.Context, form CommentFor
 		return Result{}, ErrBadID
 	}
 	comment := model.Comment{
-		ID:            uint(commentId),
-		PostId:        form.Body.PostId,
-		Text:          form.Body.Text,
+		ID:     uint(commentId),
+		PostId: form.Body.PostId,
+		Text:   form.Body.Text,
 	}
 
 	err = p.Comments.ChangeComment(comment)

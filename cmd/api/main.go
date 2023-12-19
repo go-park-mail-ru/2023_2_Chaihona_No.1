@@ -83,6 +83,7 @@ func main() {
 
 	// sessionStorage := sessrep.CreateRedisSessionStorage(pool)
 	userStoarge := usrep.CreateUserStorage(db.GetDB())
+	postStorage := posts.CreatePostStorage(db.GetDB())
 	levelStorage := levels.CreateSubscribeLevelStorage(db.GetDB())
 	subsStorage := subs.CreateSubscriptionsStorage(db.GetDB())
 	// postStorage := posts.CreatePostStorage(db.GetDB())
@@ -106,7 +107,13 @@ func main() {
 	r.HandleFunc("/api/v1/logout", handlers.NewWrapper(rep.LogoutStrategy).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/registration", handlers.NewWrapper(rep.SignupStrategy).ServeHTTP).Methods("POST")
 	r.HandleFunc("/api/v1/is_authorized", handlers.NewWrapper(rep.IsAuthorizedStrategy).ServeHTTP).Methods("GET")
-	r.HandleFunc("/api/v1/add_device", handlers.GetDevice).Methods("POST")
+	
+	deviceHandler := &handlers.DeviceHandler{
+		SessionsManager: sessManager,
+		Posts: postStorage,
+	}
+	
+	r.HandleFunc("/api/v1/add_device", handlers.NewWrapper(deviceHandler.GetDevice).ServeHTTP).Methods("POST")
 
 	r.HandleFunc("/api/v1/profile/{id:[0-9]+}", handlers.NewWrapper(profileHandler.GetInfoStrategy).ServeHTTP).Methods("GET")
 	// r.HandleFunc("/api/v1/profile/{id:[0-9]+}", handlers.NewWrapper(profileHandler.ChangeUserStratagy).ServeHTTP).Methods("POST")
