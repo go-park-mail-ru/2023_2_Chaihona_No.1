@@ -26,6 +26,13 @@ func DeleteUserSQL(id int) squirrel.DeleteBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
+func SelectAuthorsSQL() squirrel.SelectBuilder {
+	return squirrel.Select("*").
+		From(configs.UserTable).
+		Suffix("WHERE is_author = TRUE ").
+		PlaceholderFormat(squirrel.Dollar)
+}
+
 func SelectUserSQL(login string) squirrel.SelectBuilder {
 	return squirrel.Select("*").
 		From(configs.UserTable).
@@ -257,5 +264,16 @@ func (storage *UserStorage) ChangeUserDescription(description string, id int) er
 }
 
 func (storage *UserStorage) GetUsers() ([]model.User, error) {
-	return make([]model.User, 0), nil
+	rows, err := SelectAuthorsSQL().RunWith(storage.db).Query()
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	var users []model.User
+	err = dbscan.ScanAll(&users, rows)
+	if err != nil || len(users) == 0 {
+		log.Println(err)
+		return nil, err
+	}
+	return users, nil
 }
