@@ -98,7 +98,7 @@ func main() {
 	attachStorage := attaches.CreateAttachStorage(db.GetDB())
 	analyticsStorage := analytics.CreateAnalyticsStorage(db.GetDB())
 
-	rep := handlers.CreateRepoHandler(sessManager, userStoarge, levelStorage)
+	rep := handlers.CreateRepoHandler(sessManager, userStoarge, levelStorage, analyticsStorage)
 	profileHandler := handlers.CreateProfileHandlerViaRepos(sessManager, userStoarge, levelStorage, subsStorage, payManager, analyticsStorage)
 	postHandler := handlers.CreatePostHandlerViaRepos(sessManager, postManager, likeStorage, attachStorage, commentManager)
 	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessManager, payManager, subsStorage, subscriptionLevelsStorage)
