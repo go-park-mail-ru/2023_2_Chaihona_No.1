@@ -29,9 +29,9 @@ func MakeAnalytics(multiStorage *multistorage.MultiStorage) {
 	}
 	for _, user := range users {
 		if (user.Is_author) {
-			fmt.Println(user.ID)
 			lastAnalytics, err := multiStorage.Analytics.GetLastAnalytics(int(user.ID))
 			if err != nil {
+				fmt.Println("here")
 				log.Println(err)
 			}
 

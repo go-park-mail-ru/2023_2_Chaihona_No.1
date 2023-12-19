@@ -533,6 +533,7 @@ func  (p *ProfileHandler) Analitycs(ctx context.Context, form EmptyForm) (Result
 
 	analytic, err := p.Analytics.GetLastAnalytics(int(session.UserID))
 	if err != nil {
+		fmt.Println("HERE", err)
 		return Result{}, ErrDataBase
 	}
 
