@@ -98,7 +98,7 @@ func main() {
 			log.Println(err)
 		}
 		postId, ok := event.Body["id"].(float64)
-		// fmt.Println(data)
+		fmt.Println("Got postId in consumer:", postId)
 		// if !ok {
 		// 	continue
 		// } else {
@@ -112,7 +112,7 @@ func main() {
 					sendToToken(app, id.DeviceId)
 				}()
 			}
-			sendToToken(app, ids[0].DeviceId)
+			// sendToToken(app, ids[0].DeviceId)
 			fmt.Println("ids: ", ids, err)
 		} else {
 			fmt.Println(postId)

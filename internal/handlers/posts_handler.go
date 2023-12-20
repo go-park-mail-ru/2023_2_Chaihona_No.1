@@ -169,7 +169,9 @@ func (d *DeviceHandler) GetDevice(ctx context.Context, form DeviceIdForm) (Resul
 		return Result{}, ErrNoSession
 	}
 
-	d.Posts.AddNewDevice(int(session.UserID), form.Body.DeviceId)
+	_, err := d.Posts.AddNewDevice(int(session.UserID), form.Body.DeviceId)
+	log.Println("Error while adding:", err)
+	fmt.Println("got userId", session.UserID, "got deviceId", form.Body.DeviceId)
 	// d.Posts.AddNewDevice(1, form.Body.DeviceId)
 	return Result{}, nil
 }
@@ -290,6 +292,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 		EventType: 1,
 		Body:      map[string]any{"id": postId}})
 
+	fmt.Println("Send postId from producer: ", postId)
 	return Result{Body: bodyResponse}, nil
 }
 

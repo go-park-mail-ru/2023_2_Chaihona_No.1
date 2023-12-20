@@ -49,9 +49,10 @@ func SelectDevicesIdsByUserId(userID int) squirrel.SelectBuilder {
 func SelectSubscribersDevicesByPostId(postID int) squirrel.SelectBuilder {
     return squirrel.Select("ud.device_id").
         From("public.user_device ud").
-        Join("public.subscription s ON ud.user_id = s.subscriber_id").
-        Join("public.post p ON (s.creator_id = p.creator_id) AND (s.subscription_level_id >= p.min_subscription_level_id)").
-        Where("p.id = ?", postID).
+        LeftJoin("public.subscription s ON ud.user_id = s.subscriber_id").
+        LeftJoin("public.post p ON s.creator_id = p.creator_id").
+		// Where(fmt.Sprintf("s.subscription_level_id >= p.min_subscription_level_id AND p.id = %d", postID)).
+		Where(squirrel.Eq{"p.id": postID}).
 		PlaceholderFormat(squirrel.Dollar)
 }
 
@@ -62,6 +63,14 @@ func InsertUserDeviceSQL(userID uint, deviceID string) squirrel.InsertBuilder {
 		Suffix("RETURNING \"id\"").
 		PlaceholderFormat(squirrel.Dollar)
 }
+
+// func InsertPostSQL(post model.Post) squirrel.InsertBuilder {
+// 	return squirrel.Insert(configs.PostTable).
+// 		Columns("header", "body", "creator_id", "min_subscription_level_id").
+// 		Values(post.Header, post.Body, post.AuthorID, post.MinSubLevelId).
+// 		Suffix("RETURNING \"id\"").
+// 		PlaceholderFormat(squirrel.Dollar)
+// }
 
 type DeviceID struct {
 	DeviceId string `json:"device_id" db:"device_id"`
