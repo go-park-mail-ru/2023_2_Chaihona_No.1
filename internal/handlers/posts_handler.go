@@ -269,7 +269,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 		AuthorID:      uint(session.UserID),
 		MinSubLevelId: form.Body.MinSubLevelId,
 		Header:        form.Body.Header,
-		Body:          form.Body.Body,
+		//Body:          form.Body.Body,
 	}
 	postId, err := p.PostsManager.CreateNewPost(post)
 	if err != nil {
@@ -277,22 +277,6 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 		return Result{}, ErrDataBase
 	}
 
-	for i, attach := range form.Body.Attaches {
-		//check extension
-		path, err := files.SaveFileBase64(attach.Data, fmt.Sprintf("attach%d_post%d%s", i, postId, attach.Name[strings.LastIndexByte(attach.Name, '.'):]))
-		if err != nil {
-			log.Println(err)
-			return Result{}, ErrSaveFile
-		}
-		_, err = p.Attaches.PinAttach(model.Attach{
-			PostId:   postId,
-			FilePath: path,
-			Name:     attach.Name,
-		})
-		if err != nil {
-			return Result{}, ErrDataBase
-		}
-	}
 
 	bodyResponse := map[string]interface{}{
 		"id": postId,
@@ -304,7 +288,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 	})
 	notifications.ProduceNotification(ctx, w, notifications.Event{
 		EventType: 1,
-		Body:      map[string]any{"id": 1}})
+		Body:      map[string]any{"id": postId}})
 
 	return Result{Body: bodyResponse}, nil
 }
