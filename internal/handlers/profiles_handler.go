@@ -6,8 +6,11 @@ import (
 	"log"
 	"strconv"
 
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/messaging"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/analytics"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/devices"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/payments"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	subscribelevels "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/subscribe_levels"
@@ -18,6 +21,32 @@ import (
 	pay "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/payment"
 	"github.com/robfig/cron/v3"
 )
+
+func sendToToken(app *firebase.App, token string, notification *messaging.Notification) {
+	ctx := context.Background()
+	client, err := app.Messaging(ctx)
+	if err != nil {
+		log.Fatalf("error getting Messaging client: %v\n", err)
+	}
+
+	// registrationToken := "d3adVu0tMDyBUTPkgc_l-0:APA91bHjb6-wWkT1ABGSasFqxrsOR3AdfcTjLc8b7f7yukWLt32GS4UA5XdIwZ8p98oOLp-CBcyuYaCYdEPRji_f2WSXO9JKb7XPjotm_3bdkk-7hJyxJS8JuUHt82xzGGJ6Aacy0QWb"
+
+	message := &messaging.Message{
+		// Notification: &messaging.Notification{
+		// 	Title: "У вас новый	подписчик!",
+		// 	// Body:  "Скорее бежим смотреть",
+		// },
+		Notification: notification,
+		Token: token,
+	}
+
+	response, err := client.Send(ctx, message)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	fmt.Println("Successfully sent message:", response)
+}
+
 
 type BodyProfile struct {
 	Profile model.Profile `json:"profile"`
@@ -39,6 +68,8 @@ type ProfileHandler struct {
 	Subscriptions subscriptions.SubscriptionRepository
 	Payments      *payments.PaymentManager
 	Analytics	analytics.AnalyticsRepository
+	Devices devices.DevicesRepository
+	Notifications *firebase.App
 }
 
 func CreateProfileHandlerViaRepos(
@@ -48,6 +79,8 @@ func CreateProfileHandlerViaRepos(
 	subscriptions subscriptions.SubscriptionRepository,
 	payments *payments.PaymentManager,
 	analytic analytics.AnalyticsRepository,
+	devices devices.DevicesRepository,
+	notifications *firebase.App,
 ) *ProfileHandler {
 	return &ProfileHandler{
 		sessionManager,
@@ -56,6 +89,8 @@ func CreateProfileHandlerViaRepos(
 		subscriptions,
 		payments,
 		analytic,
+		devices,
+		notifications,
 	}
 }
 
@@ -372,6 +407,18 @@ func (p *ProfileHandler) FollowStratagy(ctx context.Context, form FollowForm) (R
 		if err != nil {
 			return Result{}, ErrDataBase
 		}
+		
+		deviceId, err := p.Devices.GetDeviceID(int(subscription.Creator_id))
+		if err != nil {
+			return Result{}, ErrDataBase
+		}
+		
+		go sendToToken(p.Notifications, deviceId,&messaging.Notification{
+				Title: "У вас новый	подписчик!",
+				// Body:  "Скорее бежим смотреть",
+			},)
+
+
 		return Result{Body: map[string]interface{}{"id": subId}}, nil
 
 	default:
@@ -449,6 +496,9 @@ func (p *ProfileHandler) FollowStratagy(ctx context.Context, form FollowForm) (R
 			log.Println(err)
 			return Result{}, ErrDataBase
 		}
+
+
+
 		return Result{Body: BodyPayments{RedirectURL: responseUkassa.Confirmation.ConfirmationURL}}, nil
 	}
 }
@@ -538,4 +588,23 @@ func  (p *ProfileHandler) Analitycs(ctx context.Context, form EmptyForm) (Result
 	}
 
 	return Result{Body: Analytics{Analytics: analytic}}, nil
+}
+
+func (p *ProfileHandler) GetDevice(ctx context.Context, form DeviceIdForm) (Result, error) {
+	fmt.Println("here we are")
+	cookie := auth.GetSession(ctx)
+	if cookie == nil {
+		return Result{}, ErrNoCookie
+	}
+
+	session, ok := p.SessionManager.CheckSessionCtxWrapper(ctx, cookie.Value)
+	if !ok {
+		return Result{}, ErrNoSession
+	}
+
+	_, err := p.Devices.AddNewDevice(int(session.UserID), form.Body.DeviceId)
+	log.Println("Error while adding:", err)
+	fmt.Println("got userId", session.UserID, "got deviceId", form.Body.DeviceId)
+	// d.Posts.AddNewDevice(1, form.Body.DeviceId)
+	return Result{}, nil
 }

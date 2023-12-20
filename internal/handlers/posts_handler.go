@@ -8,9 +8,11 @@ import (
 	"strconv"
 	"strings"
 
+	firebase "firebase.google.com/go"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/attaches"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/comments"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/devices"
 	likesrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/likes"
 	postsrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/posts"
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
@@ -35,16 +37,23 @@ type PostHandler struct {
 	Likes   likesrep.LikeRepository
 	Attaches attaches.AttachRepository
 	Comments *comments.CommentManager
+	Devices devices.DevicesRepository
+	Notifications *firebase.App
 }
 
 func CreatePostHandlerViaRepos(manager *sessrep.RedisManager, posts *postsrep.PostManager,
-	likes likesrep.LikeRepository, attaches attaches.AttachRepository, comments *comments.CommentManager) *PostHandler {
+	likes likesrep.LikeRepository, attaches attaches.AttachRepository, 
+	comments *comments.CommentManager,
+	devices devices.DevicesRepository,
+	notifications *firebase.App,) *PostHandler {
 	return &PostHandler{
 		manager,
 		posts,
 		likes,
 		attaches,
 		comments,
+		devices,
+		notifications,
 	}
 }
 
@@ -258,6 +267,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 	postId, err := p.PostsManager.CreateNewPost(post)
 	if err != nil {
 		//think
+		log.Println(err)
 		return Result{}, ErrDataBase
 	}
 	
@@ -267,6 +277,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 		var err error
 		uniqueKey, err := uuid.NewRandom()
 		if err != nil {
+			log.Println(err)
 			return  Result{}, err
 		}
 		if (attach.IsMedia) {
@@ -293,6 +304,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 			log.Println(err)
 			return Result{}, ErrSaveFile
 		}
+		// fmt.Println(postId)
 		_, err = p.Attaches.PinAttach(model.Attach{
 			PostId: postId,
 			FilePath: path,
@@ -300,9 +312,22 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 			IsMedia: attach.IsMedia,
 		})
 		if err != nil {
-			return Result{}, ErrDataBase
+			log.Println(err)
+			// return Result{}, ErrDataBase
 		}
 	}
+	// ids, err := p.Devices.GetDevicesID(int(session.UserID))
+	// fmt.Println(ids)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return Result{}, ErrDataBase
+	// }
+	// for _, deviceId := range ids {
+	// 	go sendToToken(p.Notifications, deviceId.DeviceId, &messaging.Notification{
+	// 		Title: "Вышел новый пост!",
+	// 		Body:  "Скорее бежим смотреть",
+	// 	},)
+	// }
 
 	bodyResponse := map[string]interface{}{
 		"id": postId,

@@ -2,6 +2,7 @@ package attaches
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/georgysavva/scany/v2/dbscan"
@@ -11,6 +12,7 @@ import (
 
 //add metadata
 func InsertAttachSQL(attach model.Attach) squirrel.InsertBuilder {
+	fmt.Println(attach.PostId)
 	return squirrel.Insert(configs.AttachTable).
 		Columns("file_path", "post_id", "name", "is_media").
 		Values(attach.FilePath, attach.PostId, attach.Name, attach.IsMedia).

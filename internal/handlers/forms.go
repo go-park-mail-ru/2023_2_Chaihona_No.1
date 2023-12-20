@@ -155,3 +155,17 @@ func (f CommentForm) IsValide() bool {
 func (f CommentForm) IsEmpty() bool {
 	return false
 }
+
+type DeviceIdForm struct {
+	Body struct {
+		DeviceId string `json:"device_id"`
+	} `json:"body"`
+}
+
+func (d DeviceIdForm) IsEmpty() bool {
+	return false
+}
+
+func (d DeviceIdForm) IsValide() bool {
+	return true
+}

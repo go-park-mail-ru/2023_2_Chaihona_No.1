@@ -1,10 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"path/filepath"
 
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/messaging"
+	"google.golang.org/api/option"
 	"google.golang.org/grpc"
 
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
@@ -14,6 +19,7 @@ import (
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/analytics"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/attaches"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/comments"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/devices"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/likes"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/multistorage"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/payments"
@@ -29,6 +35,33 @@ import (
 	_ "github.com/go-swagger/go-swagger"
 	"github.com/gorilla/mux"
 )
+
+func SetupFirebase() (*firebase.App, context.Context, *messaging.Client) {
+
+	ctx := context.Background()
+
+	// fileDir, _ := os.Getwd()
+	serviceAccountKeyFilePath, err := filepath.Abs("./serviceAccountKey.json")
+	if err != nil {
+		log.Println("Unable to load serviceAccountKeys.json file")
+	}
+
+	opt := option.WithCredentialsFile(serviceAccountKeyFilePath)
+	// fmt.Println(opt)
+
+	config := &firebase.Config{ProjectID: "kopilka-71492"}
+	//Firebase admin SDK initialization
+	// app, err := firebase.NewApp(context.Background(), nil, opt)
+	app, err := firebase.NewApp(context.Background(), config, opt)
+	if err != nil {
+		log.Println("Firebase load error")
+	}
+
+	//Messaging client
+	client, _ := app.Messaging(ctx)
+
+	return app, ctx, client
+}
 
 func main() {
 	// conn, err := redis.DialURL(fmt.Sprintf("redis://@%s:%s", configs.RedisServerIP, configs.RedisServerPort))
@@ -97,10 +130,15 @@ func main() {
 	subscriptionLevelsStorage := subscriptionlevels.CreateSubscribeLevelStorage(db.GetDB())
 	attachStorage := attaches.CreateAttachStorage(db.GetDB())
 	analyticsStorage := analytics.CreateAnalyticsStorage(db.GetDB())
+	deviceStorage := devices.CreateDevicesStorage(db.GetDB())
+	app, _, _ := SetupFirebase()
 
 	rep := handlers.CreateRepoHandler(sessManager, userStoarge, levelStorage, analyticsStorage)
-	profileHandler := handlers.CreateProfileHandlerViaRepos(sessManager, userStoarge, levelStorage, subsStorage, payManager, analyticsStorage)
-	postHandler := handlers.CreatePostHandlerViaRepos(sessManager, postManager, likeStorage, attachStorage, commentManager)
+	profileHandler := handlers.CreateProfileHandlerViaRepos(sessManager, userStoarge, 
+		levelStorage, subsStorage, 
+		payManager, analyticsStorage, 
+		deviceStorage, app)
+	postHandler := handlers.CreatePostHandlerViaRepos(sessManager, postManager, likeStorage, attachStorage, commentManager, deviceStorage, app)
 	paymentHandler := handlers.CreatePaymentHandlerViaRepos(sessManager, payManager, subsStorage, subscriptionLevelsStorage)
 	fileHandler := handlers.CreateFileHandler(sessManager, userStoarge, attachStorage)
 	csatHandler := handlers.CreateCSATHandler(sessManager,questionsStorage)
@@ -153,6 +191,7 @@ func main() {
 	
 	r.HandleFunc("/api/v1/analytics", handlers.NewWrapper(profileHandler.Analitycs).ServeHTTP).Methods("GET")
 
+	r.HandleFunc("/api/v1/add_device", handlers.NewWrapper(profileHandler.GetDevice).ServeHTTP).Methods("POST")
 
 	mltStorage := &multistorage.MultiStorage{
 		Attaches: attachStorage,
