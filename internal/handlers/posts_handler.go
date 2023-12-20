@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/model"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/attaches"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/comments"
@@ -16,6 +17,8 @@ import (
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/files"
+	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/public/notifications"
+	"github.com/segmentio/kafka-go"
 )
 
 type BodyPosts struct {
@@ -167,6 +170,7 @@ func (d *DeviceHandler) GetDevice(ctx context.Context, form DeviceIdForm) (Resul
 	}
 
 	d.Posts.AddNewDevice(int(session.UserID), form.Body.DeviceId)
+	// d.Posts.AddNewDevice(1, form.Body.DeviceId)
 	return Result{}, nil
 }
 
@@ -293,6 +297,15 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 	bodyResponse := map[string]interface{}{
 		"id": postId,
 	}
+
+	w := kafka.NewWriter(kafka.WriterConfig{
+		Brokers: []string{configs.KafkaNotificationsBroker1Address},
+		Topic:   configs.KafkaNotificationsTopic,
+	})
+	notifications.ProduceNotification(ctx, w, notifications.Event{
+		EventType: 1,
+		Body:      map[string]any{"id": 1}})
+
 	return Result{Body: bodyResponse}, nil
 }
 
