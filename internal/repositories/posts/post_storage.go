@@ -12,6 +12,7 @@ import (
 )
 
 func InsertPostSQL(post model.Post) squirrel.InsertBuilder {
+	fmt.Println(post)
 	return squirrel.Insert(configs.PostTable).
 		Columns("header", "body", "creator_id", "min_subscription_level_id").
 		Values(post.Header, post.Body, post.AuthorID, post.MinSubLevelId).
@@ -264,13 +265,18 @@ func (storage *PostStorage) CreateNewPost(post model.Post) (int, error) {
 
 func (manager *PostManager) CreateNewPost(post model.Post) (int, error) {
 	id, err := manager.CLient.CreateNewPostCtx(context.Background(), PostToPostGRPC(&post))
-
+	fmt.Println("2 ", PostToPostGRPC(&post).AuthorId)
+	fmt.Println("ЧТО БЛЯЯЯЯЯ")
+	if id == nil {
+		fmt.Println(err)
+		return 0, err
+	}
 	return int(id.I), err
 }
 
 func (storage *PostStorage) CreateNewPostCtx(ctx context.Context, post *PostGRPC) (*Int, error) {
 	var postId int
-
+	fmt.Println("1: ", PostGRPCToPost(post).AuthorID)
 	err := InsertPostSQL(*PostGRPCToPost(post)).RunWith(storage.db).QueryRow().Scan(&postId)
 	if err != nil {
 		return &Int{I: 0}, err
