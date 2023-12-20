@@ -2,10 +2,10 @@ package configs
 
 const (
 	// FrontendServerIP   = "http://212.233.89.163"
-	// FrontendServerIP = "https://my-kopilka.ru"
-	// FrontendServerPort = ""
-	FrontendServerIP = "http://localhost"
-	FrontendServerPort = ":8000"
+	FrontendServerIP = "https://my-kopilka.ru"
+	FrontendServerPort = ""
+	// FrontendServerIP = "http://localhost"
+	// FrontendServerPort = ":8000"
 	BackendServerPort  = ":8001"
 
 	DriverSQL            = "pgx"

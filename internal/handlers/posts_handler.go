@@ -304,7 +304,6 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 			log.Println(err)
 			return Result{}, ErrSaveFile
 		}
-		// fmt.Println(postId)
 		_, err = p.Attaches.PinAttach(model.Attach{
 			PostId: postId,
 			FilePath: path,
