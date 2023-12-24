@@ -390,10 +390,7 @@ func (p *PostHandler) GetPostByTagStrategy(ctx context.Context, form EmptyForm) 
 	if cookie == nil {
 		return Result{}, ErrNoCookie
 	}
-	session, ok := p.SessionsManager.CheckSessionCtxWrapper(ctx, cookie.Value)
-	if !ok {
-		return Result{}, ErrNoSession
-	}
+	session, _ := p.SessionsManager.CheckSessionCtxWrapper(ctx, cookie.Value)
 
 	vars := auth.GetVars(ctx)
 	if vars == nil {

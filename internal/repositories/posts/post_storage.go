@@ -53,6 +53,29 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
+func SelectOwnPostsByTag(tagname string, userId int) squirrel.SelectBuilder {
+	return squirrel.Select("p.*, TRUE AS has_access, "+
+	"sl1.level as min_sub_level, "+
+	"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
+	fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", userId)).
+	From(configs.PostTable+" p").
+	Join("public.tag t ON t.post_id = p.id").
+	LeftJoin(configs.LikeTable+" pl ON p.id = pl.post_id").
+	InnerJoin(configs.SubscribeLevelTable+" sl1 ON p.min_subscription_level_id = sl1.id").
+	Where(squirrel.And{
+		squirrel.Eq{
+			"p.creator_id": userId,
+		},
+		squirrel.Eq{
+			"t.name": tagname,
+		}},
+	).
+	GroupBy("p.id", "sl1.level").
+	OrderBy("created_at DESC").
+	PlaceholderFormat(squirrel.Dollar)
+}
+
+// for stranger
 func SelectPostsByTag(tagName string, userId int) squirrel.SelectBuilder {
 	// return squirrel.Select("p.*").
 	// 	From(configs.PostTable+" p").
@@ -61,6 +84,7 @@ func SelectPostsByTag(tagName string, userId int) squirrel.SelectBuilder {
 	// 	PlaceholderFormat(squirrel.Dollar)
 	return squirrel.Select("p.*, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access, "+
 		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, " + 
+		"sl1.level as min_sub_level, "+
 		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", userId)).
 		From(configs.PostTable+" p").
 		Join("public.tag t ON t.post_id = p.id").
@@ -167,6 +191,7 @@ func SelectOwnUserPostsSQL(authorId uint, subscriberId uint) squirrel.SelectBuil
 func SelectAvailiblePostsSQL(userId uint) squirrel.SelectBuilder {
 	return squirrel.Select("p.*, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access, "+
 		"array_agg(DISTINCT pa.file_path) as attaches, "+
+		"sl1.level as min_sub_level, "+
 		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, "+
 		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", userId)).
 		From(configs.PostTable+" p").
@@ -713,7 +738,6 @@ func (manager *PostManager) GetPostsByTag(tag model.Tag, userId int) ([]model.Po
 }
 
 func (storage *PostStorage) GetPostsByTagCtx(ctx context.Context, tag *TagGRPC) (*PostsMapGRPC, error) {
-	fmt.Println(tag.UserId, tag.Name)
 	rows, err := SelectPostsByTag(tag.Name, int(tag.UserId)).RunWith(storage.db).Query()
 	if err != nil {
 		return &PostsMapGRPC{}, err
@@ -723,6 +747,18 @@ func (storage *PostStorage) GetPostsByTagCtx(ctx context.Context, tag *TagGRPC) 
 	if err != nil {
 		return &PostsMapGRPC{}, err
 	}
+
+	ownRows, err := SelectOwnPostsByTag(tag.Name, int(tag.UserId)).RunWith(storage.db).Query()
+	if err != nil {
+		return &PostsMapGRPC{}, err
+	}
+	var ownPosts []model.Post
+	err = dbscan.ScanAll(&ownPosts, ownRows)
+	if err != nil {
+		return &PostsMapGRPC{}, err
+	}
+
+	posts = append(posts, ownPosts...)
 
 	for i := range posts {
 		rows, err := SelectPostCommentsSQL(int(posts[i].ID), int(tag.UserId)).RunWith(storage.db).Query()
