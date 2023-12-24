@@ -13,5 +13,5 @@ type PostRepository interface {
 	GetOwnPostsByAuthorId(authorID uint, subscriberId uint) ([]model.Post, error)
 	GetPostsByAuthorIdForFollower(authorID uint, subscriberId uint) ([]model.Post, error)
 	GetUsersFeed(userId uint) ([]model.Post, error)
-	GetPostsByTag(model.Tag) ([]model.Post, error)
+	GetPostsByTag(tag model.Tag, userId int) ([]model.Post, error)
 }

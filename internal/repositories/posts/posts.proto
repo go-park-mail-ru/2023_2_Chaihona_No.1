@@ -8,6 +8,7 @@ package posts;
 message TagGRPC {
 	uint32 id = 1;
 	string name = 2;
+	uint32 user_id = 3;
 }
 
 message TagsGRPC {

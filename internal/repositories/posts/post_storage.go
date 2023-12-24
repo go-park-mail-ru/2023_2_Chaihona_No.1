@@ -61,6 +61,13 @@ func SelectPostsByTag(tagName string) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
+func SelectTagsByPostIdSQL(postId int) squirrel.SelectBuilder {
+	return squirrel.Select("t.*").
+		From("public.tag t").
+		Where(squirrel.Eq{"t.post_id":postId}).
+		PlaceholderFormat(squirrel.Dollar)
+}
+
 func SelectPostCommentsSQL(postId, UserId int) squirrel.SelectBuilder {
 	return squirrel.Select("c.*, " +
 		fmt.Sprintf("CASE WHEN c.user_id = %d THEN TRUE ELSE FALSE END AS is_owner ", UserId)).
@@ -259,6 +266,11 @@ func (storage *PostStorage) DeletePostCtx(ctx context.Context, id *UInt) (*Nothi
 		return &Nothing{}, err
 	}
 	defer rows.Close()
+	rowsDel, errDel := DeleteTagsbyPostIdSQL(uint(id.Id)).RunWith(storage.db).Query()
+	if errDel != nil {
+		return &Nothing{}, errDel
+	}
+	defer rowsDel.Close()
 	return &Nothing{}, nil
 }
 
@@ -395,6 +407,17 @@ func (storage *PostStorage) GetPostsByAuthorIdForStrangerCtx(ctx context.Context
 			return &PostsMapGRPC{}, err
 		}
 		posts[i].Comments = comments
+
+		tagRows, err := SelectTagsByPostIdSQL(int(posts[i].ID)).RunWith(storage.db).Query()
+		if err != nil && err != sql.ErrNoRows {
+			return &PostsMapGRPC{}, err
+		}
+		var tags []model.Tag
+		err = dbscan.ScanAll(&tags, tagRows)
+		if err != nil {
+			return &PostsMapGRPC{}, err
+		}
+		posts[i].Tags = tags
 	}
 
 	postsMap := &PostsMapGRPC{}
@@ -461,6 +484,17 @@ func (storage *PostStorage) GetOwnPostsByAuthorIdCtx(ctx context.Context, ids *A
 			return &PostsMapGRPC{}, err
 		}
 		posts[i].Comments = comments
+
+		tagRows, err := SelectTagsByPostIdSQL(int(posts[i].ID)).RunWith(storage.db).Query()
+		if err != nil && err != sql.ErrNoRows {
+			return &PostsMapGRPC{}, err
+		}
+		var tags []model.Tag
+		err = dbscan.ScanAll(&tags, tagRows)
+		if err != nil {
+			return &PostsMapGRPC{}, err
+		}
+		posts[i].Tags = tags
 	}
 
 	postsMap := &PostsMapGRPC{}
@@ -528,6 +562,17 @@ func (storage *PostStorage) GetPostsByAuthorIdForFollowerCtx(ctx context.Context
 			return &PostsMapGRPC{}, err
 		}
 		posts[i].Comments = comments
+
+		tagRows, err := SelectTagsByPostIdSQL(int(posts[i].ID)).RunWith(storage.db).Query()
+		if err != nil && err != sql.ErrNoRows {
+			return &PostsMapGRPC{}, err
+		}
+		var tags []model.Tag
+		err = dbscan.ScanAll(&tags, tagRows)
+		if err != nil {
+			return &PostsMapGRPC{}, err
+		}
+		posts[i].Tags = tags
 	}
 
 	postsMap := &PostsMapGRPC{}
@@ -581,6 +626,30 @@ func (storage *PostStorage) GetUsersFeedCtx(ctx context.Context, userId *UInt) (
 		return &PostsMapGRPC{}, err
 	}
 
+	for i := range posts {
+		rows, err := SelectPostCommentsSQL(int(posts[i].ID), int(userId.Id)).RunWith(storage.db).Query()
+		if err != nil && err != sql.ErrNoRows {
+			return &PostsMapGRPC{}, err
+		}
+		var comments []model.Comment
+		err = dbscan.ScanAll(&comments, rows)
+		if err != nil {
+			return &PostsMapGRPC{}, err
+		}
+		posts[i].Comments = comments
+
+		tagRows, err := SelectTagsByPostIdSQL(int(posts[i].ID)).RunWith(storage.db).Query()
+		if err != nil && err != sql.ErrNoRows {
+			return &PostsMapGRPC{}, err
+		}
+		var tags []model.Tag
+		err = dbscan.ScanAll(&tags, tagRows)
+		if err != nil {
+			return &PostsMapGRPC{}, err
+		}
+		posts[i].Tags = tags
+	}
+
 	postsMap := &PostsMapGRPC{}
 	postsMap.Posts = make(map[int32]*PostGRPC)
 	for i, post := range posts {
@@ -590,7 +659,7 @@ func (storage *PostStorage) GetUsersFeedCtx(ctx context.Context, userId *UInt) (
 	return postsMap, nil
 }
 
-func (storage *PostStorage) GetPostsByTag(tag model.Tag) ([]model.Post, error) {
+func (storage *PostStorage) GetPostsByTag(tag model.Tag, userId int) ([]model.Post, error) {
 	rows, err := SelectPostsByTag(tag.Name).RunWith(storage.db).Query()
 	if err != nil {
 		return []model.Post{}, err
@@ -603,10 +672,11 @@ func (storage *PostStorage) GetPostsByTag(tag model.Tag) ([]model.Post, error) {
 	return posts, nil
 }
 
-func (manager *PostManager) GetPostsByTag(tag model.Tag) ([]model.Post, error) {
+func (manager *PostManager) GetPostsByTag(tag model.Tag, userId int) ([]model.Post, error) {
 	postsMap, err := manager.CLient.GetPostsByTagCtx(context.Background(), &TagGRPC{
 		Id: uint32(tag.ID),
 		Name: tag.Name,
+		UserId: uint32(userId),
 	})
 
 	if err != nil {
@@ -630,6 +700,30 @@ func (storage *PostStorage) GetPostsByTagCtx(ctx context.Context, tag *TagGRPC) 
 	err = dbscan.ScanAll(&posts, rows)
 	if err != nil {
 		return &PostsMapGRPC{}, err
+	}
+
+	for i := range posts {
+		rows, err := SelectPostCommentsSQL(int(posts[i].ID), int(tag.UserId)).RunWith(storage.db).Query()
+		if err != nil && err != sql.ErrNoRows {
+			return &PostsMapGRPC{}, err
+		}
+		var comments []model.Comment
+		err = dbscan.ScanAll(&comments, rows)
+		if err != nil {
+			return &PostsMapGRPC{}, err
+		}
+		posts[i].Comments = comments
+
+		tagRows, err := SelectTagsByPostIdSQL(int(posts[i].ID)).RunWith(storage.db).Query()
+		if err != nil && err != sql.ErrNoRows {
+			return &PostsMapGRPC{}, err
+		}
+		var tags []model.Tag
+		err = dbscan.ScanAll(&tags, tagRows)
+		if err != nil {
+			return &PostsMapGRPC{}, err
+		}
+		posts[i].Tags = tags
 	}
 
 	postsMap := &PostsMapGRPC{}
