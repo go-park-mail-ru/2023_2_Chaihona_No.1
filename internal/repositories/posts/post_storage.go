@@ -63,6 +63,7 @@ func SelectPostsByTag(tagName string, userId int) squirrel.SelectBuilder {
 		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, " + 
 		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", userId)).
 		From(configs.PostTable+" p").
+		Join("public.tag t ON t.post_id = p.id").
 		InnerJoin(configs.SubscriptionTable+" s ON p.creator_id = s.creator_id").
 		LeftJoin(configs.AttachTable+" pa ON p.id = pa.post_id").
 		LeftJoin(configs.LikeTable+" pl ON p.id = pl.post_id").
