@@ -29,7 +29,7 @@ func InsertTagSQL(postId uint, tag model.Tag) squirrel.InsertBuilder {
 
 func DeleteTagsbyPostIdSQL(postId uint) squirrel.DeleteBuilder {
 	return squirrel.Delete("public.tag").
-		Where(squirrel.Eq{"id": postId}).
+		Where(squirrel.Eq{"post_id": postId}).
 		PlaceholderFormat(squirrel.Dollar)
 }
 
