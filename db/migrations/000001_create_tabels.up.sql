@@ -191,5 +191,13 @@ CREATE TABLE user_device
   device_id     text NOT NULL
 );
 
+CREATE TABLE tag
+(
+  PRIMARY KEY (id),
+  id          serial NOT NULL,
+  post_id     serial NOT NULL,
+              CONSTRAINT FK_post_id FOREIGN KEY (post_id) REFERENCES post (id) ON DELETE CASCADE,
+  name        text NOT NULL
+);
 
 COMMIT;

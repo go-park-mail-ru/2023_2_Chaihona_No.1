@@ -23,3 +23,5 @@ go.work
 *.txt
 2023_2_Chaihona_No.1
 .trunk
+
+kafka*

@@ -24,4 +24,6 @@ DROP TABLE IF EXISTS answer;
 
 DROP TABLE IF EXISTS public.user;
 
+DROP TABLE IF EXISTS user_device;
+
 COMMIT;

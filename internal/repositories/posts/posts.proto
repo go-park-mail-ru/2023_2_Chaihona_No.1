@@ -105,4 +105,5 @@ service PostsService {
 	rpc CreateCommentCtx (CommentGRPC) returns (Int) {}
 	rpc DeleteCommentCtx(UInt) returns (Nothing) {}
 	rpc ChangeCommentCtx(CommentGRPC) returns (Nothing) {}
+	rpc GetPostsByTagCtx(TagGRPC) returns (PostsMapGRPC) {}
 }

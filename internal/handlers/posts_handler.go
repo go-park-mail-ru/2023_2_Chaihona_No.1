@@ -32,20 +32,20 @@ type BodyLike struct {
 type PostHandler struct {
 	// Sessions sessrep.SessionRepository
 	SessionsManager *sessrep.RedisManager
-	PostsManager *postsrep.PostManager
+	PostsManager    *postsrep.PostManager
 	// Posts   postsrep.PostRepository
-	Likes   likesrep.LikeRepository
-	Attaches attaches.AttachRepository
-	Comments *comments.CommentManager
-	Devices devices.DevicesRepository
+	Likes         likesrep.LikeRepository
+	Attaches      attaches.AttachRepository
+	Comments      *comments.CommentManager
+	Devices       devices.DevicesRepository
 	Notifications *firebase.App
 }
 
 func CreatePostHandlerViaRepos(manager *sessrep.RedisManager, posts *postsrep.PostManager,
-	likes likesrep.LikeRepository, attaches attaches.AttachRepository, 
+	likes likesrep.LikeRepository, attaches attaches.AttachRepository,
 	comments *comments.CommentManager,
 	devices devices.DevicesRepository,
-	notifications *firebase.App,) *PostHandler {
+	notifications *firebase.App) *PostHandler {
 	return &PostHandler{
 		manager,
 		posts,
@@ -121,9 +121,9 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 	for i := range posts {
 		posts[i].CreationDate = posts[i].CreationDateSQL.Time.Format("2006-01-02 15:04")
 		if !posts[i].HasAccess {
-			posts[i].Attaches = "";
-			posts[i].Body = "";
-			posts[i].Comments = []model.Comment{};
+			posts[i].Attaches = ""
+			posts[i].Body = ""
+			posts[i].Comments = []model.Comment{}
 		}
 	}
 	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
@@ -166,6 +166,7 @@ func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Re
 		MinSubLevelId: form.Body.MinSubLevelId,
 		Header:        form.Body.Header,
 		Body:          form.Body.Body,
+		Tags:          form.Body.Tags,
 	}
 
 	cookie := auth.GetSession(ctx)
@@ -184,34 +185,33 @@ func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Re
 		return Result{}, ErrDataBase
 	}
 
-	
 	for i, attach := range form.Body.Pinned.Files {
 		countedAttaches, err := p.Attaches.CountAttaches(postId)
 		if err != nil {
 			return Result{}, ErrDataBase
 		}
-		
+
 		var path string
 		uniqueKey, err := uuid.NewRandom()
 		if err != nil {
-			return  Result{}, err
+			return Result{}, err
 		}
-		if (attach.IsMedia) {
-			path, err = files.SaveFileBase64(attach.Data, 
-				fmt.Sprintf("attach%d_post%d%s%s", 
-				countedAttaches + i, 
-				postId, 
-				uniqueKey.String(),
-				attach.Name[strings.LastIndexByte(attach.Name, '.'):],
+		if attach.IsMedia {
+			path, err = files.SaveFileBase64(attach.Data,
+				fmt.Sprintf("attach%d_post%d%s%s",
+					countedAttaches+i,
+					postId,
+					uniqueKey.String(),
+					attach.Name[strings.LastIndexByte(attach.Name, '.'):],
 				),
 			)
 		} else {
-			path, err = files.SaveText(attach.Data, 
-				fmt.Sprintf("attach%d_post%d%s%s.txt", 
-				countedAttaches + i, 
-				postId, 
-				attach.Name,
-				uniqueKey.String(),
+			path, err = files.SaveText(attach.Data,
+				fmt.Sprintf("attach%d_post%d%s%s.txt",
+					countedAttaches+i,
+					postId,
+					attach.Name,
+					uniqueKey.String(),
 				),
 			)
 		}
@@ -220,10 +220,10 @@ func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Re
 			return Result{}, ErrSaveFile
 		}
 		_, err = p.Attaches.PinAttach(model.Attach{
-			PostId: postId,
+			PostId:   postId,
 			FilePath: path,
-			Name: attach.Name,
-			IsMedia: attach.IsMedia,
+			Name:     attach.Name,
+			IsMedia:  attach.IsMedia,
 		})
 		if err != nil {
 			return Result{}, ErrDataBase
@@ -234,8 +234,8 @@ func (p *PostHandler) ChangePostStrategy(ctx context.Context, form PostForm) (Re
 		if err != nil {
 			return Result{}, ErrDataBase
 		}
-	
-		err = files.DeleteFile(deleted_path);
+
+		err = files.DeleteFile(deleted_path)
 		if err != nil {
 			log.Println(err)
 			return Result{}, ErrDeleteFile
@@ -262,6 +262,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 		AuthorID:      uint(session.UserID),
 		MinSubLevelId: form.Body.MinSubLevelId,
 		Header:        form.Body.Header,
+		Tags:          form.Body.Tags,
 		// Body:          form.Body.Body,
 	}
 	postId, err := p.PostsManager.CreateNewPost(post)
@@ -270,7 +271,7 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 		log.Println(err)
 		return Result{}, ErrDataBase
 	}
-	
+
 	for i, attach := range form.Body.Attaches {
 		//check extension
 		var path string
@@ -278,25 +279,25 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 		uniqueKey, err := uuid.NewRandom()
 		if err != nil {
 			log.Println(err)
-			return  Result{}, err
+			return Result{}, err
 		}
-		if (attach.IsMedia) {
-			path, err = files.SaveFileBase64(attach.Data, 
-				fmt.Sprintf("attach%d_post%d%s%s", 
-				i, 
-				postId, 
-				uniqueKey.String(),
-				attach.Name[strings.LastIndexByte(attach.Name, '.'):],
+		if attach.IsMedia {
+			path, err = files.SaveFileBase64(attach.Data,
+				fmt.Sprintf("attach%d_post%d%s%s",
+					i,
+					postId,
+					uniqueKey.String(),
+					attach.Name[strings.LastIndexByte(attach.Name, '.'):],
 				),
 			)
 		} else {
 			path, err = files.SaveText(
-				attach.Data, 
-				fmt.Sprintf("attach%d_post%d%s%s.txt", 
-				i, 
-				postId, 
-				attach.Name,
-				uniqueKey.String(),
+				attach.Data,
+				fmt.Sprintf("attach%d_post%d%s%s.txt",
+					i,
+					postId,
+					attach.Name,
+					uniqueKey.String(),
 				),
 			)
 		}
@@ -305,10 +306,10 @@ func (p *PostHandler) CreateNewPostStrategy(ctx context.Context, form PostForm) 
 			return Result{}, ErrSaveFile
 		}
 		_, err = p.Attaches.PinAttach(model.Attach{
-			PostId: postId,
+			PostId:   postId,
 			FilePath: path,
-			Name: attach.Name,
-			IsMedia: attach.IsMedia,
+			Name:     attach.Name,
+			IsMedia:  attach.IsMedia,
 		})
 		if err != nil {
 			log.Println(err)
@@ -357,7 +358,7 @@ func (p *PostHandler) DeletePostStrategy(ctx context.Context, form EmptyForm) (R
 	return Result{}, nil
 }
 
-//Добавить обработку для ананоимного ползователя
+// Добавить обработку для ананоимного ползователя
 func (p *PostHandler) GetFeedStrategy(ctx context.Context, form EmptyForm) (Result, error) {
 	// if !auth.CheckAuthorizationManager(ctx, p.Manager) {
 	// 	return Result{}, ErrUnathorized
@@ -380,6 +381,37 @@ func (p *PostHandler) GetFeedStrategy(ctx context.Context, form EmptyForm) (Resu
 	for i := range posts {
 		posts[i].CreationDate = posts[i].CreationDateSQL.Time.Format("2006-01-02 15:04")
 	}
+	return Result{Body: BodyPosts{Posts: posts}}, nil
+}
+
+func (p *PostHandler) GetPostByTagStrategy(ctx context.Context, form EmptyForm) (Result, error) {
+	cookie := auth.GetSession(ctx)
+	if cookie == nil {
+		return Result{}, ErrNoCookie
+	}
+	_, ok := p.SessionsManager.CheckSessionCtxWrapper(ctx, cookie.Value)
+	if !ok {
+		return Result{}, ErrNoSession
+	}
+
+	vars := auth.GetVars(ctx)
+	if vars == nil {
+		return Result{}, ErrNoVars
+	}
+	tag := vars["tag"]
+
+	posts, err := p.PostsManager.GetPostsByTag(model.Tag{
+		ID: 0,
+		Name: tag,
+	})
+	if err != nil {
+		fmt.Println(err)
+		return Result{}, ErrDataBase
+	}
+	for i := range posts {
+		posts[i].CreationDate = posts[i].CreationDateSQL.Time.Format("2006-01-02 15:04")
+	}
+	
 	return Result{Body: BodyPosts{Posts: posts}}, nil
 }
 
@@ -462,7 +494,7 @@ func (p *PostHandler) AddCommentStratagy(ctx context.Context, form CommentForm) 
 	comment := model.Comment{
 		UserId: int(session.UserID),
 		PostId: form.Body.PostId,
-		Text: form.Body.Text,
+		Text:   form.Body.Text,
 	}
 	commentId, err := p.Comments.CreateComment(comment)
 	if err != nil {
@@ -518,9 +550,9 @@ func (p *PostHandler) ChangeCommentStrategy(ctx context.Context, form CommentFor
 		return Result{}, ErrBadID
 	}
 	comment := model.Comment{
-		ID:            uint(commentId),
-		PostId:        form.Body.PostId,
-		Text:          form.Body.Text,
+		ID:     uint(commentId),
+		PostId: form.Body.PostId,
+		Text:   form.Body.Text,
 	}
 
 	err = p.Comments.ChangeComment(comment)

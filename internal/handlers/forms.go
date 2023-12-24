@@ -8,7 +8,7 @@ import (
 
 type StatusForm struct {
 	Body struct {
-		Status       string `json:"status"`
+		Status string `json:"status"`
 	} `json:"body"`
 }
 
@@ -20,10 +20,9 @@ func (f StatusForm) IsEmpty() bool {
 	return false
 }
 
-
 type DescriptionForm struct {
 	Body struct {
-		Description  string `json:"description"`
+		Description string `json:"description"`
 	} `json:"body"`
 }
 
@@ -35,20 +34,19 @@ func (f DescriptionForm) IsEmpty() bool {
 	return false
 }
 
-
 type UserForm struct {
 	Body struct {
 		User struct {
-			ID           uint   `json:"id"`
-			Nickname     string `json:"nickname"`
-			Login        string `json:"login"`
+			ID          uint   `json:"id"`
+			Nickname    string `json:"nickname"`
+			Login       string `json:"login"`
 			OldPassword string `json:"old_password"`
 			NewPassword string `json:"new_password"`
-			Status       string `json:"status"`
-			Avatar       string `json:"avatar"`
-			Background   string `json:"background"`
-			Description  string `json:"description"`
-			IsAuthor bool `json:"is_author"`
+			Status      string `json:"status"`
+			Avatar      string `json:"avatar"`
+			Background  string `json:"background"`
+			Description string `json:"description"`
+			IsAuthor    bool   `json:"is_author"`
 		} `json:"user"`
 	} `json:"body"`
 }
@@ -63,14 +61,15 @@ func (f UserForm) IsEmpty() bool {
 
 type PostForm struct {
 	Body struct {
-		Id string `json:"id"`
-		MinSubLevelId uint      `json:"min_subscription_level_id"`
-		Header        string    `json:"header"`
-		Body          string    `json:"body,omitempty"`
+		Id            string `json:"id"`
+		MinSubLevelId uint   `json:"min_subscription_level_id"`
+		Header        string `json:"header"`
+		Body          string `json:"body,omitempty"`
+		Tags          []model.Tag    `json:"tags,omitempty"`
 		Attaches []model.Attach `json:"attaches,omitempty"`
-		Pinned struct {
-			Files []model.Attach `json:"files,omitempty"`
-			Deleted []string `json:"deleted"`
+		Pinned   struct {
+			Files   []model.Attach `json:"files,omitempty"`
+			Deleted []string       `json:"deleted"`
 		} `json:"pinned,omitempty"`
 	} `json:"body"`
 }
@@ -84,11 +83,11 @@ func (f PostForm) IsEmpty() bool {
 }
 
 type PaymentForm struct {
-	Body struct{
-		DonaterId         uint   `json:"donater_id"`
-		CreatorId         uint   `json:"creator_id"`
-		Currency          string `json:"currency,omitempty"`
-		Value             string `json:"value,omitempty"`
+	Body struct {
+		DonaterId uint   `json:"donater_id"`
+		CreatorId uint   `json:"creator_id"`
+		Currency  string `json:"currency,omitempty"`
+		Value     string `json:"value,omitempty"`
 	} `json:"body"`
 }
 
@@ -115,7 +114,7 @@ func (f FileForm) IsEmpty() bool {
 type FollowForm struct {
 	Body struct {
 		SubscriptionLevelId int `json:"id"`
-		SubscriptionId int `json:"subscription_id"`
+		SubscriptionId      int `json:"subscription_id"`
 	} `json:"body"`
 }
 
@@ -143,8 +142,8 @@ func (f RatingForm) IsEmpty() bool {
 
 type CommentForm struct {
 	Body struct {
-		PostId int `json:"post_id"`
-		Text string	`json:"text"`
+		PostId int    `json:"post_id"`
+		Text   string `json:"text"`
 	}
 }
 

@@ -19,6 +19,14 @@ func InsertPostSQL(post model.Post) squirrel.InsertBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
+func InsertTagSQL(postId uint, tag model.Tag) squirrel.InsertBuilder {
+	return squirrel.Insert("public.tag").
+		Columns("post_id", "name").
+		Values(postId, tag.Name).
+		Suffix("RETURNING \"id\"").
+		PlaceholderFormat(squirrel.Dollar)
+}
+
 func DeletePostSQL(postId uint) squirrel.DeleteBuilder {
 	return squirrel.Delete(configs.PostTable).
 		Where(squirrel.Eq{"id": postId}).
@@ -39,7 +47,15 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
-func SelectPostCommentsSQL(postId, UserId int) squirrel.SelectBuilder{
+func SelectPostsByTag(tagName string) squirrel.SelectBuilder {
+	return squirrel.Select("*").
+		From(configs.PostTable+"p").
+		Join("public.tag t ON t.post_id = p.id").
+		Where(squirrel.Eq{"t.name": tagName}).
+		PlaceholderFormat(squirrel.Dollar)
+}
+
+func SelectPostCommentsSQL(postId, UserId int) squirrel.SelectBuilder {
 	return squirrel.Select("c.*, " +
 		fmt.Sprintf("CASE WHEN c.user_id = %d THEN TRUE ELSE FALSE END AS is_owner ", UserId)).
 		From(configs.CommentTable + " c").
@@ -48,7 +64,6 @@ func SelectPostCommentsSQL(postId, UserId int) squirrel.SelectBuilder{
 		}).
 		PlaceholderFormat(squirrel.Dollar)
 }
-
 
 // For followed users
 func SelectUserPostsForFollowerSQL(authorId uint, subscriberId uint) squirrel.SelectBuilder {
@@ -60,7 +75,7 @@ func SelectUserPostsForFollowerSQL(authorId uint, subscriberId uint) squirrel.Se
 		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", subscriberId)).
 		From(configs.PostTable+" p").
 		CrossJoin(configs.SubscriptionTable+" s").
-		LeftJoin(configs.CommentTable + " pc ON p.id = pc.post_id").
+		LeftJoin(configs.CommentTable+" pc ON p.id = pc.post_id").
 		LeftJoin(configs.AttachTable+" pa ON p.id = pa.post_id").
 		LeftJoin(configs.LikeTable+" pl ON p.id = pl.post_id").
 		InnerJoin(configs.SubscribeLevelTable+" sl1 ON p.min_subscription_level_id = sl1.id").
@@ -135,6 +150,7 @@ func SelectAvailiblePostsSQL(userId uint) squirrel.SelectBuilder {
 }
 
 
+
 // func SelectAvailiblePostsSQL(userId uint) squirrel.SelectBuilder {
 // 	return squirrel.Select("p.*, TRUE AS has_access, "+
 // 		"array_agg(DISTINCT pa.file_path) as attaches, "+
@@ -202,13 +218,20 @@ func (manager *PostManager) CreateNewPost(post model.Post) (int, error) {
 func (storage *PostStorage) CreateNewPostCtx(ctx context.Context, post *PostGRPC) (*Int, error) {
 	var postId int
 
-	err := InsertPostSQL(*PostGRPCToPost(post)).RunWith(storage.db).QueryRow().Scan(&postId)
+	unmarshaledPost := *PostGRPCToPost(post)
+	err := InsertPostSQL(unmarshaledPost).RunWith(storage.db).QueryRow().Scan(&postId)
 	if err != nil {
 		return &Int{I: 0}, err
 	}
 
+	for _, tag := range unmarshaledPost.Tags {
+		InsertTagSQL(uint(postId), tag).RunWith(storage.db).Query() 
+	}
+
 	return &Int{I: int32(postId)}, nil
 }
+
+
 
 func (storage *PostStorage) DeletePost(id uint) error {
 	rows, err := DeletePostSQL(id).RunWith(storage.db).Query()
@@ -341,7 +364,6 @@ func (storage *PostStorage) GetPostsByAuthorIdForStrangerCtx(ctx context.Context
 		return &PostsMapGRPC{}, err
 	}
 
-	
 	for i := range posts {
 		if !posts[i].HasAccess {
 			continue
@@ -530,8 +552,60 @@ func (manager *PostManager) GetUsersFeed(userId uint) ([]model.Post, error) {
 	return posts, nil
 }
 
+
 func (storage *PostStorage) GetUsersFeedCtx(ctx context.Context, userId *UInt) (*PostsMapGRPC, error) {
 	rows, err := SelectAvailiblePostsSQL(uint(userId.Id)).RunWith(storage.db).Query()
+	if err != nil {
+		return &PostsMapGRPC{}, err
+	}
+	var posts []model.Post
+	err = dbscan.ScanAll(&posts, rows)
+	if err != nil {
+		return &PostsMapGRPC{}, err
+	}
+
+	postsMap := &PostsMapGRPC{}
+	postsMap.Posts = make(map[int32]*PostGRPC)
+	for i, post := range posts {
+		postsMap.Posts[int32(i)] = PostToPostGRPC(&post)
+	}
+
+	return postsMap, nil
+}
+
+func (storage *PostStorage) GetPostsByTag(tag model.Tag) ([]model.Post, error) {
+	rows, err := SelectPostsByTag(tag.Name).RunWith(storage.db).Query()
+	if err != nil {
+		return []model.Post{}, err
+	}
+	var posts []model.Post
+	err = dbscan.ScanAll(&posts, rows)
+	if err != nil {
+		return []model.Post{}, err
+	}
+	return posts, nil
+}
+
+func (manager *PostManager) GetPostsByTag(tag model.Tag) ([]model.Post, error) {
+	postsMap, err := manager.CLient.GetPostsByTagCtx(context.Background(), &TagGRPC{
+		Id: uint32(tag.ID),
+		Name: tag.Name,
+	})
+
+	if err != nil {
+		return []model.Post{}, err
+	}
+
+	var posts []model.Post
+	for _, post := range postsMap.Posts {
+		posts = append(posts, *PostGRPCToPost(post))
+	}
+
+	return posts, nil
+}
+
+func (storage *PostStorage) GetPostsByTagCtx(ctx context.Context, tag *TagGRPC) (*PostsMapGRPC, error) {
+	rows, err := SelectPostsByTag(tag.Name).RunWith(storage.db).Query()
 	if err != nil {
 		return &PostsMapGRPC{}, err
 	}
