@@ -27,6 +27,12 @@ func InsertTagSQL(postId uint, tag model.Tag) squirrel.InsertBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
+func DeleteTagsbyPostIdSQL(postId uint) squirrel.DeleteBuilder {
+	return squirrel.Delete("public.tag").
+		Where(squirrel.Eq{"id": postId}).
+		PlaceholderFormat(squirrel.Dollar)
+}
+
 func DeletePostSQL(postId uint) squirrel.DeleteBuilder {
 	return squirrel.Delete(configs.PostTable).
 		Where(squirrel.Eq{"id": postId}).
@@ -48,7 +54,7 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 }
 
 func SelectPostsByTag(tagName string) squirrel.SelectBuilder {
-	return squirrel.Select("*").
+	return squirrel.Select("p.*").
 		From(configs.PostTable+"p").
 		Join("public.tag t ON t.post_id = p.id").
 		Where(squirrel.Eq{"t.name": tagName}).
@@ -313,11 +319,22 @@ func (manager *PostManager) ChangePost(post model.Post) error {
 }
 
 func (storage *PostStorage) ChangePostCtx(ctx context.Context, post *PostGRPC) (*Nothing, error) {
-	rows, err := UpdatePostSQL(*PostGRPCToPost(post)).RunWith(storage.db).Query()
+	unmarshaledPost := *PostGRPCToPost(post)
+	rows, err := UpdatePostSQL(unmarshaledPost).RunWith(storage.db).Query()
+	defer rows.Close()
 	if err != nil {
 		return &Nothing{}, err
 	}
-	defer rows.Close()
+	rowsDel, errDel := DeleteTagsbyPostIdSQL(unmarshaledPost.ID).RunWith(storage.db).Query()
+	defer rowsDel.Close()
+	if errDel != nil {
+		return &Nothing{}, errDel
+	}
+
+	for _, tag := range unmarshaledPost.Tags {
+		InsertTagSQL(unmarshaledPost.ID, tag).RunWith(storage.db).Query() 
+	}
+
 	return &Nothing{}, nil
 }
 
