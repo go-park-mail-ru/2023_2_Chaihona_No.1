@@ -713,6 +713,7 @@ func (manager *PostManager) GetPostsByTag(tag model.Tag, userId int) ([]model.Po
 }
 
 func (storage *PostStorage) GetPostsByTagCtx(ctx context.Context, tag *TagGRPC) (*PostsMapGRPC, error) {
+	fmt.Println(tag.UserId, tag.Name)
 	rows, err := SelectPostsByTag(tag.Name, int(tag.UserId)).RunWith(storage.db).Query()
 	if err != nil {
 		return &PostsMapGRPC{}, err
