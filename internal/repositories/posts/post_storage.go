@@ -55,7 +55,7 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 
 func SelectPostsByTag(tagName string) squirrel.SelectBuilder {
 	return squirrel.Select("p.*").
-		From(configs.PostTable+"p").
+		From(configs.PostTable+" p").
 		Join("public.tag t ON t.post_id = p.id").
 		Where(squirrel.Eq{"t.name": tagName}).
 		PlaceholderFormat(squirrel.Dollar)

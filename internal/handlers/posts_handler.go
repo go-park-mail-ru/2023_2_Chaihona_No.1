@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -400,9 +401,15 @@ func (p *PostHandler) GetPostByTagStrategy(ctx context.Context, form EmptyForm) 
 	}
 	tag := vars["tag"]
 
+	decodedTag, err := url.QueryUnescape(tag)
+	if err != nil {
+		log.Fatal(err)
+		return Result{}, ErrBadID
+	}
+
 	posts, err := p.PostsManager.GetPostsByTag(model.Tag{
 		ID: 0,
-		Name: tag,
+		Name: decodedTag,
 	}, int(session.UserID))
 	if err != nil {
 		fmt.Println(err)
