@@ -53,11 +53,31 @@ func SelectPostByIdSQL(postId uint) squirrel.SelectBuilder {
 		PlaceholderFormat(squirrel.Dollar)
 }
 
-func SelectPostsByTag(tagName string) squirrel.SelectBuilder {
-	return squirrel.Select("p.*").
+func SelectPostsByTag(tagName string, userId int) squirrel.SelectBuilder {
+	// return squirrel.Select("p.*").
+	// 	From(configs.PostTable+" p").
+	// 	Join("public.tag t ON t.post_id = p.id").
+	// 	Where(squirrel.Eq{"t.name": tagName}).
+	// 	PlaceholderFormat(squirrel.Dollar)
+	return squirrel.Select("p.*, CASE WHEN sl1.level > sl2.level THEN FALSE ELSE TRUE END AS has_access, "+
+		"coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl IS NOT NULL), 1), 0) as likes, " + 
+		fmt.Sprintf("CASE WHEN coalesce(array_length(array_agg(distinct pl.id) FILTER (WHERE pl.user_id = %d), 1), 0) > 0 THEN TRUE ELSE FALSE END AS is_liked", userId)).
 		From(configs.PostTable+" p").
-		Join("public.tag t ON t.post_id = p.id").
-		Where(squirrel.Eq{"t.name": tagName}).
+		InnerJoin(configs.SubscriptionTable+" s ON p.creator_id = s.creator_id").
+		LeftJoin(configs.AttachTable+" pa ON p.id = pa.post_id").
+		LeftJoin(configs.LikeTable+" pl ON p.id = pl.post_id").
+		InnerJoin(configs.SubscribeLevelTable+" sl1 ON p.min_subscription_level_id = sl1.id").
+		InnerJoin(configs.SubscribeLevelTable+" sl2 ON s.subscription_level_id = sl2.id").
+		Where(squirrel.And{
+			squirrel.Eq{
+				"s.subscriber_id": userId,
+			}, 
+			squirrel.Eq{
+				"t.name": tagName,
+			}},
+			"sl1.level <= sl2.level").
+		GroupBy("p.id", "sl1.level", "sl2.level").
+		OrderBy("created_at DESC").
 		PlaceholderFormat(squirrel.Dollar)
 }
 
@@ -660,7 +680,7 @@ func (storage *PostStorage) GetUsersFeedCtx(ctx context.Context, userId *UInt) (
 }
 
 func (storage *PostStorage) GetPostsByTag(tag model.Tag, userId int) ([]model.Post, error) {
-	rows, err := SelectPostsByTag(tag.Name).RunWith(storage.db).Query()
+	rows, err := SelectPostsByTag(tag.Name, userId).RunWith(storage.db).Query()
 	if err != nil {
 		return []model.Post{}, err
 	}
@@ -692,7 +712,7 @@ func (manager *PostManager) GetPostsByTag(tag model.Tag, userId int) ([]model.Po
 }
 
 func (storage *PostStorage) GetPostsByTagCtx(ctx context.Context, tag *TagGRPC) (*PostsMapGRPC, error) {
-	rows, err := SelectPostsByTag(tag.Name).RunWith(storage.db).Query()
+	rows, err := SelectPostsByTag(tag.Name, int(tag.UserId)).RunWith(storage.db).Query()
 	if err != nil {
 		return &PostsMapGRPC{}, err
 	}
