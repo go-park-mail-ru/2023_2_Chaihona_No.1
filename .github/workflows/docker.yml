@@ -12,22 +12,22 @@ jobs:
       - name: Login to DockerHub Registry
         run: echo Antihyp3. | docker login -u m0rdovorot --password-stdin
       - name: Build Docker API image
-        run: docker build -t m0rdovorot/kopilka.api:${GITHUB_SHA::8} -f API.Dockerfile .
+        run: docker build -t m0rdovorot/kopilka.api:latest -f API.Dockerfile .
       - name: Build Docker auth image
-        run: docker build -t m0rdovorot/kopilka.auth:${GITHUB_SHA::8} -f auth.Dockerfile .
+        run: docker build -t m0rdovorot/kopilka.auth:latest -f auth.Dockerfile .
       - name: Build Docker posts image
-        run: docker build -t m0rdovorot/kopilka.posts:${GITHUB_SHA::8} -f posts.Dockerfile .
+        run: docker build -t m0rdovorot/kopilka.posts:latest -f posts.Dockerfile .
       - name: Build Docker pay image
-        run: docker build -t m0rdovorot/kopilka.pay:${GITHUB_SHA::8} -f pay.Dockerfile .
+        run: docker build -t m0rdovorot/kopilka.pay:latest -f pay.Dockerfile .
 
       - name: Push API image
-        run: docker push m0rdovorot/kopilka.api:${GITHUB_SHA::8}
+        run: docker push m0rdovorot/kopilka.api:latest
       - name: Push auth image
-        run: docker push m0rdovorot/kopilka.auth:${GITHUB_SHA::8}
+        run: docker push m0rdovorot/kopilka.auth:latest
       - name: Push posts image
-        run: docker push m0rdovorot/kopilka.posts:${GITHUB_SHA::8}
+        run: docker push m0rdovorot/kopilka.posts:latest
       - name: Push pay image
-        run: docker push m0rdovorot/kopilka.pay:${GITHUB_SHA::8}
+        run: docker push m0rdovorot/kopilka.pay:latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -71,9 +71,9 @@ jobs:
         run: |
             ssh -tt -i key.pem ubuntu@212.233.89.163 << 'ENDSSH'
             cd backend/2023_2_Chaihona_No.1/
-            docker compose down
-            git pull
-            docker compose up -d
+            sudo docker compose down
+            sudo git pull
+            sudo docker compose up -d
             ENDSSH
             
       # sudo docker pull m0rdovorot/kopilka.api:${GITHUB_SHA::8}
