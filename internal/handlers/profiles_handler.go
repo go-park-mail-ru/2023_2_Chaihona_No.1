@@ -47,15 +47,17 @@ func sendToToken(app *firebase.App, token string, notification *messaging.Notifi
 	fmt.Println("Successfully sent message:", response)
 }
 
-
+//easyjson:json
 type BodyProfile struct {
 	Profile model.Profile `json:"profile"`
 }
 
+//easyjson:json
 type Profiles struct {
 	Profiles []model.Profile `json:"profiles"`
 }
 
+//easyjson:json
 type Analytics struct {
 	Analytics model.Analitycs `json:"analytics"`
 }

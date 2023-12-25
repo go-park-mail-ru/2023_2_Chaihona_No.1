@@ -20,6 +20,7 @@ type RepoHandler struct {
 	Analytics	analytics.AnalyticsRepository
 }
 
+//easyjson:json
 type EmptyForm struct{}
 
 func (f EmptyForm) IsValide() bool {

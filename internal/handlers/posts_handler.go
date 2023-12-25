@@ -22,10 +22,12 @@ import (
 	"github.com/google/uuid"
 )
 
+//easyjson:json
 type BodyPosts struct {
 	Posts []model.Post `json:"posts"`
 }
 
+//easyjson:json
 type BodyLike struct {
 	PostId int `json:"post_id"`
 }

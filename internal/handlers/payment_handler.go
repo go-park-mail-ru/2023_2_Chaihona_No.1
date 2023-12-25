@@ -18,6 +18,7 @@ import (
 	pay "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/payment"
 )
 
+//easyjson:json
 type BodyPayments struct {
 	Payments    []model.Payment `json:"payments,omitempty"`
 	RedirectURL string          `json:"redirect_url,omitempty"`

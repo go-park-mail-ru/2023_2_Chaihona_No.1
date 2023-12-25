@@ -18,10 +18,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
+//easyjson:json
 type BodyAttaches struct {
 	Attaches []model.Attach `json:"attaches"`
 }
 
+//easyjson:json
 type FileBody struct {
 	Path string `json:"path"`
 }

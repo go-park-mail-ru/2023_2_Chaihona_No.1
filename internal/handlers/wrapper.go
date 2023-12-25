@@ -12,6 +12,8 @@ import (
 
 	auth "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/usecases/authorization"
 	"github.com/gorilla/mux"
+	"github.com/mailru/easyjson"
+	jwriter "github.com/mailru/easyjson/jwriter"
 )
 
 const (
@@ -23,12 +25,17 @@ type IValidatable interface {
 	IsEmpty() bool
 }
 
-type Wrapper[Req IValidatable, Resp any] struct {
+type IMarshable interface {
+	MarshalJSON() ([]byte, error) 
+	MarshalEasyJSON(w *jwriter.Writer)
+}
+
+type Wrapper[Req IValidatable, Resp IMarshable] struct {
 	fn func(ctx context.Context, req Req) (Resp, error)
 }
 
 // возможно хорошо бы валидатор отдельно сделать, но пока так
-func NewWrapper[Req IValidatable, Resp any](fn func(ctx context.Context, req Req) (Resp, error)) *Wrapper[Req, Resp] {
+func NewWrapper[Req IValidatable, Resp IMarshable](fn func(ctx context.Context, req Req) (Resp, error)) *Wrapper[Req, Resp] {
 	return &Wrapper[Req, Resp]{
 		fn: fn,
 	}
@@ -79,7 +86,7 @@ func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	rawJSON, err := json.Marshal(response)
+	rawJSON, err := easyjson.Marshal(response)
 	if err != nil {
 		log.Println(err)
 		WriteHttpError(w, ErrEncoding)
@@ -93,11 +100,11 @@ func (wrapper *Wrapper[Req, Res]) ServeHTTP(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-type FileWrapper[Resp any] struct {
+type FileWrapper[Resp IMarshable] struct {
 	fn func(ctx context.Context, req FileForm) (Resp, error)
 }
 
-func NewFileWrapper[Resp any](fn func(ctx context.Context, req FileForm) (Resp, error)) *FileWrapper[Resp] {
+func NewFileWrapper[Resp IMarshable](fn func(ctx context.Context, req FileForm) (Resp, error)) *FileWrapper[Resp] {
 	return &FileWrapper[Resp]{
 		fn: fn,
 	}
@@ -141,7 +148,7 @@ func (wrapper *FileWrapper[Res]) ServeHTTP(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	rawJSON, err := json.Marshal(response)
+	rawJSON, err := easyjson.Marshal(response)
 	if err != nil {
 		log.Println(err)
 		WriteHttpError(w, ErrEncoding)
