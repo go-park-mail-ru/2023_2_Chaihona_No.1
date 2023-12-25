@@ -496,7 +496,7 @@ func (p *PostHandler) AddCommentStratagy(ctx context.Context, form CommentForm) 
 	if !ok {
 		return Result{}, ErrNoSession
 	}
-
+	fmt.Println(form)
 	comment := model.Comment{
 		UserId: int(session.UserID),
 		PostId: form.Body.PostId,

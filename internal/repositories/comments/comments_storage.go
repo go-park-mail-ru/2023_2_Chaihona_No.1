@@ -51,6 +51,7 @@ func CreateCommentStore(db *sql.DB) *CommentStorage {
 }
 
 func (manager *CommentManager) CreateComment(comment model.Comment) (int, error) {
+	fmt.Println(comment)
 	id, err := manager.CLient.CreateCommentCtx(context.Background(), CommentToCommentGRPC(&comment))
 	fmt.Println(err)
 	if err != nil {
@@ -61,7 +62,7 @@ func (manager *CommentManager) CreateComment(comment model.Comment) (int, error)
 
 func (storage *CommentStorage) CreateCommentCtx(ctx context.Context, comment *CommentGRPC) (*Int, error) {
 	var commentId int
-
+	fmt.Println(comment)
 	err := InsertCommentSQL(*CommentGRPCToComment(comment)).RunWith(storage.db).QueryRow().Scan(&commentId)
 	if err != nil {
 		return &Int{I: 0}, err
