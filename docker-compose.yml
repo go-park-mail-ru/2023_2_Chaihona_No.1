@@ -41,7 +41,7 @@ services:
     ports:
       - "8001:8001"
     volumes:
-      - ./static/:static
+      - ./static/:/static
   kopilka.auth:
     image: m0rdovorot/kopilka.auth:latest
     ports:
