@@ -23,11 +23,11 @@ jobs:
       - name: Push API image
         run: docker push m0rdovorot/kopilka.api:${GITHUB_SHA::8}
       - name: Push auth image
-        run: docker build -t m0rdovorot/kopilka.auth:${GITHUB_SHA::8}
+        run: docker push -t m0rdovorot/kopilka.auth:${GITHUB_SHA::8}
       - name: Push posts image
-        run: docker build -t m0rdovorot/kopilka.posts:${GITHUB_SHA::8}
+        run: docker push -t m0rdovorot/kopilka.posts:${GITHUB_SHA::8}
       - name: Push pay image
-        run: docker build -t m0rdovorot/kopilka.pay:${GITHUB_SHA::8}
+        run: docker push -t m0rdovorot/kopilka.pay:${GITHUB_SHA::8}
 
   deploy:
     runs-on: ubuntu-latest
