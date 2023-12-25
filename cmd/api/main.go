@@ -81,7 +81,8 @@ func main() {
 	defer db.Close()
 
 	grcpConnSessions, err := grpc.Dial(
-		"212.233.89.163:8081",
+		// "212.233.89.163:8081",
+		"kopilka-kopilka.auth-1:8081",
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -90,7 +91,8 @@ func main() {
 	defer grcpConnSessions.Close()
 
 	grcpConnPayments, err := grpc.Dial(
-		"212.233.89.163:8082",
+		// "212.233.89.163:8082",
+		"kopilka-kopilka.pay-1:8082",
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -99,7 +101,8 @@ func main() {
 	defer grcpConnPayments.Close()
 
 	grcpConnPosts, err := grpc.Dial(
-		"212.233.89.163:8083",
+		// "212.233.89.163:8083",
+		"kopilka-kopilka.posts-1:8083",
 		grpc.WithInsecure(),
 	)
 	if err != nil {

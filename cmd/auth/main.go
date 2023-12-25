@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+
 	"github.com/go-park-mail-ru/2023_2_Chaihona_No.1/configs"
 
 	sessrep "github.com/go-park-mail-ru/2023_2_Chaihona_No.1/internal/repositories/sessions"
@@ -19,7 +20,10 @@ func main() {
 
 	server := grpc.NewServer()
 
-	sessrep.RegisterAuthCheckerServer(server, sessrep.CreateRedisSessionStorage(sessrep.NewPool(fmt.Sprintf("%s:%s", configs.RedisServerIP, configs.RedisServerPort))))
+	sessrep.RegisterAuthCheckerServer(server, sessrep.CreateRedisSessionStorage(sessrep.NewPool(
+		// fmt.Sprintf("%s:%s", configs.RedisServerIP, configs.RedisServerPort),
+			fmt.Sprintf("%s:%s", configs.RedisServerURL, configs.RedisServerPort),
+		)))
 
 	fmt.Println("starting server at :8081")
 	server.Serve(lis)
