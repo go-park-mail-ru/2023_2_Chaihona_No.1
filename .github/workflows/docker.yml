@@ -33,6 +33,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Add known host
+        run: |
+          mkdir -p ~/.ssh/ && touch ~/.ssh/known_hosts
+          ssh-keyscan -H 212.233.89.163 >> ~/.ssh/known_hosts
       - name: Create SHH Key
         run: |
           echo "-----BEGIN RSA PRIVATE KEY-----
