@@ -42,6 +42,8 @@ services:
       - "8001:8001"
     volumes:
       - ./static/:/static
+      - ./API_key:/API_key
+      - ./serviceAccountKey.json:/serviceAccountKey.json
   kopilka.auth:
     image: m0rdovorot/kopilka.auth:latest
     ports:
