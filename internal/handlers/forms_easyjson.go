@@ -1732,7 +1732,7 @@ func easyjson84463b63DecodeGithubComGoParkMailRu20232ChaihonaNo1InternalHandlers
 			continue
 		}
 		switch key {
-		case "Body":
+		case "body":
 			easyjson84463b63Decode10(in, &out.Body)
 		default:
 			in.SkipRecursive()
@@ -1749,7 +1749,7 @@ func easyjson84463b63EncodeGithubComGoParkMailRu20232ChaihonaNo1InternalHandlers
 	first := true
 	_ = first
 	{
-		const prefix string = ",\"Body\":"
+		const prefix string = ",\"body\":"
 		out.RawString(prefix[1:])
 		easyjson84463b63Encode10(out, in.Body)
 	}

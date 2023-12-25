@@ -144,7 +144,7 @@ type CommentForm struct {
 	Body struct {
 		PostId int    `json:"post_id"`
 		Text   string `json:"text"`
-	}
+	} `json:"body"`
 }
 
 func (f CommentForm) IsValide() bool {
