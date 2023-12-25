@@ -36,3 +36,19 @@ services:
       - REDIS_PASSWORD=12345
       - REDIS_PORT=6379
       - REDIS_DATABASES=16
+  kopilka.api:
+    image: m0rdovorot/kopilka.api
+    ports:
+      - "8001:8001"
+  kopilka.auth:
+    image: m0rdovorot/kopilka.auth
+    ports:
+      - "8081:8081"
+  kopilka.pay:
+    image: m0rdovorot/kopilka.pay
+    ports:
+      - "8082:8082"
+  kopilka.posts:
+    image: m0rdovorot/kopilka.posts
+    ports:
+      - "8083:8083"

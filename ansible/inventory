@@ -1,0 +1,2 @@
+[web]
+212.233.89.163 ansible_user=ubuntu ansible_ssh_private_key_file=~/park/sem/2023-2-Chaihona-No1-YucupIsJ.crt
