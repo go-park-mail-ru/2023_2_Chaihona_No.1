@@ -110,6 +110,7 @@ func main() {
 	}
 	defer grcpConnPosts.Close()
 
+	
 	sessManager := &sessrep.RedisManager{sessrep.NewAuthCheckerClient(grcpConnSessions)}
 	payManager := &payments.PaymentManager{payments.NewPaymentsServiceClient(grcpConnPayments)}
 	postManager := &posts.PostManager{posts.NewPostsServiceClient(grcpConnPosts)}
