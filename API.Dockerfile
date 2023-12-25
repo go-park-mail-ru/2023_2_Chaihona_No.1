@@ -14,6 +14,7 @@ FROM alpine:latest
 
 WORKDIR /
 
+COPY ./static static/
 COPY ./db/migrations db/migrations
 COPY --from=build /project/bin/ /bin/
 
