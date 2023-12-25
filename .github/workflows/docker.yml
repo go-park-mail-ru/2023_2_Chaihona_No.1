@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Login to DockerHub Registry
-        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+        run: echo Antihyp3. | docker login -u m0rdovorot --password-stdin
       - name: Build Docker API image
         run: docker build -t m0rdovorot/kopilka.api:${GITHUB_SHA::8} -f API.Dockerfile .
       - name: Build Docker auth image
