@@ -145,7 +145,8 @@ func (storage *UserStorage) RegisterNewUser(user *model.User) (int, error) {
 	err := InsertUserSQL(*user).RunWith(storage.db).QueryRow().Scan(&userId)
 	if err != nil {
 		return 0, ErrorUserRegistration{
-			ErrUserLoginAlreadyExists,
+			// ErrUserLoginAlreadyExists,
+			err,
 			http.StatusBadRequest,
 		}
 	}

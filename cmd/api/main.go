@@ -82,7 +82,7 @@ func main() {
 
 	grcpConnSessions, err := grpc.Dial(
 		// "212.233.89.163:8081",
-		"kopilka-kopilka.auth-1:8081",
+		"2023_2_chaihona_no1-kopilka.auth-1:8081",
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -92,7 +92,7 @@ func main() {
 
 	grcpConnPayments, err := grpc.Dial(
 		// "212.233.89.163:8082",
-		"kopilka-kopilka.pay-1:8082",
+		"2023_2_chaihona_no1-kopilka.pay-1:8082",
 		grpc.WithInsecure(),
 	)
 	if err != nil {
@@ -102,7 +102,7 @@ func main() {
 
 	grcpConnPosts, err := grpc.Dial(
 		// "212.233.89.163:8083",
-		"kopilka-kopilka.posts-1:8083",
+		"2023_2_chaihona_no1-kopilka.posts-1:8083",
 		grpc.WithInsecure(),
 	)
 	if err != nil {

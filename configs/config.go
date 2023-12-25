@@ -13,7 +13,7 @@ const (
 	DatabaseUser         = "kopilka"
 	DatabaseUserPassword = "12345"
 	// DatabaseServerIP     = "localhost"
-	DatabaseServerIP = "kopilka-postgres-1"
+	DatabaseServerIP = "2023_2_chaihona_no1-postgres-1"
 	DatabaseServerPort   = "5432"
 	DatabaseName         = "kopilka"
 	DatabaseURL          = DatabaseDMS + "://" + DatabaseUser +
@@ -33,7 +33,7 @@ const (
 
 	RedisServerIP   = "127.0.0.1"
 	RedisServerPort = "6379"
-	RedisServerURL = "kopilka-redis-1"
+	RedisServerURL = "2023_2_chaihona_no1-redis-1"
 
 	PaymentAPI      = "https://api.yookassa.ru/v3/"
 	PaymentKeyPath  = "API_key"
