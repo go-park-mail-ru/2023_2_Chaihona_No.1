@@ -130,13 +130,13 @@ func (storage *AnalyticsStorage) GetMounthAgoAnalytics(userId int) (model.Analit
 	monthAgo := now.AddDate(0, -1, 0)
 	var analyticsMonth []model.Analitycs	
 	rowsMonth, err := SelectAnalyticsMonthAgoSQL(userId, monthAgo.Format("2006-01-02")).RunWith(storage.db).Query()
-	
+
 	if err != nil {
 		log.Println(err)
 		return model.Analitycs{}, err
 	}
 	err = dbscan.ScanAll(&analyticsMonth, rowsMonth)
-	fmt.Println(analyticsMonth)
+	fmt.Println("1", analyticsMonth)
 	if err != nil {
 		log.Println(err)
 		return model.Analitycs{}, err
@@ -153,7 +153,7 @@ func (storage *AnalyticsStorage) GetMounthAgoAnalytics(userId int) (model.Analit
 			log.Println(err)
 			return model.Analitycs{}, err
 		}
-		fmt.Println(analyticsLast)
+		fmt.Println("2", analyticsLast)
 		return analyticsLast[0], nil
 	}
 	return analyticsMonth[0], nil
