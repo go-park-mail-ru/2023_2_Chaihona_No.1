@@ -122,7 +122,7 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 		}
 	}
 	for i := range posts {
-		posts[i].CreationDate = posts[i].CreationDateSQL.Time.Format("2006-01-02 15:04")
+		// posts[i].CreationDate = posts[i].CreationDateSQL.Time.Format("2006-01-02 15:04")
 		if !posts[i].HasAccess {
 			posts[i].Attaches = ""
 			posts[i].Body = ""
