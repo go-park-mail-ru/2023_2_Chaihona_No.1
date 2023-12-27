@@ -402,7 +402,7 @@ func (p *PostHandler) GetPostByTagStrategy(ctx context.Context, form EmptyForm) 
 
 	decodedTag, err := url.QueryUnescape(tag)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return Result{}, ErrBadID
 	}
 
