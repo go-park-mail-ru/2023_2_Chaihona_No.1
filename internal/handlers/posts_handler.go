@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -129,6 +130,9 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 			posts[i].Comments = []model.Comment{}
 		}
 	}
+	sort.SliceStable(posts, func(i, j int) bool {
+		return posts[i].ID < posts[j].ID
+	})
 	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
 	if errPost != nil {
 		switch err.(type) {

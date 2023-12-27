@@ -576,11 +576,9 @@ func (manager *PostManager) GetPostsByAuthorIdForFollower(authorId uint, subscri
 	}
 
 	var posts []model.Post
-	fmt.Println("3", postsMap)
 	for _, post := range postsMap.Posts {
 		posts = append(posts, *PostGRPCToPost(post))
 	}
-	fmt.Println("4", posts)
 	return posts, nil
 }
 
@@ -625,10 +623,8 @@ func (storage *PostStorage) GetPostsByAuthorIdForFollowerCtx(ctx context.Context
 	postsMap := &PostsMapGRPC{}
 	postsMap.Posts = make(map[int32]*PostGRPC)
 	for i, post := range posts {
-		fmt.Println("1", post)
 		postsMap.Posts[int32(i)] = PostToPostGRPC(&post)
 	}
-	fmt.Println("2", postsMap)
 	return postsMap, nil
 }
 
