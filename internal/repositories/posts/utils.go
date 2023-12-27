@@ -35,7 +35,7 @@ func PostToPostGRPC(post *model.Post) *PostGRPC {
 		Currency:      post.Currency,
 		MinSubLevel:   uint32(post.MinSubLevel),
 		MinSubLevelId: uint32(post.MinSubLevelId),
-		CreationDate:  post.CreationDate,
+		CreationDate:  post.CreationDateSQL.Time.Format("2006-01-02"),
 		UpdatedAt:     post.UpdatedAt,
 		Header:        post.Header,
 		Body:          post.Body,
