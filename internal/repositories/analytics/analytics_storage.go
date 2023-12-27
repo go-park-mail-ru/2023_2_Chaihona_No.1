@@ -126,7 +126,7 @@ func (storage *AnalyticsStorage) GetLastAnalytics(userId int) (model.Analitycs, 
 		return model.Analitycs{}, err
 	}
 	err = dbscan.ScanAll(&analyticsMonth, rowsMonth)
-	fmt.Println(rowsMonth)
+	fmt.Println(analyticsMonth)
 	if err != nil {
 		log.Println(err)
 		return model.Analitycs{}, err
@@ -143,6 +143,7 @@ func (storage *AnalyticsStorage) GetLastAnalytics(userId int) (model.Analitycs, 
 			log.Println(err)
 			return model.Analitycs{}, err
 		}
+		fmt.Println(analyticsLast)
 		return analyticsLast[0], nil
 	}
 	return analyticsMonth[0], nil
