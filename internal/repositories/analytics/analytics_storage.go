@@ -22,6 +22,16 @@ func SelectAnalyticsMonthAgoSQL(userId int, date string) squirrel.SelectBuilder 
 		PlaceholderFormat(squirrel.Dollar)	
 }
 
+func SelectLastAnalyticsSQL(userId int) squirrel.SelectBuilder {
+	return squirrel.Select("*").
+		From(configs.AnalitycsTable + " a").
+		Where(squirrel.Eq{"user_id": userId}).
+		GroupBy("a.user_id, a.id").
+		OrderBy("a.created_at DESC").
+		Limit(1).
+		PlaceholderFormat(squirrel.Dollar)	
+}
+
 func SelectFirstAnalyticsSQL(userId int) squirrel.SelectBuilder {
 	return squirrel.Select("*").
 		From(configs.AnalitycsTable + " a").
@@ -115,7 +125,7 @@ func CreateAnalyticsStorage(db *sql.DB) AnalyticsRepository {
 	}
 }
 
-func (storage *AnalyticsStorage) GetLastAnalytics(userId int) (model.Analitycs, error) {
+func (storage *AnalyticsStorage) GetMounthAgoAnalytics(userId int) (model.Analitycs, error) {
 	now := time.Now()
 	monthAgo := now.AddDate(0, -1, 0)
 	var analyticsMonth []model.Analitycs	
@@ -147,6 +157,21 @@ func (storage *AnalyticsStorage) GetLastAnalytics(userId int) (model.Analitycs, 
 		return analyticsLast[0], nil
 	}
 	return analyticsMonth[0], nil
+}
+
+func (storage *AnalyticsStorage) GetLastAnalytics(userId int) (model.Analitycs, error) {
+	lastRows, err := SelectLastAnalyticsSQL(userId).RunWith(storage.db).Query()
+	if err != nil {
+		log.Println(err)
+		return model.Analitycs{}, err
+	}
+	var analyticsLast []model.Analitycs	
+	err = dbscan.ScanAll(&analyticsLast, lastRows)
+	if err != nil || len(analyticsLast) == 0 {
+		log.Println(err)
+		return model.Analitycs{}, err
+	}
+	return analyticsLast[0], nil
 }
 
 func (storage *AnalyticsStorage) CountPosts(userId int) (int, error) {
