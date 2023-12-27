@@ -131,7 +131,7 @@ func (p *PostHandler) GetAllUserPostsStrategy(ctx context.Context, form EmptyFor
 		}
 	}
 	sort.SliceStable(posts, func(i, j int) bool {
-		return posts[i].ID < posts[j].ID
+		return posts[i].ID > posts[j].ID
 	})
 	// сделал по примеру из 6-ой лекции, возможно, стоит добавить обработку по дефолту в свиче
 	if errPost != nil {
