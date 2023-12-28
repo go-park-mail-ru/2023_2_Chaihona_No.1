@@ -1,0 +1,9 @@
+[Unit]
+Description=Kopilka
+
+[Service]
+ExecStart=/home/ubuntu/backend/bin/kopilka
+WorkingDirectory=/home/ubuntu/bin
+
+[Install]
+WantedBy=multi-user.target

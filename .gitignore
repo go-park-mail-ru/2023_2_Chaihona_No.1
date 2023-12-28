@@ -15,10 +15,13 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
 
 # Go workspace file
 go.work
 
 *.txt
-github.com/go-park-mail-ru/2023_2_Chaihona_No.1
+2023_2_Chaihona_No.1
+.trunk
+
+kafka*
