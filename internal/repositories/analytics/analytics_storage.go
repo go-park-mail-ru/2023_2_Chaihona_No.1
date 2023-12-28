@@ -128,8 +128,10 @@ func CreateAnalyticsStorage(db *sql.DB) AnalyticsRepository {
 func (storage *AnalyticsStorage) GetMounthAgoAnalytics(userId int) (model.Analitycs, error) {
 	now := time.Now()
 	monthAgo := now.AddDate(0, -1, 0)
-	fmt.Println("date: ", monthAgo)
+	fmt.Println("date: ", monthAgo.Format("2006-01-02"))
 	var analyticsMonth []model.Analitycs	
+	sq, _, _ := SelectAnalyticsMonthAgoSQL(userId, monthAgo.Format("2006-01-02")).ToSql()
+	fmt.Println(sq)
 	rowsMonth, err := SelectAnalyticsMonthAgoSQL(userId, monthAgo.Format("2006-01-02")).RunWith(storage.db).Query()
 
 	if err != nil {
