@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+// protoc --go_out=. --go-grpc_out=. --go-grpc_opt=paths=source_relative --go_opt=paths=source_relative *.proto  
+option go_package = "./;sessions";
+
+package sessions;
+
+
+message SessionID {
+  string id = 1;
+}
+
+message Session {
+  string session_id = 1;
+  uint32 user_id = 2;
+  string ttl = 3;
+}
+
+message CheckSession {
+  string session_id = 1;
+  uint32 user_id = 2;
+  string ttl = 3;
+  bool exists = 4;
+}
+
+message Nothing {
+  bool dummy = 1;
+}
+
+// grpc-сервис проверки авторизации
+service AuthChecker {
+    rpc RegisterNewSessionCtx (Session) returns (Nothing) {}
+    rpc CheckSessionCtx(SessionID)  returns (CheckSession) {}
+    rpc DeleteSessionCtx(SessionID) returns (Nothing) {}
+}

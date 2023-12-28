@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+// protoc --go_out=. --go-grpc_out=. --go-grpc_opt=paths=source_relative --go_opt=paths=source_relative *.proto  
+option go_package = "./;comments";
+
+package comments;
+
+message CommentGRPC {
+	uint32 id = 1;
+	uint32 user_id = 2;
+  uint32 post_id = 3;
+	string text = 4; 
+  bool is_owner = 5;
+}
+
+message CommentsGRPC {
+	map<int32, CommentGRPC> comments_map = 1;
+}
+
+
+message CommentsMapGRPC {
+  map<int32, CommentsGRPC> comments = 1;
+}
+
+message UInt {
+  uint32 id = 1;
+}
+
+message Int {
+    int32 i = 1; 
+}
+
+message Nothing {
+  bool dummy = 1;
+}
+
+// grpc-сервис проверки авторизации
+service CommentService {
+  rpc CreateCommentCtx (CommentGRPC) returns (Int) {}
+	rpc DeleteCommentCtx(UInt) returns (Nothing) {}
+	rpc ChangeCommentCtx(CommentGRPC) returns (Nothing) {}
+}
