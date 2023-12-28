@@ -15,7 +15,7 @@ import (
 func SelectAnalyticsMonthAgoSQL(userId int, date string) squirrel.SelectBuilder {
 	return squirrel.Select("*").
 		From(configs.AnalitycsTable + " a").
-		Where(squirrel.Eq{"user_id": userId}, "created_at >= " + date, "created_at < " + date + "::timestamp + interval '1 day'").
+		Where(fmt.Sprintf("WHERE user_id = %d", userId), "created_at >= " + date, "created_at < " + date + "::timestamp + interval '1 day'").
 		GroupBy("a.user_id, a.id").
 		OrderBy("a.created_at DESC").
 		Limit(1).
